@@ -4,6 +4,10 @@
 
 [一期规格](docs/phase-one.md) · [二期实施计划](docs/phase-two.md) · [调研稿](docs/blink-design.html) · [自动打包与下载](https://github.com/Zhao-wl/Blink/actions/workflows/offline.yml)
 
+## 二期安卓内测
+
+安装 Releases 中的「Blink 内测」。在「日程 → 账号与同步」注册后，可以跨会话同步打卡、撤销、用眼区间、作息和当天安排，离线时继续在本机记录。当前内测使用开发 Mac 的 SSH 隧道和 USB 转发连接成都 ECS，拔线后自动转为离线。原有四端离线包继续独立发布。[安卓内测包](https://github.com/Zhao-wl/Blink/releases?q=android-stage) · [联调与恢复](server/README.md)
+
 ## 安装与打包
 
 在成功的 Actions 运行底部下载对应 Artifact 并解压。Android 包为可侧载测试 APK；iOS 模拟器包可通过 Xcode 安装。未签名设备 IPA 需要开发者签名和匹配的描述文件才能在真机运行。Windows 安装包为 x64，macOS DMG 包含 Apple Silicon 和 Intel。开发测试构建可能显示系统签名提示。
