@@ -48,7 +48,7 @@ if (Capacitor.isNativePlatform()) {
   if(android)timer.addListener('tap',event=>receive(event.token));
   notifications.addListener('localNotificationActionPerformed',event=>receive(event.notification.extra?.token));
   window.blinkMobile={
-    ios:!android,replace,
+    ios:!android,replace,configureFace:options=>timer.configureFace(options),openFace:()=>timer.openFace(),
     async exactAllowed(){return (await notifications.checkExactNotificationSetting()).exact_alarm==='granted'},
     async requestExact(){return (await notifications.changeExactNotificationSetting()).exact_alarm==='granted'},
     async consumeTap(){if(android){const {token}=await timer.consumeTap();if(token)receive(token)}},

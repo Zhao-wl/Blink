@@ -59,3 +59,15 @@ test('dinner never extends the scheduled shift',()=>{
   assert.equal(run('status(Date.now()).work'),false);
   assert.equal(run("eyeDuration('2026-11-23')/minute"),5);
 });
+
+test('lock screen follows work, dinner and explicit non-work sessions',()=>{
+  const {run,advance}=engine('2026-11-23T17:50');
+  run("data.end='19:00';settle()");
+  const rows=run('faceRows(Date.now(),backgroundPlan(Date.now()))');
+  const rowAt=hm=>rows.find(r=>r.from<=Date.parse('2026-11-23T'+hm+'+08:00')&&r.until>Date.parse('2026-11-23T'+hm+'+08:00'));
+  assert.equal(rowAt('18:10').label,'晚餐结束');
+  assert.equal(rowAt('18:40').work,true);
+  assert.equal(rowAt('19:01'),undefined);
+  advance('2026-11-23T19:05');run('startSession(30)');
+  assert.equal(run('faceRows(Date.now(),backgroundPlan(Date.now()))[0].work'),false);
+});

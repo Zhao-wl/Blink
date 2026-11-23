@@ -155,6 +155,16 @@ function deliverySettings(){
  for(const [id,k] of [['soundOn','sound'],['buzzOn','buzz']]){const input=el(id);input.checked=pref[k];input.disabled=!supportsSystem()||(k==='buzz'&&(window.blinkDesktop||window.blinkMobile?.ios));input.onchange=()=>{pref[k]=input.checked;save();syncBackground()}}
  if(window.blinkMobile){
    const label=document.createElement('label');label.className='field';label.textContent='锁屏显示倒计时';const toggle=document.createElement('input');toggle.type='checkbox';toggle.checked=pref.lock!==false;toggle.onchange=()=>{pref.lock=toggle.checked;save();syncBackground()};label.append(toggle);section.append(label);
+   if(!window.blinkMobile.ios){
+     const field=document.createElement('label');field.className='field';field.textContent='工作时自动显示锁屏计时页';
+     const auto=document.createElement('input');auto.type='checkbox';auto.checked=pref.autoFace!==false;
+     auto.onchange=()=>{pref.autoFace=auto.checked;save();syncBackground()};field.append(auto);section.append(field);
+     const open=document.createElement('button');open.textContent='手动打开计时页';section.append(open);
+     const show=async()=>{try{await syncFace(Date.now());await window.blinkMobile.openFace()}catch{say('计时页未能打开')}};
+     open.onclick=()=>{const st=status(Date.now());if(st.work||st.timed){show();return}
+       sheet('定时用眼','选择本次时长并打开计时页。可在首页提前结束。',
+         [30,60,90,120].map(n=>[n+' 分钟',()=>{startSession(n);show()}]))};
+   }
    if(!window.blinkMobile.ios&&pref.enabled){
      const exact=document.createElement('button');exact.textContent='允许锁屏准时提醒';exact.hidden=true;section.append(exact);
      window.blinkMobile.exactAllowed().then(allowed=>{exact.hidden=allowed}).catch(()=>{});
@@ -418,6 +428,24 @@ function backgroundPlan(ms){
  }
  return items
 }
+function faceRows(ms,items){
+ const rows=[],end=ms+3*dayMs;
+ for(let from=ms;from<end;){
+   const st=status(from),stop=boundary(from,end,st);
+   if(st.work||st.timed){
+     let t=from;
+     while(t<stop){
+       const next=items.find(item=>item.at>t&&item.at<=stop);
+       const until=st.meal||st.pause||!next?stop:next.at;
+       const label=st.meal?st.meal+'结束':st.pause?(st.pause.kind===0?'远眺结束':'离席结束'):
+         next?'距离下次'+next.title:st.timed?'定时结束':'本段工作结束';
+       rows.push({from:t,until,work:st.work,label});t=until;
+     }
+   }
+   from=stop
+ }
+ return rows
+}
 function viewKey(){const st=status(Date.now());return [st.day,st.work,st.meal,st.pause?.from,st.planned,st.timed,sessionEndsFirst(st,reminders()[0]),...[0,1,2].map(k=>frequency(k)>0&&!left(k)),...todayBlocks().map(b=>b.at<=time(now()))].join('|')}
 let painted='',lastSaved=0;
 function render(persist=true){settle();if(persist)save();painted=viewKey();document.title='Blink · '+tabs[tab];Array.from(el('nav').children).forEach((b,i)=>{if(i===tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});[home,records,schedule][tab]();checkReminder();syncBackground()}
@@ -430,9 +458,14 @@ document.addEventListener('visibilitychange',()=>{refreshStored();settle();visib
 window.addEventListener('pagehide',()=>{if(visible){refreshStored();settle();save()}});
 window.addEventListener('storage',e=>{if(e.key===key&&e.newValue){const latest=JSON.parse(e.newValue);if(latest.cursor>=data.cursor){data=loadMealTimes(latest);if(!document.hidden)render(false)}}});
 let nativePlanSignature='';
+function syncFace(ms,plan=backgroundPlan(ms)){
+ return window.blinkMobile.configureFace({auto:data.delivery?.autoFace!==false,rows:faceRows(ms,plan)})
+}
 function syncBackground(){
  if(!window.blinkMobile)return;
- const ms=Date.now(),pref=data.delivery||{},items=pref.enabled?backgroundPlan(ms):[];
+ const ms=Date.now(),pref=data.delivery||{},android=!window.blinkMobile.ios;
+ const plan=pref.enabled||android?backgroundPlan(ms):[],items=pref.enabled?plan:[];
+ if(android)syncFace(ms,plan).catch(()=>say('锁屏计时页未能更新'));
  const st=status(ms),current=st.work||st.timed||st.planned;
  const display=current&&pref.enabled?items[0]:null;
  const fingerprint=JSON.stringify([pref.enabled,pref.sound,pref.buzz,pref.lock,items.map(i=>[i.k,Math.round(i.at/1000),i.retry]),display?.k]);

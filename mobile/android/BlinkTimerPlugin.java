@@ -9,6 +9,16 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 
 @CapacitorPlugin(name="BlinkTimer")
 public class BlinkTimerPlugin extends Plugin {
+    @PluginMethod public void configureFace(PluginCall call){
+        LockFace.prefs(getContext()).edit().putString("rows",call.getArray("rows",new JSArray()).toString())
+            .putBoolean("auto",call.getBoolean("auto",true)).apply();
+        call.resolve();
+    }
+    @PluginMethod public void openFace(PluginCall call){
+        getActivity().runOnUiThread(()->{
+            getActivity().startActivity(new Intent(getActivity(),LockClockActivity.class));call.resolve();
+        });
+    }
     @PluginMethod public void configure(PluginCall call) {
         Context ctx = getContext();
         String plan = call.getArray("items", new JSArray()).toString();

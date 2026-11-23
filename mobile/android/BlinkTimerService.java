@@ -79,10 +79,14 @@ public class BlinkTimerService extends Service {
         if(token!=null)i.putExtra("blinkToken",token);
         return PendingIntent.getActivity(this,token==null?0:1,i,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
     }
+    private PendingIntent openClock(){
+        if(!LockFace.autoEnabled(this))return open(null);
+        return PendingIntent.getActivity(this,3,new Intent(this,LockClockActivity.class),PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
+    }
     private Notification timerNotification(JSONObject item){
         boolean display=prefs.getBoolean("lock",true);
         NotificationCompat.Builder b=new NotificationCompat.Builder(this,"blink-clock")
-            .setSmallIcon(R.drawable.blink_notification).setContentIntent(open(null)).setOngoing(true)
+            .setSmallIcon(R.drawable.blink_notification).setContentIntent(openClock()).setOngoing(true)
             .setOnlyAlertOnce(true).setSilent(true).setShowWhen(false)
             .setVisibility(display&&!separateLockCard?NotificationCompat.VISIBILITY_PUBLIC:NotificationCompat.VISIBILITY_SECRET)
             .setContentTitle(item==null?"Blink 后台提醒":"下次"+item.optString("title")+"提醒");
@@ -110,7 +114,7 @@ public class BlinkTimerService extends Service {
         long seconds=Math.max(0,(deadline-System.currentTimeMillis()+999)/1000);
         String remaining=String.format(java.util.Locale.ROOT,"%d:%02d",seconds/60,seconds%60);
         Notification notification=new NotificationCompat.Builder(this,"blink-lock-clock")
-            .setSmallIcon(R.drawable.blink_notification).setContentIntent(open(null)).setContentTitle(title)
+            .setSmallIcon(R.drawable.blink_notification).setContentIntent(openClock()).setContentTitle(title)
             .setWhen(deadline).setUsesChronometer(true).setChronometerCountDown(true).setShowWhen(true)
             .setGroup("blink-lock-countdown").setContentText("剩余 "+remaining)
             .setOnlyAlertOnce(true).setVisibility(NotificationCompat.VISIBILITY_PUBLIC).build();
