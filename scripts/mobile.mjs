@@ -11,6 +11,8 @@ if(platform==='android'){
   const java='android/app/src/main/java/com/zhaowl/blink';
   for(const name of ['MainActivity','BlinkTimerService','BlinkTimerPlugin'])await copyFile('mobile/android/'+name+'.java',java+'/'+name+'.java');
   await copyFile('mobile/android/blink_notification.xml','android/app/src/main/res/drawable/blink_notification.xml');
+  await mkdir('android/app/src/main/res/layout',{recursive:true});
+  await copyFile('mobile/android/blink_lock_clock.xml','android/app/src/main/res/layout/blink_lock_clock.xml');
   const manifest='android/app/src/main/AndroidManifest.xml';
   const xml=await readFile(manifest,'utf8');
   const service='<service android:name=".BlinkTimerService" android:exported="false" android:stopWithTask="false" android:foregroundServiceType="specialUse"><property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="User enabled work and break countdown with local reminders"/></service>';

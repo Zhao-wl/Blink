@@ -8,15 +8,28 @@ import org.json.*;
 
 /** Executes the on-device plan when the UI disappears; the system draws the countdown. */
 public class BlinkTimerService extends Service {
-    private static final int TIMER=4100, ALERT=4101;
+    private static final int TIMER=4100, ALERT=4101, LOCK_TIMER=4102;
     private final Handler handler=new Handler(Looper.getMainLooper());
     private NotificationManager manager;
     private SharedPreferences prefs;
     private JSONArray items;
     private int cursor;
     private final Runnable tick=this::advance;
+    private final boolean separateLockCard="Xiaomi".equalsIgnoreCase(Build.MANUFACTURER);
+    private long displayedDeadline;
+    private boolean screenLocked(){
+        return !getSystemService(PowerManager.class).isInteractive() ||
+            getSystemService(KeyguardManager.class).isKeyguardLocked();
+    }
+    private void clearLockCard(){
+        manager.cancel(LOCK_TIMER);
+        displayedDeadline=0;
+    }
     private final BroadcastReceiver wake=new BroadcastReceiver(){
-        @Override public void onReceive(Context c,Intent intent){ advance(); }
+        @Override public void onReceive(Context c,Intent intent){
+            if(Intent.ACTION_USER_PRESENT.equals(intent.getAction()))clearLockCard();
+            else advance();
+        }
     };
     @Override public void onCreate(){
         super.onCreate();
@@ -27,8 +40,18 @@ public class BlinkTimerService extends Service {
             channel.setSound(null,null);
             channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             manager.createNotificationChannel(channel);
+            if(separateLockCard){
+                NotificationChannel lock=new NotificationChannel("blink-lock-clock","锁屏倒计时",NotificationManager.IMPORTANCE_DEFAULT);
+                lock.setSound(null,null);
+                lock.enableVibration(false);
+                lock.setShowBadge(false);
+                lock.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+                manager.createNotificationChannel(lock);
+            }
         }
-        registerReceiver(wake,new IntentFilter(Intent.ACTION_SCREEN_ON));
+        IntentFilter filter=new IntentFilter(Intent.ACTION_SCREEN_ON);
+        if(separateLockCard){filter.addAction(Intent.ACTION_SCREEN_OFF);filter.addAction(Intent.ACTION_USER_PRESENT);}
+        registerReceiver(wake,filter);
     }
     @Override public int onStartCommand(Intent intent,int flags,int startId){
         try { items=new JSONArray(prefs.getString("plan","[]")); }
@@ -54,10 +77,31 @@ public class BlinkTimerService extends Service {
         NotificationCompat.Builder b=new NotificationCompat.Builder(this,"blink-clock")
             .setSmallIcon(R.drawable.blink_notification).setContentIntent(open(null)).setOngoing(true)
             .setOnlyAlertOnce(true).setSilent(true).setShowWhen(false)
-            .setVisibility(display?NotificationCompat.VISIBILITY_PUBLIC:NotificationCompat.VISIBILITY_SECRET)
+            .setVisibility(display&&!separateLockCard?NotificationCompat.VISIBILITY_PUBLIC:NotificationCompat.VISIBILITY_SECRET)
             .setContentTitle(item==null?"Blink 后台提醒":"下次"+item.optString("title")+"提醒");
         if(item!=null&&display)b.setWhen(item.optLong("at")).setUsesChronometer(true).setChronometerCountDown(true).setShowWhen(true);
         return b.build();
+    }
+    private void syncLockCard(JSONObject item){
+        if(!separateLockCard)return;
+        if(!prefs.getBoolean("lock",true)||!screenLocked()){
+            if(displayedDeadline!=0)clearLockCard();
+            return;
+        }
+        long deadline=item.optLong("at");
+        if(displayedDeadline==deadline)return;
+        String title="下次"+item.optString("title")+"提醒";
+        android.widget.RemoteViews content=new android.widget.RemoteViews(getPackageName(),R.layout.blink_lock_clock);
+        content.setTextViewText(R.id.blink_clock_title,title);
+        content.setChronometer(R.id.blink_clock_time,SystemClock.elapsedRealtime()+deadline-System.currentTimeMillis(),null,true);
+        content.setBoolean(R.id.blink_clock_time,"setCountDown",true);
+        Notification notification=new NotificationCompat.Builder(this,"blink-lock-clock")
+            .setSmallIcon(R.drawable.blink_notification).setContentIntent(open(null)).setContentTitle(title)
+            .setWhen(deadline).setUsesChronometer(true).setChronometerCountDown(true).setShowWhen(true)
+            .setCustomContentView(content).setStyle(new NotificationCompat.DecoratedCustomViewStyle())
+            .setOnlyAlertOnce(true).setVisibility(NotificationCompat.VISIBILITY_PUBLIC).build();
+        manager.notify(LOCK_TIMER,notification);
+        displayedDeadline=deadline;
     }
     private void advance(){
         handler.removeCallbacks(tick);
@@ -69,6 +113,7 @@ public class BlinkTimerService extends Service {
             long due=item.optLong("at");
             if(due>now){
                 manager.notify(TIMER,timerNotification(item));
+                syncLockCard(item);
                 handler.postDelayed(tick,due-now);
                 armWakeup(due);
                 return;
@@ -96,6 +141,7 @@ public class BlinkTimerService extends Service {
     @Override public IBinder onBind(Intent intent){return null;}
     @Override public void onDestroy(){
         handler.removeCallbacks(tick);unregisterReceiver(wake);
+        if(separateLockCard)clearLockCard();
         getSystemService(AlarmManager.class).cancel(alarmIntent());
         stopForeground(STOP_FOREGROUND_REMOVE);super.onDestroy();
     }
