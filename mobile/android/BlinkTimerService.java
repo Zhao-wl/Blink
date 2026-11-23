@@ -34,7 +34,13 @@ public class BlinkTimerService extends Service {
         try { items=new JSONArray(prefs.getString("plan","[]")); }
         catch(JSONException e){items=new JSONArray();}
         cursor=0;
-        startForeground(TIMER,timerNotification(null));
+        JSONObject upcoming=null;
+        long now=System.currentTimeMillis();
+        for(int i=0;i<items.length();i++){
+            JSONObject item=items.optJSONObject(i);
+            if(item!=null&&item.optLong("at")>now){upcoming=item;break;}
+        }
+        startForeground(TIMER,timerNotification(upcoming));
         advance();
         return START_STICKY;
     }
