@@ -4,7 +4,8 @@ Description=Blink staging API
 [Service]
 Type=simple
 DynamicUser=yes
-ExecStart=/usr/bin/python3 -B /opt/blink-staging/health.py
+StateDirectory=blink-staging
+ExecStart=/usr/bin/python3 -B /opt/blink-staging/api.py
 Restart=on-failure
 RestartSec=3
 NoNewPrivileges=yes
