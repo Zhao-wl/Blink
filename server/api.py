@@ -93,7 +93,6 @@ def sync(db, owner, body):
     changes, cursor = body.get("records", []), body.get("cursor", 0)
     check(type(cursor) is int and 0 <= cursor < 2**63)
     check(isinstance(changes, list) and len(changes) <= LIMIT)
-    db.execute("BEGIN IMMEDIATE")
     for item in changes:
         check(isinstance(item, dict))
         rid, deleted = item.get("id"), item.get("deleted", False)
@@ -158,10 +157,11 @@ class Handler(BaseHTTPRequestHandler):
             with closing(sqlite3.connect(DB, timeout=10)) as db, db:
                 if self.path not in ("/v1/sync","/v2/sync","/v1/logout","/v2/devices") and not cloud.allowed(self.client_address[0]):
                     raise Problem(429,"try_later")
+                # Keep authentication and its write in one transaction, including account deletion.
+                db.execute("BEGIN IMMEDIATE")
                 if self.path == "/v2/reset":
                     name,code,new=(body.get(k) for k in ("name","recovery","newPassword"))
                     check(isinstance(name,str) and isinstance(code,str) and isinstance(new,str) and 10<=len(new)<=128)
-                    db.execute("BEGIN IMMEDIATE")
                     user=db.execute("SELECT u.id,p.recovery FROM users u JOIN profiles p ON p.owner=u.id WHERE name=?",(name.strip().casefold(),)).fetchone()
                     if not user or not user[1] or not hmac.compare_digest(token_hash(code),user[1]):
                         raise Problem(401,"invalid_credentials")

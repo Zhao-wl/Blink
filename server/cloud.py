@@ -107,7 +107,6 @@ def valid(key, value):
 def sync_objects(db, owner, body, check):
     changes, cursor = body.get("changes", []), body.get("cursor", 0)
     check(isinstance(changes, list) and len(changes) <= 100 and number(cursor, 0, 2**63-1))
-    db.execute("BEGIN IMMEDIATE")
     epoch = db.execute("SELECT value FROM metadata WHERE name='epoch'").fetchone()[0]
     if body.get("epoch") and body["epoch"] != epoch:
         return {"reset": True, "epoch": epoch}

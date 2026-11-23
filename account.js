@@ -164,10 +164,34 @@ window.BlinkAccounts=function(env){
   }
   async function restore(){
     const backup=JSON.parse((await native.importFile()).content);
-    const s=backup.state;
-    if(backup.format!=='blink-backup-v1'||!s||!Array.isArray(s.logs)||!Array.isArray(s.blocks)||
-      !Array.isArray(s.freq)||!Array.isArray(s.extraFreq)||!s.totals||!s.corrections||!Number.isFinite(s.cursor)||
-      !s.logs.every(r=>typeof r.id==='string'&&[0,1,2].includes(r.k)&&Number.isSafeInteger(r.at)))throw Error('备份格式不正确');
+    const source=backup.state,s=fresh();
+    const requireValue=ok=>{if(!ok)throw Error('备份格式不正确')};
+    const integer=(v,min,max)=>Number.isSafeInteger(v)&&v>=min&&v<=max;
+    const time=v=>typeof v==='string'&&/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/.test(v);
+    const day=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&Number.isFinite(env.midnight(v))&&env.dayKey(env.midnight(v))===v;
+    const uuid=v=>typeof v==='string'&&/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(v);
+    requireValue(backup.format==='blink-backup-v1'&&source&&Array.isArray(source.logs)&&Array.isArray(source.blocks));
+    for(const k of ['start','end','lunchStart','lunchEnd','dinnerStart','dinnerEnd']){
+      requireValue(time(source[k]));s[k]=source[k];
+    }
+    requireValue(s.start<=s.lunchStart&&s.lunchStart<=s.lunchEnd&&s.lunchEnd<=s.end&&s.start<s.end&&s.lunchEnd<=s.dinnerStart&&s.dinnerStart<=s.dinnerEnd);
+    requireValue(Array.isArray(source.freq)&&source.freq.length===2&&source.freq.every(v=>integer(v,0,1440)));
+    requireValue(Array.isArray(source.extraFreq)&&source.extraFreq.length===2&&source.extraFreq.every(v=>Array.isArray(v)&&integer(v[0],0,1440)));
+    requireValue(integer(source.breakMinutes,1,1440));
+    s.freq=source.freq;s.extraFreq=source.extraFreq.map(v=>[v[0],0]);s.breakMinutes=source.breakMinutes;
+    s.logs=source.logs.map(r=>{requireValue(r&&uuid(r.id)&&[0,1,2].includes(r.k)&&integer(r.at,0,253402300799999));return {id:r.id,k:r.k,at:r.at}});
+    s.blocks=source.blocks.map(b=>{
+      requireValue(b&&uuid(b.id)&&day(b.day)&&time(b.at)&&typeof b.title==='string'&&b.title.length>0&&b.title.length<=100&&integer(b.minutes,1,1440)&&typeof b.screen==='boolean');
+      return {id:b.id,day:b.day,at:b.at,title:b.title,minutes:b.minutes,screen:b.screen,done:b.done===true};
+    });
+    for(const field of ['totals','corrections']){
+      const values=source[field];requireValue(values&&typeof values==='object'&&!Array.isArray(values));
+      for(const [date,value] of Object.entries(values)){
+        requireValue(day(date)&&integer(value,field==='totals'?0:-86400000,86400000));s[field][date]=value;
+      }
+    }
+    if(['system','light','dark'].includes(source.theme))s.theme=source.theme;
+    if(source.delivery)s.delivery=Object.fromEntries(['enabled','sound','buzz','autoFace'].filter(k=>typeof source.delivery[k]==='boolean').map(k=>[k,source.delivery[k]]));
     dialog('导入本机备份');note('恢复 '+s.logs.length+' 条记录和 '+Object.keys(s.totals).length+' 天估算；当前游客数据会在本机保留一份迁移快照。');
     button(modal,'恢复至游客空间',()=>{
       if(getKey()!==guestKey)throw Error('请先退出账号');store();
@@ -208,5 +232,10 @@ window.BlinkAccounts=function(env){
     render(false);sync();setInterval(()=>{if(!document.hidden)sync()},30000);
     window.addEventListener('online',()=>sync(true));document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});
   }).catch(()=>display('无法读取本机凭证'));
-  return {settings,sync};
+  let syncTimer;
+  function changed(){
+    if(!scope(get()))return;
+    clearTimeout(syncTimer);syncTimer=setTimeout(()=>{if(!failures)nextTry=0;sync()},750);
+  }
+  return {settings,sync,changed};
 };

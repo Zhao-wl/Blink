@@ -96,7 +96,7 @@ function reminderMode(){const st=status(Date.now());return st.work||st.timed?0:1
 function frequency(k){const mode=reminderMode();return mode===1&&k!==0?0:(k?data.extraFreq[k-1]:data.freq)[mode]}
 function left(k){return Math.max(0,(data.snooze[k]||frequency(k)*minute)-data.progress[k])}
 function restart(k,delay=0){if(data.card?.k===k){clearSystemCard(data.card);data.card=null}data.progress[k]=0;data.snooze[k]=delay}
-function log(k){data.logs.unshift({id:crypto.randomUUID(),k,at:Date.now()});restart(k);save()}
+function log(k){data.logs.unshift({id:crypto.randomUUID(),k,at:Date.now()});restart(k);save();window.blinkAccounts?.changed()}
 function eyeDuration(day){return Math.max(0,(data.totals[day]||0)+(data.corrections[day]||0))}
 function duration(ms){const m=Math.floor(ms/minute);return m>=60?Math.floor(m/60)+' 小时 '+m%60+' 分钟':m?m+' 分钟':Math.floor(ms/1000)+' 秒'}
 function clockShift(){settle();const ms=Date.now(),st=status(ms),end=at(st.day,data.end);

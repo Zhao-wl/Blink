@@ -25,6 +25,7 @@ install -d -o blink-publish -g blink-publish -m 755 "$d"
 if [[ ! -L "$d/current" ]]; then
   install -d -m 755 "$d/initial"
   install -m 644 /opt/blink-staging/api.py "$d/initial/api.py"
+  if [[ -f /opt/blink-staging/cloud.py ]]; then install -m 644 /opt/blink-staging/cloud.py "$d/initial/cloud.py"; fi
   ln -s initial "$d/current"
 fi
 install -d /etc/systemd/system/blink-staging.service.d
