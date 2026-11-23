@@ -4,6 +4,8 @@ import hmac
 import json
 import os
 import secrets
+import shutil
+from pathlib import Path
 import sqlite3
 import time
 import uuid
@@ -13,6 +15,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 
 DB = os.environ.get("BLINK_DB", "/var/lib/blink-staging/blink.sqlite3")
+BACKUP_ACCESS_FILE = "/etc/blink-backup-access.sha256"
 SESSION_SECONDS = 30 * 86400
 LIMIT = 200
 SCHEMA = """
@@ -143,8 +146,47 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def encrypted_backup(self):
+        # Only encrypted daily snapshots can be downloaded, with a separate operations credential.
+        header = self.headers.get("Authorization", "")
+        try:
+            expected = Path(BACKUP_ACCESS_FILE).read_text().strip()
+        except OSError:
+            expected = ""
+        if not expected or not header.startswith("Bearer ") or not hmac.compare_digest(
+                hashlib.sha256(header[7:].encode()).hexdigest(), expected):
+            self.reply(404, {"error":"not_found"})
+            return
+        directory = Path(DB).parent / "encrypted"
+        name = self.path[len("/ops/backups"):]
+        if name == "":
+            self.reply(200, {"dates":sorted(p.stem for p in directory.glob("*.cms") if cloud.valid_day(p.stem))})
+            return
+        if not name.startswith("/") or not cloud.valid_day(name[1:]):
+            self.reply(404, {"error":"not_found"})
+            return
+        try:
+            stream = (directory / (name[1:]+".cms")).open("rb")
+        except FileNotFoundError:
+            self.reply(404, {"error":"not_found"})
+            return
+        with stream:
+            digest = hashlib.sha256()
+            for chunk in iter(lambda:stream.read(65536), b""):
+                digest.update(chunk)
+            self.send_response(200)
+            self.send_header("Content-Type","application/octet-stream")
+            self.send_header("Cache-Control","no-store")
+            self.send_header("Content-Length",str(stream.tell()))
+            self.send_header("X-Checksum-SHA256",digest.hexdigest())
+            self.end_headers()
+            stream.seek(0)
+            shutil.copyfileobj(stream,self.wfile)
+
     def do_GET(self):
-        if self.path == "/healthz":
+        if self.path.startswith("/ops/backups"):
+            self.encrypted_backup()
+        elif self.path == "/healthz":
             self.reply(200, {"service": "blink", "status": "ok"})
         else:
             self.reply(404, {"error": "not_found"})

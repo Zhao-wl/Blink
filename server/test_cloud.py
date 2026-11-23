@@ -1,3 +1,9 @@
+import hashlib
+import json
+from pathlib import Path
+from unittest.mock import patch
+from urllib.request import Request
+from urllib.error import HTTPError
 import test_api
 import secrets
 import uuid
@@ -35,6 +41,26 @@ class ExtendedTest(test_api.SyncTest):
         end=self.v2("sync",{"changes":[change(key,[[50,150]])],"cursor":rev})
         self.assertEqual(end["changes"][0]["value"],[[0,150]])
         self.assertTrue(self.v2("sync",{"epoch":"previous"})["reset"])
+
+    def test_encrypted_backups_require_separate_access(self):
+        root = Path(self.tmp.name)
+        access = secrets.token_urlsafe()
+        digest = hashlib.sha256(access.encode()).hexdigest()
+        (root/"access").write_text(digest)
+        (root/"encrypted").mkdir()
+        (root/"encrypted"/"2026-11-23.cms").write_bytes(b"encrypted sample")
+        url = "http://127.0.0.1:%s/ops/backups" % self.server.server_port
+        with patch("api.BACKUP_ACCESS_FILE",str(root/"access")):
+            with self.assertRaises(HTTPError) as error:
+                self.http.open(Request(url,headers={"Authorization":"Bearer "+self.token}))
+            self.assertEqual(error.exception.code,404)
+            headers = {"Authorization":"Bearer "+access}
+            with self.http.open(Request(url,headers=headers)) as result:
+                self.assertEqual(json.load(result)["dates"],["2026-11-23"])
+            with self.http.open(Request(url+"/2026-11-23",headers=headers)) as result:
+                body = result.read()
+                self.assertEqual(body,b"encrypted sample")
+                self.assertEqual(result.headers["X-Checksum-SHA256"],hashlib.sha256(body).hexdigest())
 
     def test_two_confirmations_for_one_work_reminder(self):
         reminder = {"id":"b11e0000-0000-8000-8002-000001c800ff","k":2,"at":1000}
