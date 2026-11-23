@@ -1,0 +1,212 @@
+/* Android account controls are optional. Guest mode never needs a network connection. */
+window.BlinkAccounts=function(env){
+  const {native,modal,get,getKey,guestKey,save,settle,render,say}=env,engine=window.BlinkSync;
+  let info,expanded=false,running=false,authBusy=false,message='',nextTry=0,failures=0;
+  const clone=x=>JSON.parse(JSON.stringify(x));
+  const profile=id=>'blink-profile-'+id;
+  const errorText=e=>({invalid_credentials:'账号或密码不正确',name_unavailable:'此用户名已使用',
+    invalid_request:'请检查输入内容',invalid_session:'登录已过期，本机记录仍已保存',try_later:'操作频繁，请稍后再试'}[e.message]||e.message);
+  const rpc=(route,body={},account=info?.account||'')=>native.request({route,body,account});
+  function display(text){message=text;const node=document.getElementById('cloud-status');if(node)node.textContent=text;}
+  function button(parent,text,fn){
+    const button=document.createElement('button');button.type='button';button.textContent=text;
+    button.onclick=async()=>{button.disabled=true;try{await fn()}catch(e){say(errorText(e))}finally{button.disabled=false}};
+    parent.append(button);return button;
+  }
+  function dialog(title){
+    if(modal.open)modal.close();modal.replaceChildren();
+    const head=document.createElement('h2');head.textContent=title;modal.append(head);modal.showModal();
+  }
+  function note(text){const p=document.createElement('p');p.textContent=text;modal.append(p);return p;}
+  function field(form,title,type='text'){
+    const label=document.createElement('label'),input=document.createElement('input');
+    label.className='field';label.textContent=title;input.type=type;
+    if(type!=='checkbox'){input.required=true;input.maxLength=type==='password'?128:64;}
+    if(type==='password')input.autocomplete='current-password';
+    label.append(input);form.append(label);return input;
+  }
+  function store(){if(!save())throw Error('本机数据保存失败');}
+  function fresh(){return env.loadMealTimes(env.createState(false));}
+  function switchTo(k,s){env.switchTo(k,s);message='';nextTry=0;failures=0;}
+  function scope(s){return s.cloud&&info?.account&&getKey()===profile(info.account);}
+  function returnGuest(){
+    const old=JSON.parse(localStorage.getItem(guestKey)||'null')||fresh();
+    old.cursor=Date.now();old.card=null;old.pause=null;
+    switchTo(guestKey,old);
+  }
+  function showRecovery(code){
+    dialog('保存恢复码');note('忘记密码时可用。请保存在自己的密码管理器中。');note(code);
+    button(modal,'我已保存',()=>modal.close());
+  }
+  function initializeProfile(s,migrate,device){
+    const c=engine.accountState(s,device);
+    if(migrate){
+      for(const [day,total] of Object.entries(s.totals)){
+        const cut=Math.min(86400000,Math.max(0,s.cursor-env.midnight(day)));
+        c.local['baseline/'+day]=[Math.max(0,Math.min(86400000,total)),cut];
+      }
+    }else c.seen=clone(engine.collect(s));
+    return s;
+  }
+  async function login(route,name,password,merge){
+    if(running||authBusy)throw Error('同步处理中，请稍后重试');
+    authBusy=true;
+    try{
+      settle();store();
+      const source=get(),sourceKey=getKey(),result=await rpc(route,{name,password});
+      info={...info,account:result.account,name:result.name};
+      const targetKey=profile(result.account);
+      let target=JSON.parse(localStorage.getItem(targetKey)||'null');
+      if(!target){
+        target=merge&&sourceKey===guestKey?clone(source):fresh();
+        initializeProfile(target,merge&&sourceKey===guestKey,info.device);
+        if(route==='v1/register')target.cloud.seen={};
+      }
+      target.cursor=Date.now();target.card=null;target.pause=null;target.session=null;
+      switchTo(targetKey,target);modal.close();
+      if(merge&&sourceKey===guestKey)localStorage.setItem('blink-guest-imported',result.account);
+      if(result.recovery)showRecovery(result.recovery);
+    }finally{authBusy=false}
+    await sync(true);
+  }
+  function loginForm(route){
+    dialog(route==='v1/register'?'创建账号':'登录');
+    const form=document.createElement('form');modal.append(form);
+    const name=field(form,'用户名'),password=field(form,'密码（至少 10 位）','password');password.minLength=10;
+    let merge;
+    if(getKey()===guestKey&&!localStorage.getItem('blink-guest-imported')){
+      const s=get();
+      merge=field(form,'首次使用此账号时合并本机 '+s.logs.length+' 条记录、'+Object.keys(s.totals).length+' 天估算和作息','checkbox');
+    }
+    const submit=document.createElement('button');submit.className='primary';submit.textContent=route==='v1/register'?'创建并登录':'登录';form.append(submit);
+    form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;try{await login(route,name.value.trim(),password.value,!!merge?.checked)}catch(err){say(errorText(err))}finally{submit.disabled=false}};
+    button(modal,'取消',()=>modal.close());
+  }
+  async function sync(force=false){
+    const s=get();if(!scope(s)||running||authBusy||(!force&&Date.now()<nextTry))return;
+    const owner=info.account,c=s.cloud,valid=()=>get()===s&&scope(s)&&owner===info.account;
+    running=true;display('同步中…');
+    try{
+      let more;
+      do{
+        settle();store();
+        const batch=engine.recordBatch(s);
+        const rows=await rpc('v1/sync',{records:batch,cursor:c.recordCursor},owner);
+        if(!valid())return;engine.records(s,rows,batch);store();
+        const changes=clone(Object.values(c.pending).slice(0,80));
+        const reply=await rpc('v2/sync',{changes,cursor:c.cursor,epoch:c.epoch},owner);
+        if(!valid())return;
+        if(reply.reset){
+          const deleted=Object.keys(c.logs).filter(id=>!s.logs.some(r=>r.id===id));
+          c.cursor=0;c.recordCursor=0;c.epoch=reply.epoch;c.logs=Object.fromEntries(deleted.map(id=>[id,true]));
+          c.remote={};c.seen={};c.pending={};store();more=true;continue;
+        }
+        settle();engine.observe(s);engine.objects(s,reply,changes);store();
+        more=rows.more||reply.more||batch.length===200||changes.length===80;
+      }while(more&&valid());
+      c.synced=Date.now();store();failures=0;nextTry=Date.now()+20000;
+      display('已同步 · '+new Date(c.synced).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}));
+      if(!modal.open&&!document.activeElement?.matches('input,select'))render(false);
+    }catch(e){
+      failures++;nextTry=Date.now()+Math.min(300000,5000*2**Math.min(6,failures));
+      display(e.code==='401'?'请重新登录 · 本机记录已保存':'待同步 · 联网后自动重试');
+      if(force)say(errorText(e));
+    }finally{running=false}
+  }
+  async function logout(){
+    if(running)throw Error('请稍后再试');settle();store();
+    // Revoke on server before removing the local session.
+    await rpc('v1/logout');info=await native.info();returnGuest();modal.close();
+  }
+  function passwordAction(mode){
+    dialog({reset:'找回账号',password:'修改密码',code:'重新生成恢复码',delete:'注销并删除账号'}[mode]);
+    const form=document.createElement('form');modal.append(form);
+    let name,recovery,password,newPassword;
+    if(mode==='reset'){name=field(form,'用户名');recovery=field(form,'一次性恢复码');}
+    else password=field(form,'当前密码','password');
+    if(['reset','password'].includes(mode)){newPassword=field(form,'新密码','password');newPassword.minLength=10;}
+    if(mode==='delete')note('将删除这个账号的云端数据与本机账号副本，所有会话都会退出。');
+    const go=document.createElement('button');go.textContent=mode==='delete'?'确认删除我的账号':'确认';form.append(go);
+    form.onsubmit=async e=>{
+      e.preventDefault();if(running||authBusy){say('同步处理中，请稍后重试');return}
+      authBusy=true;go.disabled=true;
+      try{
+        const result=await rpc('v2/'+(mode==='code'?'recovery-code':mode),{name:name?.value,recovery:recovery?.value,password:password?.value,newPassword:newPassword?.value});
+        modal.close();
+        if(mode==='delete'){const k=getKey();info=await native.info();returnGuest();localStorage.removeItem(k);}
+        if(result.recovery)showRecovery(result.recovery);
+      }catch(err){say(errorText(err))}finally{authBusy=false;go.disabled=false}
+    };
+    button(modal,'取消',()=>modal.close());
+  }
+  async function devices(){
+    const result=await rpc('v2/devices');dialog('登录设备');
+    for(const d of result.devices){
+      note(d.label+(d.current?' · 本机':''));
+      if(!d.current&&d.id)button(modal,'退出此设备',async()=>{await rpc('v2/revoke',{device:d.id});await devices()});
+    }
+    button(modal,'关闭',()=>modal.close());
+  }
+  function conflicts(){
+    const c=get().cloud;
+    dialog('同时修改的设置');
+    for(const [key,v] of Object.entries(c.conflicts)){
+      note(key+' · 本机 '+JSON.stringify(v.mine)+' / 云端 '+JSON.stringify(v.theirs));
+      for(const [title,mine] of [['采用本机',true],['采用云端',false]])button(modal,title,async()=>{
+        if(mine){engine.apply(get(),key,v.mine);c.pending[key]={key,value:v.mine,base:c.remote[key].rev,mutation:crypto.randomUUID()};}
+        delete c.conflicts[key];store();modal.close();await sync(true);
+      });
+    }
+    button(modal,'稍后处理',()=>modal.close());
+  }
+  async function backup(){settle();store();const state=clone(get());delete state.cloud;
+    await native.exportFile({content:JSON.stringify({format:'blink-backup-v1',state})});say('已导出');
+  }
+  async function restore(){
+    const backup=JSON.parse((await native.importFile()).content);
+    const s=backup.state;
+    if(backup.format!=='blink-backup-v1'||!s||!Array.isArray(s.logs)||!Array.isArray(s.blocks)||
+      !Array.isArray(s.freq)||!Array.isArray(s.extraFreq)||!s.totals||!s.corrections||!Number.isFinite(s.cursor)||
+      !s.logs.every(r=>typeof r.id==='string'&&[0,1,2].includes(r.k)&&Number.isSafeInteger(r.at)))throw Error('备份格式不正确');
+    dialog('导入本机备份');note('恢复 '+s.logs.length+' 条记录和 '+Object.keys(s.totals).length+' 天估算；当前游客数据会在本机保留一份迁移快照。');
+    button(modal,'恢复至游客空间',()=>{
+      if(getKey()!==guestKey)throw Error('请先退出账号');store();
+      localStorage.setItem('blink-before-import',JSON.stringify(get()));
+      delete s.cloud;s.cursor=Date.now();s.card=null;s.pause=null;s.session=null;
+      switchTo(guestKey,s);localStorage.removeItem('blink-guest-imported');modal.close();say('已恢复');
+    });button(modal,'取消',()=>modal.close());
+  }
+  async function update(){
+    display('正在检查版本…');const r=await native.update({install:false});
+    if(r.installed>=r.version){display('当前已是最新内测版');return}
+    dialog('可更新到 0.2.'+r.version);note('安装完成后保留账号和离线记录。');
+    button(modal,'下载安装',async()=>{await native.update({install:true});modal.close()});button(modal,'稍后',()=>modal.close());
+  }
+  function settings(parent){
+    if(!info?.enabled)return;
+    const panel=document.createElement('details');panel.open=expanded;panel.ontoggle=()=>{if(panel.isConnected)expanded=panel.open};
+    const summary=document.createElement('summary');summary.textContent='账号与同步';panel.append(summary);parent.append(panel);
+    const state=document.createElement('p');state.id='cloud-status';state.textContent=message||(info.account?'已登录 · '+info.name:'游客 · 数据仅在本机');panel.append(state);
+    if(info.account){
+      button(panel,'立即同步',()=>sync(true));button(panel,'重新登录',()=>loginForm('v1/login'));
+      if(get().cloud&&Object.keys(get().cloud.conflicts).length)button(panel,'处理设置冲突',conflicts);
+      button(panel,'登录设备',devices);button(panel,'修改密码',()=>passwordAction('password'));
+      button(panel,'恢复码',()=>passwordAction('code'));button(panel,'退出账号',async()=>{dialog('退出本机账号');note('待同步记录保存在此账号的本机空间。');button(modal,'退出',logout);button(modal,'取消',()=>modal.close())});
+      button(panel,'注销账号',()=>passwordAction('delete'));
+    }else{
+      button(panel,'登录',()=>loginForm('v1/login'));button(panel,'注册',()=>loginForm('v1/register'));button(panel,'找回账号',()=>passwordAction('reset'));
+      button(panel,'导入备份',restore);
+    }
+    button(panel,'导出备份',backup);button(panel,'检查内测更新',update);
+  }
+  native.info().then(result=>{
+    info=result;if(!info.enabled)return;
+    if(info.account&&getKey()!==profile(info.account)){
+      const s=JSON.parse(localStorage.getItem(profile(info.account))||'null')||initializeProfile(fresh(),false,info.device);
+      s.cursor=Date.now();switchTo(profile(info.account),s);
+    }else if(!info.account&&getKey()!==guestKey)returnGuest();
+    render(false);sync();setInterval(()=>{if(!document.hidden)sync()},30000);
+    window.addEventListener('online',()=>sync(true));document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});
+  }).catch(()=>display('无法读取本机凭证'));
+  return {settings,sync};
+};

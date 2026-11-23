@@ -3,6 +3,7 @@ import { LocalNotifications as notifications } from '@capacitor/local-notificati
 
 if (Capacitor.isNativePlatform()) {
   const android = Capacitor.getPlatform() === 'android';
+  if(android)window.blinkCloudNative=registerPlugin('BlinkCloud');
   const timer=registerPlugin('BlinkTimer');
   const live=registerPlugin('BlinkLive');
   const channels = new Set();

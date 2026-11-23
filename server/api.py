@@ -7,6 +7,7 @@ import secrets
 import sqlite3
 import time
 import uuid
+import cloud
 from contextlib import closing
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
@@ -39,7 +40,9 @@ def check(ok, msg="invalid_request"):
 def initialize():
     with closing(sqlite3.connect(DB)) as db:
         db.execute("PRAGMA journal_mode=WAL")
-        db.executescript(SCHEMA)
+        db.executescript(SCHEMA + cloud.SCHEMA)
+        db.execute("INSERT OR IGNORE INTO metadata VALUES('epoch',?)",(str(uuid.uuid4()),))
+        db.commit()
 
 
 def token_hash(token):
@@ -73,7 +76,17 @@ def account(db, path, body):
     token = secrets.token_urlsafe(32)
     db.execute("DELETE FROM sessions WHERE expires<=?", (now,))
     db.execute("INSERT INTO sessions VALUES(?,?,?)", (token_hash(token), owner, now+SESSION_SECONDS))
-    return {"token": token, "expires": now+SESSION_SECONDS}
+    account_id = cloud.identity(db, owner)
+    device = body.get("device", str(uuid.uuid4()))
+    label = body.get("label","Android")
+    check(cloud.is_uuid(device) and isinstance(label,str) and len(label)<=80)
+    db.execute("DELETE FROM sessions WHERE owner=? AND token IN (SELECT token FROM devices WHERE device=?)",(owner,device))
+    db.execute("DELETE FROM devices WHERE token NOT IN (SELECT token FROM sessions)")
+    db.execute("INSERT INTO devices VALUES(?,?,?)",(token_hash(token),device,label))
+    result = {"token":token,"expires":now+SESSION_SECONDS,"account":account_id,"name":name}
+    if path == "/v1/register":
+        result["recovery"] = cloud.recovery(db,owner)
+    return result
 
 
 def sync(db, owner, body):
@@ -135,7 +148,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         try:
-            if self.path not in ("/v1/register", "/v1/login", "/v1/logout", "/v1/sync"):
+            if self.path not in ("/v1/register", "/v1/login", "/v1/logout", "/v1/sync", "/v2/sync", "/v2/devices", "/v2/revoke", "/v2/recovery-code", "/v2/password", "/v2/delete", "/v2/reset"):
                 raise Problem(404, "not_found")
             check(self.headers.get_content_type() == "application/json")
             length = int(self.headers.get("Content-Length", "0"))
@@ -143,7 +156,20 @@ class Handler(BaseHTTPRequestHandler):
             body = json.loads(self.rfile.read(length).decode())
             check(isinstance(body, dict))
             with closing(sqlite3.connect(DB, timeout=10)) as db, db:
-                if self.path in ("/v1/register", "/v1/login"):
+                if self.path not in ("/v1/sync","/v2/sync","/v1/logout","/v2/devices") and not cloud.allowed(self.client_address[0]):
+                    raise Problem(429,"try_later")
+                if self.path == "/v2/reset":
+                    name,code,new=(body.get(k) for k in ("name","recovery","newPassword"))
+                    check(isinstance(name,str) and isinstance(code,str) and isinstance(new,str) and 10<=len(new)<=128)
+                    db.execute("BEGIN IMMEDIATE")
+                    user=db.execute("SELECT u.id,p.recovery FROM users u JOIN profiles p ON p.owner=u.id WHERE name=?",(name.strip().casefold(),)).fetchone()
+                    if not user or not user[1] or not hmac.compare_digest(token_hash(code),user[1]):
+                        raise Problem(401,"invalid_credentials")
+                    salt=secrets.token_bytes(16)
+                    db.execute("UPDATE users SET salt=?,digest=? WHERE id=?",(salt,derive(new,salt),user[0]))
+                    cloud.revoke_sessions(db,user[0])
+                    result={"recovery":cloud.recovery(db,user[0])}
+                elif self.path in ("/v1/register", "/v1/login"):
                     result = account(db, self.path, body)
                 else:
                     auth = self.headers.get("Authorization", "")
@@ -155,8 +181,12 @@ class Handler(BaseHTTPRequestHandler):
                     if self.path == "/v1/logout":
                         db.execute("DELETE FROM sessions WHERE token=?", (key,))
                         result = {"ok": True}
-                    else:
+                    elif self.path == "/v1/sync":
                         result = sync(db, row[0], body)
+                    elif self.path == "/v2/sync":
+                        result = cloud.sync_objects(db,row[0],body,check)
+                    else:
+                        result = cloud.manage(db,row[0],key,self.path,body,check,Problem,derive)
             self.reply(200, result)
         except Problem as exc:
             self.reply(exc.status, {"error": exc.message})

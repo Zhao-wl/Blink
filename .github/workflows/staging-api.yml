@@ -1,0 +1,27 @@
+name: Publish staging API
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['server/api.py', 'server/cloud.py', 'server/test_api.py', 'server/test_cloud.py']
+permissions:
+  contents: read
+concurrency:
+  group: staging-api
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -B -m unittest discover -s server -p 'test_*.py'
+      - name: Deploy verified commit
+        env:
+          KEY: ${{ secrets.BLINK_STAGE_DEPLOY_KEY }}
+          HOSTKEY: ${{ vars.BLINK_STAGE_HOSTKEY }}
+          HOST: ${{ vars.BLINK_STAGE_HOST }}
+        run: |
+          umask 077
+          printf '%s\n' "$KEY" > "$RUNNER_TEMP/stage-key"
+          printf '%s %s\n' "$HOST" "$HOSTKEY" > "$RUNNER_TEMP/hostkeys"
+          ssh -o BatchMode=yes -o ConnectTimeout=15 -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/hostkeys" -i "$RUNNER_TEMP/stage-key" "blink-publish@$HOST" "$GITHUB_SHA"

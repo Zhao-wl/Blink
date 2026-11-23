@@ -9,7 +9,7 @@ if(platform==='android'){
   const dir='android/app/src/main/res/raw';await mkdir(dir,{recursive:true});await copyFile('mobile/blink.wav',dir+'/blink.wav');
   await copyFile('mobile/quiet.wav',dir+'/quiet.wav');
   const java='android/app/src/main/java/com/zhaowl/blink';
-  for(const name of ['MainActivity','LockClockActivity','LockFace','BlinkTimerService','BlinkTimerPlugin'])await copyFile('mobile/android/'+name+'.java',java+'/'+name+'.java');
+  for(const name of ['MainActivity','BlinkCloudPlugin','LockClockActivity','LockFace','BlinkTimerService','BlinkTimerPlugin'])await copyFile('mobile/android/'+name+'.java',java+'/'+name+'.java');
   await copyFile('mobile/android/blink_notification.xml','android/app/src/main/res/drawable/blink_notification.xml');
   const manifest='android/app/src/main/AndroidManifest.xml';
   const xml=await readFile(manifest,'utf8');

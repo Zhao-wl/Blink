@@ -27,7 +27,8 @@ class SyncTest(unittest.TestCase):
         self.addCleanup(self.server.shutdown)
 
     def post(self, route, body, token=""):
-        url = "http://127.0.0.1:%s/v1/%s" % (self.server.server_port, route)
+        path = route if route.startswith("/") else "/v1/" + route
+        url = "http://127.0.0.1:%s%s" % (self.server.server_port, path)
         request = Request(url, json.dumps(body).encode(), {
             "Content-Type": "application/json", "Authorization": "Bearer " + token})
         try:

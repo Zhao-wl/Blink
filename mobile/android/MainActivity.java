@@ -23,7 +23,7 @@ public class MainActivity extends BridgeActivity {
         }
     };
     @Override public void onCreate(Bundle state){
-        registerPlugin(BlinkTimerPlugin.class);super.onCreate(state);
+        registerPlugin(BlinkTimerPlugin.class);registerPlugin(BlinkCloudPlugin.class);super.onCreate(state);
         IntentFilter filter=new IntentFilter(Intent.ACTION_SCREEN_OFF);filter.addAction(Intent.ACTION_USER_PRESENT);
         registerReceiver(screen,filter);
     }
