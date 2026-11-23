@@ -13,7 +13,7 @@ end
 unless widget
   widget=project.new_target(:app_extension,'BlinkWidget',:ios,'16.2')
   widget.build_configurations.each do |c|
-    c.build_settings.merge!({'APPLICATION_EXTENSION_API_ONLY'=>'YES','SWIFT_VERSION'=>'5.0','GENERATE_INFOPLIST_FILE'=>'NO','INFOPLIST_FILE'=>'BlinkLive/Info.plist','PRODUCT_BUNDLE_IDENTIFIER'=>'com.zhaowl.blink.countdown','MARKETING_VERSION'=>'1.0','CURRENT_PROJECT_VERSION'=>'1','TARGETED_DEVICE_FAMILY'=>'1,2','SKIP_INSTALL'=>'YES','PROVISIONING_PROFILE_SPECIFIER'=>'$(BLINK_WIDGET_PROFILE)'})
+    c.build_settings.merge!({'PRODUCT_NAME'=>'BlinkWidget','APPLICATION_EXTENSION_API_ONLY'=>'YES','SWIFT_VERSION'=>'5.0','GENERATE_INFOPLIST_FILE'=>'NO','INFOPLIST_FILE'=>'BlinkLive/Info.plist','PRODUCT_BUNDLE_IDENTIFIER'=>'com.zhaowl.blink.countdown','MARKETING_VERSION'=>'1.0','CURRENT_PROJECT_VERSION'=>'1','TARGETED_DEVICE_FAMILY'=>'1,2','SKIP_INSTALL'=>'YES','PROVISIONING_PROFILE_SPECIFIER'=>'$(BLINK_WIDGET_PROFILE)'})
   end
   app.build_configurations.each { |c| c.build_settings['PROVISIONING_PROFILE_SPECIFIER']='$(BLINK_APP_PROFILE)' }
   app.add_dependency(widget)

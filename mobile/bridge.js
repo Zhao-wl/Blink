@@ -23,10 +23,10 @@ if (Capacitor.isNativePlatform()) {
         await timer.configure({items,channel:channelId,lock:pref.lock!==false});
         return;
       }
-      await live.setTimer({at:pref.lock===false?0:display?.at||0,title:display?.title||''});
+      const liveUpdate=live.setTimer({at:pref.lock===false?0:display?.at||0,title:display?.title||''}).catch(()=>{});
       const pending = (await notifications.getPending()).notifications;
       if(pending.length) await notifications.cancel({notifications:pending.map(({id})=>({id}))});
-      if(!items.length)return;
+      if(!items.length)return liveUpdate;
       const channelId=await channel(pref.sound,pref.buzz);
       const list=items.filter(item=>item.at>Date.now()).map(item=>({
         id:item.slot, isExactNotification:false, foreground:false, title:'Blink · '+(item.retry?'再次提醒 · ':'')+item.title,
@@ -35,6 +35,7 @@ if (Capacitor.isNativePlatform()) {
         schedule:{at:new Date(item.at),allowWhileIdle:true}
       }));
       if(list.length)await notifications.schedule({notifications:list});
+      await liveUpdate;
     });
     return queue;
   }
