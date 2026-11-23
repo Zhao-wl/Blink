@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['server/api.py', 'server/cloud.py', 'server/test_api.py', 'server/test_cloud.py']
+    paths: ['server/api.py', 'server/cloud.py', 'server/test_api.py', 'server/test_*.py', 'server/ops/publish']
 permissions:
   contents: write
 concurrency:
