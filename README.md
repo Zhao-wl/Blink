@@ -2,7 +2,7 @@
 
 本地运行的用眼与工休提醒应用。安卓、iOS 使用 Capacitor 和系统本地通知；Windows 11、macOS 使用 Electron、系统托盘与可直接打卡的提示窗。日程、修正与活动记录存储在当前设备。首次安装后可断网启动。
 
-[一期规格](docs/phase-one.md) · [调研稿](docs/blink-design.html) · [自动打包与下载](https://github.com/Zhao-wl/Blink/actions/workflows/offline.yml)
+[一期规格](docs/phase-one.md) · [二期实施计划](docs/phase-two.md) · [调研稿](docs/blink-design.html) · [自动打包与下载](https://github.com/Zhao-wl/Blink/actions/workflows/offline.yml)
 
 ## 安装与打包
 
