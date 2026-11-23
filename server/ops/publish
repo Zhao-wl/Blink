@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Forced command for the unprivileged blink-publish SSH account.
+set -euo pipefail
+sha=${SSH_ORIGINAL_COMMAND:-}
+[[ $sha =~ ^[0-9a-f]{40}$ ]] || exit 64
+cd /var/lib/blink-publish
+exec 9>deploy.lock
+flock -w 90 9
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+curl -fSsL --retry 2 --max-time 90 "https://codeload.github.com/Zhao-wl/Blink/tar.gz/$sha" -o "$work/source"
+dir="release-$sha"
+mkdir -p "$dir"
+for f in api.py cloud.py; do
+  tar xOzf "$work/source" "Blink-$sha/server/$f" > "$work/$f"
+  install -m 644 "$work/$f" "$dir/$f"
+done
+previous=$(readlink current)
+ln -sfn "$dir" pending
+mv -Tf pending current
+restart() { sudo -n /usr/bin/systemctl restart blink-staging.service; }
+probe() {
+  curl -fsS --retry 4 --retry-connrefused http://127.0.0.1:18765/healthz &&
+    [[ $(curl -sS -o /dev/null -w '%{http_code}' -H 'Content-Type: application/json' -d '{}' http://127.0.0.1:18765/v2/sync) == 401 ]]
+}
+if ! restart || ! probe; then
+  ln -sfn "$previous" rollback
+  mv -Tf rollback current
+  restart
+  exit 1
+fi
+echo "Deployed $sha"
