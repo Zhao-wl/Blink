@@ -27,7 +27,7 @@ public final class LockFace extends LinearLayout {
     }
     static boolean autoEnabled(Context c){
         JSONObject row=current(c);
-        return row!=null&&row.optBoolean("work")&&prefs(c).getBoolean("auto",true);
+        return row!=null&&(row.optBoolean("work")?prefs(c).getBoolean("auto",true):prefs(c).getBoolean("timed",true));
     }
     private final TextView mode,label,clock;
     private final Runnable close;
@@ -35,7 +35,7 @@ public final class LockFace extends LinearLayout {
     private final Runnable update=new Runnable(){public void run(){
         JSONObject row=current(getContext());
         if(row==null||(automatic&&!autoEnabled(getContext()))){close.run();return;}
-        mode.setText(row.optBoolean("work")?"Blink  ·  工作":"Blink  ·  定时用眼");
+        mode.setText(row.optBoolean("work")?"Blink  ·  工作":"非工作  ·  定时用眼");
         label.setText(row.optString("label"));
         long seconds=Math.max(0,(row.optLong("until")-System.currentTimeMillis()+999)/1000);
         clock.setText(String.format(Locale.ROOT,"%02d:%02d",seconds/60,seconds%60));

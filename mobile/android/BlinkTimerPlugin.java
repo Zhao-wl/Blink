@@ -11,7 +11,7 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 public class BlinkTimerPlugin extends Plugin {
     @PluginMethod public void configureFace(PluginCall call){
         LockFace.prefs(getContext()).edit().putString("rows",call.getArray("rows",new JSArray()).toString())
-            .putBoolean("auto",call.getBoolean("auto",true)).apply();
+            .putBoolean("auto",call.getBoolean("auto",true)).putBoolean("timed",call.getBoolean("timed",true)).apply();
         call.resolve();
     }
     @PluginMethod public void openFace(PluginCall call){

@@ -117,6 +117,13 @@ function startSession(minutes){
   for(let t=from;t<until;){const st=status(t);if(st.work){until=t;break}t=boundary(t,until,st)}
   data.session={from,until};context(status(from));save();render()
 }
+function openLockClock(){
+  const show=async()=>{try{await syncFace(Date.now());await window.blinkMobile.openFace()}catch{say('计时页未能打开')}};
+  const st=status(Date.now());
+  if(st.work||st.timed){show();return}
+  sheet('锁屏计时','选择本次定时用眼时长，熄屏后继续计时。可在首页提前结束。',
+    [30,60,90,120].map(n=>[n+' 分钟',()=>{startSession(n);show()}]))
+}
 function toggleSession(){
   settle();
   if(data.session){data.session=null;context(status(Date.now()));save();render();return}
@@ -169,10 +176,7 @@ function deliverySettings(){
      const auto=document.createElement('input');auto.type='checkbox';auto.checked=pref.autoFace!==false;
      auto.onchange=()=>{pref.autoFace=auto.checked;save();syncBackground()};field.append(auto);section.append(field);
      const open=document.createElement('button');open.textContent='手动打开计时页';section.append(open);
-     const show=async()=>{try{await syncFace(Date.now());await window.blinkMobile.openFace()}catch{say('计时页未能打开')}};
-     open.onclick=()=>{const st=status(Date.now());if(st.work||st.timed){show();return}
-       sheet('定时用眼','选择本次时长并打开计时页。可在首页提前结束。',
-         [30,60,90,120].map(n=>[n+' 分钟',()=>{startSession(n);show()}]))};
+     open.onclick=openLockClock;
    }
    if(!window.blinkMobile.ios&&pref.enabled){
      const exact=document.createElement('button');exact.textContent='允许锁屏准时提醒';exact.hidden=true;section.append(exact);
@@ -281,6 +285,7 @@ function home(){
    action(['开始远眺','开始离席','喝过了'][next],()=>takeReminder(next));
    if(!left(next))action(delayLabel(next),()=>deferReminder(next))
  }else if(!resting)action('设置提醒',()=>{edit=scene();tab=2;render()});
+ if(!st.work&&window.blinkMobile&&!window.blinkMobile.ios)action('锁屏计时',openLockClock);
  updateText()
 }
 function updateText(){const ms=Date.now(),st=status(ms);
@@ -478,7 +483,7 @@ window.addEventListener('pagehide',()=>{if(visible){refreshStored();settle();sav
 window.addEventListener('storage',e=>{if(e.key===key&&e.newValue){const latest=JSON.parse(e.newValue);if(latest.cursor>=data.cursor){data=loadMealTimes(latest);if(!document.hidden)render(false)}}});
 let nativePlanSignature='';
 function syncFace(ms,plan=backgroundPlan(ms)){
- return window.blinkMobile.configureFace({auto:data.delivery?.autoFace!==false,rows:faceRows(ms,plan)})
+ return window.blinkMobile.configureFace({auto:data.delivery?.autoFace!==false,timed:data.delivery?.lock!==false,rows:faceRows(ms,plan)})
 }
 function syncBackground(){
  if(!window.blinkMobile)return;
