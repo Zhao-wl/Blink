@@ -26,7 +26,7 @@
 
 ### 签名与测试安装
 
-iOS 真机打包支持三个 GitHub Actions Secrets：`IOS_P12_BASE64`（签名证书及私钥导出的 P12）、`IOS_P12_PASSWORD`、`IOS_PROFILE_BASE64`（与 com.zhaowl.blink 匹配的 mobileprovision）。配置后再次运行会额外生成 signed IPA。可安装的设备与分发范围由描述文件决定。证书和密码只应存入仓库 Secrets。
+iOS 真机签名使用四个 GitHub Actions Secrets：`IOS_P12_BASE64`（签名证书及私钥导出的 P12）、`IOS_P12_PASSWORD`、`IOS_PROFILE_BASE64`（与 com.zhaowl.blink 匹配的 mobileprovision），以及扩展的 `IOS_WIDGET_PROFILE_BASE64`。配置后再次运行会额外生成 signed IPA。可安装的设备与分发范围由描述文件决定。证书和密码只应存入仓库 Secrets。
 
 Android 默认 APK 使用运行器的测试签名。需要连续覆盖安装时请在仓库 Secrets 中配置固定的 `ANDROID_KEYSTORE_BASE64`、`ANDROID_KEYSTORE_PASSWORD`、`ANDROID_KEY_ALIAS`、`ANDROID_KEY_PASSWORD`；工作流将改用该密钥签名 release 包。不同签名之间无法覆盖安装。
 
@@ -34,6 +34,6 @@ Android 默认 APK 使用运行器的测试签名。需要连续覆盖安装时�
 
 「今日」的工作／非工作页签显示当前生效的模式，点另一个页签立即切换，仍沿用原有自动上下班规则。「日程 → 外观」可选跟随系统、亮色或暗色。
 
-启用系统通知后，Android 使用可见的前台计时服务持有本地提醒队列，退到桌面或划掉任务后可继续。服务使用系统计时通知展示下次提醒，用户可在通知设置中关闭锁屏显示。熄屏唤醒时间受厂商省电策略、精确闹钟权限和系统通知设置影响。系统强制停止应用后需重新打开。桌面关闭窗口后在托盘继续，选择退出会停止运行。
+启用系统通知后，Android 使用可见的前台计时服务持有本地提醒队列，退到桌面或划掉任务后可继续。「日程 → 通知设置 → 允许锁屏准时提醒」可打开 Blink 的系统闹钟权限。服务使用系统计时通知展示下次提醒，用户可在通知设置中关闭锁屏显示。熄屏唤醒时间受厂商省电策略、精确闹钟权限和系统通知设置影响。系统强制停止应用后需重新打开。桌面关闭窗口后在托盘继续，选择退出会停止运行。
 
 iOS 使用系统本地通知，iOS 16.2 及以上在活动时段使用实时活动展示当前倒计时。系统管理实时活动的展示、过期与结束。签名真机包另需为扩展 com.zhaowl.blink.countdown 配置对应的 IOS_WIDGET_PROFILE_BASE64。

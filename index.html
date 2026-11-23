@@ -143,7 +143,14 @@ function deliverySettings(){
  for(const [id,k] of [['soundOn','sound'],['buzzOn','buzz']]){const input=el(id);input.checked=pref[k];input.disabled=!supportsSystem()||(k==='buzz'&&(window.blinkDesktop||window.blinkMobile?.ios));input.onchange=()=>{pref[k]=input.checked;save();syncBackground()}}
  if(window.blinkMobile){
    const label=document.createElement('label');label.className='field';label.textContent='锁屏显示倒计时';const toggle=document.createElement('input');toggle.type='checkbox';toggle.checked=pref.lock!==false;toggle.onchange=()=>{pref.lock=toggle.checked;save();syncBackground()};label.append(toggle);section.append(label);
-   el('deliveryHint').textContent=window.blinkMobile.ios?'后台到点发送本地通知，iOS 16.2 起可显示实时活动。':'启用后由前台服务保留下次提醒，锁屏可见性由系统通知设置决定。'
+   if(!window.blinkMobile.ios&&pref.enabled){
+     const exact=document.createElement('button');exact.textContent='允许锁屏准时提醒';exact.hidden=true;section.append(exact);
+     window.blinkMobile.exactAllowed().then(allowed=>{exact.hidden=allowed}).catch(()=>{});
+     exact.onclick=async()=>{try{
+       if(await window.blinkMobile.requestExact()){nativePlanSignature='';render()}
+     }catch{say('请在系统设置中允许 Blink 使用闹钟和提醒')}}
+   }
+   el('deliveryHint').textContent=window.blinkMobile.ios?'后台到点发送本地通知，iOS 16.2 起可显示实时活动。':'允许准时提醒后，系统闹钟会显示下次提醒时间。锁屏显示由系统通知设置决定。'
  }
 }
 function clearSystemCard(card){

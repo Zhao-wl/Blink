@@ -49,6 +49,8 @@ if (Capacitor.isNativePlatform()) {
   notifications.addListener('localNotificationActionPerformed',event=>receive(event.notification.extra?.token));
   window.blinkMobile={
     ios:!android,replace,
+    async exactAllowed(){return (await notifications.checkExactNotificationSetting()).exact_alarm==='granted'},
+    async requestExact(){return (await notifications.changeExactNotificationSetting()).exact_alarm==='granted'},
     async consumeTap(){if(android){const {token}=await timer.consumeTap();if(token)receive(token)}},
     async show(card,title,body,pref){
       const channelId=await channel(pref.sound,pref.buzz);

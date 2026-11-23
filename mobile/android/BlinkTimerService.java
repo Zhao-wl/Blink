@@ -68,7 +68,7 @@ public class BlinkTimerService extends Service {
                 return;
             }
             cursor++;
-            
+
             if(!MainActivity.visible&&item.optLong("expires")>now&&due>prefs.getLong("deliveredAt",0)){
                 manager.notify(ALERT,new NotificationCompat.Builder(this,prefs.getString("channel","blink-00"))
                     .setSmallIcon(R.drawable.blink_notification).setContentTitle("Blink · "+item.optString("title"))
@@ -84,7 +84,7 @@ public class BlinkTimerService extends Service {
     }
     private void armWakeup(long at){
         AlarmManager am=getSystemService(AlarmManager.class);
-        if(Build.VERSION.SDK_INT<31||am.canScheduleExactAlarms())am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,at,alarmIntent());
+        if(Build.VERSION.SDK_INT<31||am.canScheduleExactAlarms())am.setAlarmClock(new AlarmManager.AlarmClockInfo(at,open(null)),alarmIntent());
         else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,at,alarmIntent());
     }
     @Override public IBinder onBind(Intent intent){return null;}
