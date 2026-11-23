@@ -6,7 +6,7 @@
 
 ## 二期安卓内测
 
-安装 Releases 中的「Blink 内测」。在「日程 → 账号与同步」注册后，可以跨会话同步打卡、撤销、用眼区间、作息和当天安排，离线时继续在本机记录。当前内测使用开发 Mac 的 SSH 隧道和 USB 转发连接成都 ECS，拔线后自动转为离线。原有四端离线包继续独立发布。[安卓内测包](https://github.com/Zhao-wl/Blink/releases?q=android-stage) · [联调与恢复](server/README.md)
+安装 Releases 中的「Blink 内测」。在「日程 → 账号与同步」注册后，可以跨会话同步打卡、撤销、用眼区间、作息和当天安排，离线时继续在本机记录。从 0.2.7 开始，安卓内测包通过公网 HTTPS 连接成都 ECS；使用 Wi-Fi 或移动数据即可同步，断网后继续在本机记录。原有四端离线包继续独立发布。[安卓内测包](https://github.com/Zhao-wl/Blink/releases?q=android-stage) · [联调与恢复](server/README.md)
 
 ## 安装与打包
 

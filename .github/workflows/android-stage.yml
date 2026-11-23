@@ -36,7 +36,7 @@ jobs:
           "$sdk/apksigner" sign --ks "$RUNNER_TEMP/stage.p12" --ks-type PKCS12 --ks-key-alias blink-stage --ks-pass env:PASSWORD --key-pass env:PASSWORD --out "$apk" android/app/build/outputs/apk/debug/app-debug.apk
           "$sdk/apksigner" verify "$apk"
           tag="android-stage-$GITHUB_RUN_NUMBER"
-          gh release create "$tag" "$apk" --prerelease --target "$GITHUB_SHA" --title "Android 内测 0.2.$GITHUB_RUN_NUMBER" --notes "Blink Android 内网测试包。"
+          gh release create "$tag" "$apk" --prerelease --target "$GITHUB_SHA" --title "Android 内测 0.2.$GITHUB_RUN_NUMBER" --notes "Blink Android 内测包，支持公网 HTTPS 同步和应用内检查更新。"
           jq -n --argjson version "$GITHUB_RUN_NUMBER" --arg sha "$(sha256sum "$apk" | cut -d' ' -f1)" --arg url "https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/$apk" '{version:$version,sha256:$sha,url:$url}' > android-stage.json
           if ! gh release view android-stage-channel >/dev/null 2>&1; then
             gh release create android-stage-channel --prerelease --target "$GITHUB_SHA" --title 'Android 内测更新清单' --notes '固定内测渠道'
