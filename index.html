@@ -42,36 +42,31 @@ function createState(){
     cursor:start,progress:[0,0,0],context:'',snooze:[0,0,0]};
 }
 let data;try{data=JSON.parse(localStorage.getItem(key))}catch{}data??=createState();
+function loadMealTimes(state){
+  state.dinnerStart??=state.lunchEnd>'18:00'?state.lunchEnd:'18:00';
+  state.dinnerEnd??=state.dinnerStart>'18:30'?state.dinnerStart:'18:30';
+  delete state.overtime;
+  return state
+}
+loadMealTimes(data);
 const save=()=>{try{localStorage.setItem(key,JSON.stringify(data))}catch{}};
-function isWorkday(day){const type=dayType(day);return type==='工作日'||type==='调休上班'}
-function overtimeWindow(day){
-  const rule=data.overtime;
-  if(!rule||!isWorkday(day)||(rule.date&&rule.date!==day))return null;
-  const from=at(day,rule.start),until=at(day,rule.end)+(rule.end<rule.start?dayMs:0);
-  return {from,until}
-}
-function overtimeAt(ms,day){
-  for(const date of [day,dayKey(ms-dayMs)]){
-    const span=overtimeWindow(date);
-    if(span&&ms>=span.from&&ms<span.until)return span
-  }
-  return null
-}
 function status(ms){
-  const day=dayKey(ms),legal=isWorkday(day),overtime=overtimeAt(ms,day);
+  const day=dayKey(ms),type=dayType(day),legal=type==='工作日'||type==='调休上班';
   const shift=data.shift,override=shift&&ms>=shift.from&&ms<shift.until;
-  const work=override?shift.work:!!overtime||(legal&&ms>=at(day,data.start)&&ms<at(day,data.end));
-  const lunch=work&&ms>=at(day,data.lunchStart)&&ms<at(day,data.lunchEnd);
+  const work=override?shift.work:legal&&ms>=at(day,data.start)&&ms<at(day,data.end);
+  let meal='',mealUntil=0;
+  if(work){
+    if(ms>=at(day,data.lunchStart)&&ms<at(day,data.lunchEnd)){meal='午休';mealUntil=at(day,data.lunchEnd)}
+    else if(ms>=at(day,data.dinnerStart)&&ms<at(day,data.dinnerEnd)){meal='晚餐';mealUntil=at(day,data.dinnerEnd)}
+    if(meal)mealUntil=Math.min(mealUntil,override?shift.until:at(day,data.end))
+  }
   const planned=!work&&data.blocks.some(b=>b.screen&&!b.done&&b.day===day&&ms>=at(day,b.at)&&ms<at(day,b.at)+b.minutes*minute);
   const pause=data.pause&&ms>=data.pause.from&&ms<data.pause.until?data.pause:null;
   const timed=!!(!work&&data.session&&ms>=data.session.from&&ms<data.session.until);
-  return {day,work,lunch,planned,pause,timed,overtime:work?overtime:null};
+  return {day,work,meal,mealUntil,planned,pause,timed};
 }
 function boundary(ms,end,st){
-  const day=st.day,points=[end,midnight(day)+dayMs,...[data.start,data.lunchStart,data.lunchEnd,data.end].map(h=>at(day,h)),data.shift?.until,data.pause?.until,data.session?.until];
-  const span=overtimeWindow(day);
-  if(span)points.push(span.from,span.until);
-  if(data.overtime){const previous=overtimeWindow(dayKey(ms-dayMs));if(previous)points.push(previous.until)}
+  const day=st.day,points=[end,midnight(day)+dayMs,...[data.start,data.lunchStart,data.lunchEnd,data.dinnerStart,data.dinnerEnd,data.end].map(h=>at(day,h)),data.shift?.until,data.pause?.until,data.session?.until];
   for(const b of data.blocks){if(b.day===day&&b.screen&&!b.done){const a=at(day,b.at);points.push(a,a+b.minutes*minute)}}
   return Math.min(...points.filter(x=>x>ms));
 }
@@ -83,7 +78,7 @@ function settle(end=Date.now()){
   let t=data.cursor;
   while(t<end){
     const st=status(t);context(st);const next=boundary(t,end,st);
-    if(!st.lunch&&!st.pause){
+    if(!st.meal&&!st.pause){
       const delta=st.work||st.planned||st.timed?next-t:Math.max(0,next-Math.max(t,observedFrom));
       data.totals[st.day]=(data.totals[st.day]||0)+delta;
       data.progress=data.progress.map(x=>x+delta)
@@ -103,12 +98,7 @@ function log(k){data.logs.unshift({id:crypto.randomUUID(),k,at:Date.now()});rest
 function eyeDuration(day){return Math.max(0,(data.totals[day]||0)+(data.corrections[day]||0))}
 function duration(ms){const m=Math.floor(ms/minute);return m>=60?Math.floor(m/60)+' 小时 '+m%60+' 分钟':m?m+' 分钟':Math.floor(ms/1000)+' 秒'}
 function clockShift(){settle();const ms=Date.now(),st=status(ms),end=at(st.day,data.end);
-  const span=overtimeWindow(st.day);
-  let until=midnight(st.day)+dayMs;
-  if(st.overtime)until=st.overtime.until;
-  else if(!st.work&&ms<end)until=end;
-  else if(span&&ms<span.from)until=st.work?span.from:span.until;
-  data.session=null;data.shift={from:ms,work:!st.work,until};
+  data.session=null;data.shift={from:ms,work:!st.work,until:!st.work&&ms<end?end:midnight(st.day)+dayMs};
   data.pause=null;save();render()
 }
 function startSession(minutes){
@@ -200,7 +190,7 @@ async function postSystem(card){
 }
 function openReminder(id,confirm){
  refreshStored();settle();const card=data.card,st=status(Date.now());
- if(!card||card.id!==id||Date.now()>card.until||!frequency(card.k)||left(card.k)||st.lunch||st.pause){say('这条提醒已经结束');return}
+ if(!card||card.id!==id||Date.now()>card.until||!frequency(card.k)||left(card.k)||st.meal||st.pause){say('这条提醒已经结束');return}
  openedReminder=id;tab=0;
  if(confirm)takeReminder(card.k);else render()
 }
@@ -218,7 +208,7 @@ function paintCard(card){
  el('postpone').textContent=again?'跳过本轮':'稍后 5 分钟';
  function act(confirm){
    settle();const st=status(Date.now());
-   if(data.card?.until!==card.until||st.lunch||st.pause||!frequency(k)||left(k)){render();return}
+   if(data.card?.until!==card.until||st.meal||st.pause||!frequency(k)||left(k)){render();return}
    if(confirm)takeReminder(k);else deferReminder(k)
  }
  el('accept').onclick=()=>act(true);el('postpone').onclick=()=>act(false)
@@ -229,8 +219,8 @@ function checkReminder(){
  const useSystem=systemEnabled()&&(window.blinkDesktop||mobileDevice()||document.hidden||!document.hasFocus());
  if(document.hidden&&!useSystem){paintCard(null);return}
  let card=data.card;
- if(card&&(st.pause||st.lunch||!frequency(card.k)||left(card.k))){clearSystemCard(card);data.card=null;card=null;save()}
- if(st.pause||st.lunch){paintCard(null);return}
+ if(card&&(st.pause||st.meal||!frequency(card.k)||left(card.k))){clearSystemCard(card);data.card=null;card=null;save()}
+ if(st.pause||st.meal){paintCard(null);return}
  if(card&&!card.id){card.id=crypto.randomUUID();save()}
  if(window.blinkMobile&&document.hidden){paintCard(null);return}
  if(card&&ms>=card.until){
@@ -249,16 +239,16 @@ function checkReminder(){
  }else paintCard(document.hidden?null:card)
 }
 function home(){
- const st=status(Date.now()),next=reminders()[0],resting=st.lunch||st.pause;
- const label=sessionEndsFirst(st,next)?'距离定时结束':st.lunch?'午休结束':st.pause?(st.pause.kind===0?'远眺结束':'离席休息结束'):next==null?'当前提醒已关闭':(left(next)?'距离下次':'现在可以')+['远眺','离席休息','喝水'][next];
+ const st=status(Date.now()),next=reminders()[0],resting=st.meal||st.pause;
+ const label=sessionEndsFirst(st,next)?'距离定时结束':st.meal?st.meal+'结束':st.pause?(st.pause.kind===0?'远眺结束':'离席休息结束'):next==null?'当前提醒已关闭':(left(next)?'距离下次':'现在可以')+['远眺','离席休息','喝水'][next];
  app.innerHTML='<div class="mode-tabs" role="group" aria-label="当前运行模式"><button id="workMode" aria-pressed="'+st.work+'">工作</button><button id="offMode" aria-pressed="'+!st.work+'">非工作</button></div>'+
- '<div class="scene-note"><small>'+ (st.lunch?'午休中':st.overtime?'加班中 · 至 '+time(st.overtime.until):st.work?'工作计时中':st.timed?'定时用眼 · 至 '+time(data.session.until):'按用屏计时')+'</small>'+(!st.work?'<button id="sessionToggle">'+(st.timed?'结束定时':'定时用眼')+'</button>':'')+'</div><section class="focus-clock"><h1>'+label+'</h1><div id="countdown" role="timer"></div><div id="clockActions"></div></section>';
+ '<div class="scene-note"><small>'+ (st.meal?st.meal+'中':st.work?'工作计时中':st.timed?'定时用眼 · 至 '+time(data.session.until):'按用屏计时')+'</small>'+(!st.work?'<button id="sessionToggle">'+(st.timed?'结束定时':'定时用眼')+'</button>':'')+'</div><section class="focus-clock"><h1>'+label+'</h1><div id="countdown" role="timer"></div><div id="clockActions"></div></section>';
  el('workMode').onclick=()=>{if(!status(Date.now()).work)clockShift()};
  el('offMode').onclick=()=>{if(status(Date.now()).work)clockShift()};
  if(el('sessionToggle'))el('sessionToggle').onclick=toggleSession;
  const actions=el('clockActions');
  function action(text,fn){const btn=document.createElement('button');btn.textContent=text;btn.onclick=fn;actions.append(btn)}
- if(st.pause&&!st.lunch)action('提前结束',resume);
+ if(st.pause&&!st.meal)action('提前结束',resume);
  else if(!resting&&next!=null){
    action(['开始远眺','开始离席','喝过了'][next],()=>takeReminder(next));
    if(!left(next))action(delayLabel(next),()=>deferReminder(next))
@@ -267,11 +257,11 @@ function home(){
 }
 function updateText(){const ms=Date.now(),st=status(ms);
  if(el('countdown')){
-   const k=reminders()[0],remaining=sessionEndsFirst(st,k)?data.session.until-ms:st.lunch?at(st.day,data.lunchEnd)-ms:st.pause?st.pause.until-ms:k==null?null:left(k);
+   const k=reminders()[0],remaining=sessionEndsFirst(st,k)?data.session.until-ms:st.meal?st.mealUntil-ms:st.pause?st.pause.until-ms:k==null?null:left(k);
    const sec=Math.max(0,Math.ceil(remaining/1000));
    el('countdown').textContent=remaining==null?'—':String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0')
  }
- if(el('total')){el('total').textContent=duration(eyeDuration(st.day));el('reason').textContent=st.pause||st.lunch?'休息中 · 已暂停':st.work?'按工作作息自动累计':st.timed?'按定时用眼区间累计':st.planned?'按今天的用眼安排累计':'按 Blink 页面可见时长累计'}
+ if(el('total')){el('total').textContent=duration(eyeDuration(st.day));el('reason').textContent=st.pause||st.meal?'休息中 · 已暂停':st.work?'按工作作息自动累计':st.timed?'按定时用眼区间累计':st.planned?'按今天的用眼安排累计':'按 Blink 页面可见时长累计'}
 
 }
 function blockEditor(existing){
@@ -300,7 +290,7 @@ function projectedTime(ms,remaining){
    const state=status(cursor);
    if(state.work!==initial.work||state.timed!==initial.timed)return null;
    const next=boundary(cursor,end,state);
-   if(!state.lunch&&!state.pause){
+   if(!state.meal&&!state.pause){
      if(remaining<next-cursor)return cursor+remaining;
      remaining-=next-cursor;
    }
@@ -356,32 +346,6 @@ function frequencyField(parent,title,kind,mode){
   select.onchange=()=>{settle();values[mode]=Number(select.value);if(scene()===mode)restart(kind);render()};
   label.append(select);parent.append(label)
 }
-function validOvertime(rule,start,end){
-  return rule.start>=end&&rule.end!==rule.start&&(rule.end>rule.start||rule.end<=start)
-}
-function editOvertime(){
-  chosen=document.activeElement;
-  const today=dayKey(Date.now()),rule=data.overtime;
-  modal.innerHTML='<form id="otForm"><h2>加班时段</h2><label class="field">适用日期<select id="otScope"><option value="once">指定工作日</option><option value="repeat">每个工作日</option></select></label><label class="field" id="otDayField">工作日<input type="date" id="otDay" required></label><label class="field">加班开始<input type="time" id="otStart" required></label><label class="field">加班结束<input type="time" id="otEnd" required></label><p id="otHint" aria-live="polite"></p><button class="primary">保存加班</button><button type="button" id="otCancel">取消</button></form>';
-  const scope=el('otScope'),day=el('otDay'),start=el('otStart'),end=el('otEnd'),hint=el('otHint');
-  scope.value=rule&&!rule.date?'repeat':'once';day.value=rule?.date||today;
-  start.value=rule?.start||(data.end>'19:00'?data.end:'19:00');
-  end.value=rule?.end||(start.value>='21:00'?'00:00':'21:00');
-  function update(){day.disabled=scope.value==='repeat';el('otDayField').style.display=day.disabled?'none':'';hint.textContent=end.value<start.value?'结束时间在次日，跨零点分日累计。':'加班期间沿用工作提醒。'}
-  el('otForm').oninput=update;update();
-  el('otCancel').onclick=()=>modal.close();
-  if(rule){
-    const remove=document.createElement('button');remove.type='button';remove.textContent='移除加班';
-    remove.onclick=()=>{settle();delete data.overtime;modal.close();render()};el('otForm').append(remove)
-  }
-  el('otForm').onsubmit=e=>{
-    e.preventDefault();const next={start:start.value,end:end.value,date:day.disabled?null:day.value};
-    if(next.date&&(!isWorkday(next.date)||next.date<today)){hint.textContent='请选择今天或以后的法定工作日（含调休上班日）。';return}
-    if(!validOvertime(next,data.start,data.end)){hint.textContent='加班需从下班后开始，并在次日上班前结束。';return}
-    settle();data.overtime=next;modal.close();render()
-  };
-  modal.showModal()
-}
 function schedule(){
   app.innerHTML=bar('日程')+'<div class="days scene-tabs" id="planMode" role="group" aria-label="日程模式"></div><section id="planBody"></section>';
   deliverySettings();
@@ -394,15 +358,15 @@ function schedule(){
     frequencyField(el('screenFreq'),'提醒远眺',0,1);
     el('newBlock').onclick=()=>blockEditor();drawBlocks();return
   }
-  body.innerHTML='<h2 class="section">固定作息</h2><small>按中国大陆节假日及调休安排 · 北京时间</small><div id="hours" class="hours"></div><button id="otEdit"></button><button id="dayException"></button><details id="workPrefs"><summary>提醒频率</summary><div id="freqs"></div></details>';
-  for(const [title,fields] of [['上下班',[['start','上班'],['end','下班']]],['午休',[['lunchStart','午休开始'],['lunchEnd','午休结束']]]]){
+  body.innerHTML='<h2 class="section">固定作息</h2><small>按中国大陆节假日及调休安排 · 北京时间</small><div id="hours" class="hours"></div><button id="dayException"></button><details id="workPrefs"><summary>提醒频率</summary><div id="freqs"></div></details>';
+  for(const [title,fields] of [['上下班',[['start','上班'],['end','下班']]],['午休',[['lunchStart','午休开始'],['lunchEnd','午休结束']]],['晚餐',[['dinnerStart','晚餐开始'],['dinnerEnd','晚餐结束']]]]){
     const row=document.createElement('div');row.className='hours-row';
     const caption=document.createElement('span');caption.textContent=title;row.append(caption);
     for(const [key,name] of fields){
       const input=document.createElement('input');input.type='time';input.value=data[key];input.setAttribute('aria-label',name);
       input.onchange=()=>{const next={...data,[key]:input.value};
         if(!input.value||!(next.start<=next.lunchStart&&next.lunchStart<=next.lunchEnd&&next.lunchEnd<=next.end&&next.start<next.end)){input.value=data[key];say('午休需在上下班时间内，结束时间应晚于开始时间');return}
-        if(data.overtime&&!validOvertime(data.overtime,next.start,next.end)){input.value=data[key];say('与加班时段重叠，请先调整加班');return}
+        if(next.dinnerStart<next.lunchEnd||next.dinnerEnd<next.dinnerStart){input.value=data[key];say('晚餐应在午休后，结束时间不能早于开始时间');return}
         settle();data[key]=input.value;render()
       };
       if(key===fields[1][0]){const dash=document.createElement('span');dash.textContent='–';row.append(dash)}
@@ -410,12 +374,9 @@ function schedule(){
     }
     el('hours').append(row)
   }
-  const ot=data.overtime,otEdit=el('otEdit');
-  otEdit.textContent=ot?'加班 · '+(ot.date||'每个工作日')+' '+ot.start+'–'+(ot.end<ot.start?'次日 ':'')+ot.end:'＋ 设置加班时段';
-  otEdit.onclick=editOvertime;
   const exception=el('dayException'),hasOverride=data.shift&&data.shift.until>Date.now();
   exception.textContent=hasOverride?'恢复今天的自动作息':'今天取消自动上班';
-  exception.onclick=()=>{settle();const ms=Date.now();data.shift=hasOverride?null:{from:ms,until:Math.max(midnight(dayKey(ms))+dayMs,overtimeWindow(dayKey(ms))?.until||0),work:false};data.pause=null;render()};
+  exception.onclick=()=>{settle();const ms=Date.now();data.shift=hasOverride?null:{from:ms,until:midnight(dayKey(ms))+dayMs,work:false};data.pause=null;render()};
   const details=el('workPrefs');details.open=frequenciesOpen;details.ontoggle=()=>{if(details.isConnected)frequenciesOpen=details.open};
   const prefs=el('freqs');
   ['远眺','离席休息','喝水'].forEach((name,k)=>frequencyField(prefs,name,k,0));
@@ -434,7 +395,7 @@ function backgroundPlan(ms){
    const mode=st.work||st.timed?0:1;
    const periods=[data.freq[mode],mode===0?data.extraFreq[0][0]:0,mode===0?data.extraFreq[1][0]:0].map(n=>n*minute);
    if(lastContext!==tag){next=periods.slice();lastContext=tag}
-   if(!st.pause&&!st.lunch&&(st.work||st.planned||st.timed)){
+   if(!st.pause&&!st.meal&&(st.work||st.planned||st.timed)){
      while(t<stop&&items.length<60){
        const due=Math.min(...next.filter((_,k)=>periods[k]>0));
        if(!Number.isFinite(due)||t+due>=stop){next=next.map(n=>Math.max(0,n-(stop-t)));break}
@@ -457,17 +418,17 @@ function backgroundPlan(ms){
  }
  return items
 }
-function viewKey(){const st=status(Date.now());return [st.day,st.work,st.overtime?.until,st.lunch,st.pause?.from,st.planned,st.timed,sessionEndsFirst(st,reminders()[0]),...[0,1,2].map(k=>frequency(k)>0&&!left(k)),...todayBlocks().map(b=>b.at<=time(now()))].join('|')}
+function viewKey(){const st=status(Date.now());return [st.day,st.work,st.meal,st.pause?.from,st.planned,st.timed,sessionEndsFirst(st,reminders()[0]),...[0,1,2].map(k=>frequency(k)>0&&!left(k)),...todayBlocks().map(b=>b.at<=time(now()))].join('|')}
 let painted='',lastSaved=0;
 function render(persist=true){settle();if(persist)save();painted=viewKey();document.title='Blink · '+tabs[tab];Array.from(el('nav').children).forEach((b,i)=>{if(i===tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});[home,records,schedule][tab]();checkReminder();syncBackground()}
 el('logo').innerHTML='<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#96dfc3" stroke="none" d="M3 14 Q14 24 29 12 Q19 31 4 20 Z"/><circle cx="21" cy="9" r="4" fill="#ffc58c" stroke="none"/></svg>';
 function applyTheme(){const dark=data.theme==='dark'||(data.theme!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=dark?'dark':'light';document.querySelector('meta[name="theme-color"]').content=dark?'#191b21':'#faf9f6'}
 applyTheme();matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme);
 tabs.forEach((label,i)=>{const b=document.createElement('button');b.innerHTML='<i>'+svg(['today','record','plan'][i])+'</i>'+label;b.onclick=()=>{if(i===2&&tab!==2){edit=scene();frequenciesOpen=false}tab=i;window.scrollTo(0,0);render()};el('nav').append(b)});
-function refreshStored(){try{const saved=JSON.parse(localStorage.getItem(key));if(saved&&saved.cursor>data.cursor)data=saved}catch{}}
+function refreshStored(){try{const saved=JSON.parse(localStorage.getItem(key));if(saved&&saved.cursor>data.cursor)data=loadMealTimes(saved)}catch{}}
 document.addEventListener('visibilitychange',()=>{refreshStored();settle();visible=!document.hidden;render()});
 window.addEventListener('pagehide',()=>{if(visible){refreshStored();settle();save()}});
-window.addEventListener('storage',e=>{if(e.key===key&&e.newValue){const latest=JSON.parse(e.newValue);if(latest.cursor>=data.cursor){data=latest;if(!document.hidden)render(false)}}});
+window.addEventListener('storage',e=>{if(e.key===key&&e.newValue){const latest=JSON.parse(e.newValue);if(latest.cursor>=data.cursor){data=loadMealTimes(latest);if(!document.hidden)render(false)}}});
 let nativePlanSignature='';
 function syncBackground(){
  if(!window.blinkMobile)return;
@@ -489,7 +450,7 @@ if(window.blinkMobile){
    const row=pending.find(x=>x.token===token&&x.at<=ms&&ms<=x.expires);
    if(!row){say('这条提醒已结束');return}
    localStorage.setItem('blink-pending',JSON.stringify(pending.filter(x=>x.token!==token)));
-   settle();const st=status(ms);if(st.pause||st.lunch||!frequency(row.k))return;
+   settle();const st=status(ms);if(st.pause||st.meal||!frequency(row.k))return;
    data.progress[row.k]=Math.max(data.progress[row.k],frequency(row.k)*minute);
    data.card={id:token,k:row.k,until:ms+5*minute,retry:row.retry};openedReminder=token;tab=0;render()
  });

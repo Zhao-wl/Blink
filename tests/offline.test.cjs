@@ -38,23 +38,24 @@ test('background notifications skip lunch and pair a reminder with one retry',()
   for(const item of plan){const hour=new Date(item.at+8*3600000).getUTCHours();assert.ok(hour>=9&&hour<18&&hour!==12)}
 });
 
-test('scheduled overtime respects the work calendar, midnight and work reminders',()=>{
-  const {run,advance}=engine('2026-11-27T18:00');
-  run("data.overtime={start:'22:00',end:'01:00',date:null}");
-  const plan=run('backgroundPlan(Date.now())');
-  assert.equal(plan[0].at,Date.parse('2026-11-27T22:20:00+08:00'));
-  advance('2026-11-28T01:00');
-  assert.equal(run("eyeDuration('2026-11-27')/minute"),120);
-  assert.equal(run("eyeDuration('2026-11-28')/minute"),60);
-  assert.equal(run('status(Date.now()).work'),false);
-  assert.equal(run("overtimeWindow('2026-11-28')"),null);
-  assert.ok(run("overtimeWindow('2026-10-10')"));
+test('dinner pauses eye time and reminders, then resumes the remaining interval',()=>{
+  const {run,advance}=engine('2026-11-23T17:50');
+  run("data.end='20:00';settle()");
+  assert.equal(run('projectedTime(Date.now(),20*minute)'),Date.parse('2026-11-23T18:40+08:00'));
+  assert.equal(run('backgroundPlan(Date.now())[0].at'),Date.parse('2026-11-23T18:40+08:00'));
+  advance('2026-11-23T18:10');
+  assert.equal(run('status(Date.now()).meal'),'晚餐');
+  assert.equal(run("eyeDuration('2026-11-23')/minute"),10);
+  advance('2026-11-23T18:40');
+  assert.equal(run('data.progress[0]/minute'),20);
+  assert.equal(run("eyeDuration('2026-11-23')/minute"),20);
 });
-test('one-off overtime starts after a manual clock-out and can end early',()=>{
-  const {run,advance}=engine('2026-11-23T17:55');
-  run("data.overtime={start:'19:00',end:'21:00',date:'2026-11-23'};clockShift()");
-  advance('2026-11-23T19:00');assert.ok(run('status(Date.now()).overtime'));
-  advance('2026-11-23T19:30');run('clockShift()');
-  advance('2026-11-23T22:00');assert.equal(run("eyeDuration('2026-11-23')/minute"),30);
-  assert.equal(run("overtimeWindow('2026-11-24')"),null);
+test('dinner never extends the scheduled shift',()=>{
+  const {run,advance}=engine('2026-11-23T17:50');
+  run("data.dinnerStart='17:55'");
+  advance('2026-11-23T17:58');
+  assert.equal(run('status(Date.now()).mealUntil'),Date.parse('2026-11-23T18:00+08:00'));
+  advance('2026-11-23T19:00');
+  assert.equal(run('status(Date.now()).work'),false);
+  assert.equal(run("eyeDuration('2026-11-23')/minute"),5);
 });
