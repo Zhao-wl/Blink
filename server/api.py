@@ -93,6 +93,7 @@ def sync(db, owner, body):
     changes, cursor = body.get("records", []), body.get("cursor", 0)
     check(type(cursor) is int and 0 <= cursor < 2**63)
     check(isinstance(changes, list) and len(changes) <= LIMIT)
+    canonical = []
     for item in changes:
         check(isinstance(item, dict))
         rid, deleted = item.get("id"), item.get("deleted", False)
@@ -111,6 +112,9 @@ def sync(db, owner, body):
             if old[2]:
                 continue  # A revoked check-in cannot be resurrected by an offline device.
             if not deleted:
+                if rid.startswith("b11e0000-0000-8000-800%d-" % kind) and old[0] == kind:
+                    canonical.append({"id":rid,"k":kind,"at":old[1]})
+                    continue
                 if old[:2] != (kind, occurred):
                     raise Problem(409, "record_id_conflict")
                 continue
@@ -122,7 +126,7 @@ def sync(db, owner, body):
     page = rows[:LIMIT]
     return {"records": [{"id": r[1], "deleted": True} if r[4] else
                         {"id": r[1], "k": r[2], "at": r[3]} for r in page],
-            "cursor": page[-1][0] if page else cursor, "more": len(rows) > LIMIT}
+            "cursor": page[-1][0] if page else cursor, "more": len(rows) > LIMIT, **({"canonical":canonical} if canonical else {})}
 
 
 class Handler(BaseHTTPRequestHandler):

@@ -36,6 +36,13 @@ class ExtendedTest(test_api.SyncTest):
         self.assertEqual(end["changes"][0]["value"],[[0,150]])
         self.assertTrue(self.v2("sync",{"epoch":"previous"})["reset"])
 
+    def test_two_confirmations_for_one_work_reminder(self):
+        reminder = {"id":"b11e0000-0000-8000-8002-000001c800ff","k":2,"at":1000}
+        first = self.post("sync",{"records":[reminder]},self.token)
+        replay = self.post("sync",{"cursor":first["cursor"],"records":[dict(reminder,at=3000)]},self.token)
+        self.assertEqual(replay["canonical"],[reminder])
+        self.assertEqual(self.post("sync",{},self.token)["records"],[reminder])
+
     def test_recovery_revocation_and_deletion(self):
         other=self.post("login",dict(self.creds,device=str(uuid.uuid4())))["token"]
         self.assertEqual(len(self.v2("devices",{})["devices"]),2)

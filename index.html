@@ -71,7 +71,7 @@ function boundary(ms,end,st){
   for(const b of data.blocks){if(b.day===day&&b.screen&&!b.done){const a=at(day,b.at);points.push(a,a+b.minutes*minute)}}
   return Math.min(...points.filter(x=>x>ms));
 }
-function context(st){const tag=st.day+':'+st.work+(st.timed?':session':'');if(tag!==data.context){data.context=tag;clearSystemCard(data.card);data.card=null;data.progress=[0,0,0];data.snooze=[0,0,0]}}
+function context(st){const tag=st.day+':'+st.work+(st.timed?':session':'');if(tag!==data.context){data.context=tag;clearSystemCard(data.card);data.card=null;data.deferredRounds={};data.progress=[0,0,0];data.snooze=[0,0,0]}}
 let lastVisibleSample=Date.now(), visible=!document.hidden;
 function settle(end=Date.now()){
   // Visible time requires a recent observation. A suspended tab supplies none.
@@ -95,8 +95,14 @@ function scene(){return status(Date.now()).work?0:1}
 function reminderMode(){const st=status(Date.now());return st.work||st.timed?0:1}
 function frequency(k){const mode=reminderMode();return mode===1&&k!==0?0:(k?data.extraFreq[k-1]:data.freq)[mode]}
 function left(k){return Math.max(0,(data.snooze[k]||frequency(k)*minute)-data.progress[k])}
-function restart(k,delay=0){if(data.card?.k===k){clearSystemCard(data.card);data.card=null}data.progress[k]=0;data.snooze[k]=delay}
-function log(k){data.logs.unshift({id:crypto.randomUUID(),k,at:Date.now()});restart(k);save();window.blinkAccounts?.changed()}
+function restart(k,delay=0){if(data.card?.k===k){clearSystemCard(data.card);data.card=null}data.progress[k]=0;data.snooze[k]=delay;if(data.deferredRounds)delete data.deferredRounds[k]}
+function roundId(k,when){
+  return 'b11e0000-0000-8000-800'+k+'-'+Math.round(when/minute).toString(16).padStart(12,'0');
+}
+function log(k,id=crypto.randomUUID()){
+  if(!data.logs.some(row=>row.id===id))data.logs.unshift({id,k,at:Date.now()});
+  restart(k);save();window.blinkAccounts?.changed()
+}
 function eyeDuration(day){return Math.max(0,(data.totals[day]||0)+(data.corrections[day]||0))}
 function duration(ms){const m=Math.floor(ms/minute);return m>=60?Math.floor(m/60)+' 小时 '+m%60+' 分钟':m?m+' 分钟':Math.floor(ms/1000)+' 秒'}
 function clockShift(){settle();const ms=Date.now(),st=status(ms),end=at(st.day,data.end);
@@ -118,8 +124,8 @@ function toggleSession(){
     [30,60,90,120].map(n=>[n+' 分钟',()=>startSession(n)]))
 }
 function sessionEndsFirst(st,next){return st.timed&&!st.pause&&(next==null||data.session.until-Date.now()<=left(next))}
-function pauseFor(kind,length){settle();data.pause={from:Date.now(),until:Date.now()+length,kind};restart(kind);
-  if(kind===1)restart(0);log(kind);save();render()}
+function pauseFor(kind,length,round){settle();data.pause={from:Date.now(),until:Date.now()+length,kind};restart(kind);
+  if(kind===1)restart(0);log(kind,round);save();render()}
 function resume(){settle();data.pause=null;save();render()}
 function todayBlocks(){return data.blocks.filter(b=>b.day===dayKey(now())).sort((a,b)=>a.at.localeCompare(b.at))}
 function say(s){el('toast').textContent=s;clearTimeout(notice);notice=setTimeout(()=>el('toast').textContent='',2000)}
@@ -134,8 +140,9 @@ function correct(day){settle();const initial=eyeDuration(day);
 }
 function reminders(){return [0,1,2].filter(k=>frequency(k)>0).sort((a,b)=>left(a)-left(b))}
 function takeReminder(k){
-  if(k<2){pauseFor(k,k?data.breakMinutes*minute:20000);return}
-  settle();log(2);say('已记录喝水');render()
+  const round=data.card?.k===k?data.card.round:undefined;
+  if(k<2){pauseFor(k,k?data.breakMinutes*minute:20000,round);return}
+  settle();log(2,round);say('已记录喝水');render()
 }
 const reminderLabels=['开始远眺','开始离席','喝过了'];
 const reminderMessages=['方便的话，看看约 6 米外的地方。','起来走走，让眼睛和身体歇一会儿。','手边有水的话，喝一口吧。'];
@@ -207,7 +214,10 @@ function openReminder(id,confirm){
  if(confirm)takeReminder(card.k);else render()
 }
 function delayLabel(k){return data.snooze[k]||data.card?.k===k&&data.card.retry?'跳过本轮':'稍后 5 分钟'}
-function deferReminder(k){settle();restart(k,delayLabel(k)==='跳过本轮'?0:5*minute);render()}
+function deferReminder(k){
+  settle();const round=data.card?.round,delay=delayLabel(k)==='跳过本轮'?0:5*minute;
+  restart(k,delay);if(delay&&round)(data.deferredRounds??={})[k]=round;render()
+}
 function paintCard(card){
  const box=el('nudge');
  if(!card){box.hidden=true;box.removeAttribute('data-display');return}
@@ -243,7 +253,13 @@ function checkReminder(){
  }
  if(!card&&ms>=(data.nextCardAt||0)){
    const due=reminders().find(k=>!left(k));
-   if(due!=null){card={id:crypto.randomUUID(),k:due,system:!!useSystem,until:ms+(useSystem?5*minute:20000)};data.card=card;data.nextCardAt=ms+2*minute;save()}
+   if(due!=null){
+     const period=data.snooze[due]||frequency(due)*minute;
+     const round=st.work?(data.deferredRounds?.[due]||roundId(due,ms-Math.max(0,data.progress[due]-period))):undefined;
+     card={id:crypto.randomUUID(),k:due,round,system:!!useSystem,until:ms+(useSystem?5*minute:20000)};data.card=card;data.nextCardAt=ms+2*minute;save()}
+ }
+ if(card?.round&&data.logs.some(row=>row.id===card.round)){
+   restart(card.k);paintCard(null);save();return
  }
  if(card&&useSystem&&openedReminder!==card.id&&failed!==card.id){
    if(!card.system){card.system=true;card.until=ms+5*minute;save()}
@@ -420,7 +436,7 @@ function backgroundPlan(ms){
          for(const retry of [false,true]){
            const when=fire+(retry?5*minute:0);
            if(when>=stop||items.length>=60)break;
-           items.push({slot:items.length+1,token,k,at:when,expires:Math.min(stop,when+5*minute),retry,title:kinds[k],body:reminderMessages[k]});
+           items.push({slot:items.length+1,token,k,round:st.work?roundId(k,t):undefined,at:when,expires:Math.min(stop,when+5*minute),retry,title:kinds[k],body:reminderMessages[k]});
            lastDelivery=when;
          }
        }
@@ -488,7 +504,7 @@ if(window.blinkMobile){
    localStorage.setItem('blink-pending',JSON.stringify(pending.filter(x=>x.token!==token)));
    settle();const st=status(ms);if(st.pause||st.meal||!frequency(row.k))return;
    data.progress[row.k]=Math.max(data.progress[row.k],frequency(row.k)*minute);
-   data.card={id:token,k:row.k,until:ms+5*minute,retry:row.retry};openedReminder=token;tab=0;render()
+   data.card={id:token,k:row.k,round:row.round,until:ms+5*minute,retry:row.retry};openedReminder=token;tab=0;render()
  });
  window.blinkMobile.consumeTap().catch(()=>{});
 }

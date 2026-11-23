@@ -75,7 +75,7 @@
   function records(s,reply,sent){
     const c=s.cloud,local=new Map(s.logs.map(r=>[r.id,r]));
     for(const r of sent){if(r.deleted)delete c.logs[r.id];else c.logs[r.id]=true;}
-    for(const r of reply.records){
+    for(const r of [...(reply.canonical||[]),...reply.records]){
       if(r.deleted){delete c.logs[r.id];local.delete(r.id);}
       else{
         // Keep a local revoke pending even if the upload acknowledgement raced with it.
