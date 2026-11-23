@@ -17,11 +17,18 @@ public class BlinkTimerService extends Service {
     private final Runnable tick=this::advance;
     private final boolean separateLockCard="Xiaomi".equalsIgnoreCase(Build.MANUFACTURER);
     private long displayedDeadline;
+    private final Runnable refreshLockText=()->{
+        if(items!=null&&cursor<items.length()&&screenLocked()){
+            JSONObject next=items.optJSONObject(cursor);
+            if(next!=null&&next.optLong("at")>System.currentTimeMillis())syncLockCard(next);
+        }
+    };
     private boolean screenLocked(){
         return !getSystemService(PowerManager.class).isInteractive() ||
             getSystemService(KeyguardManager.class).isKeyguardLocked();
     }
     private void clearLockCard(){
+        handler.removeCallbacks(refreshLockText);
         manager.cancel(LOCK_TIMER);
         displayedDeadline=0;
     }
@@ -89,19 +96,27 @@ public class BlinkTimerService extends Service {
             return;
         }
         long deadline=item.optLong("at");
-        if(displayedDeadline==deadline)return;
+        handler.removeCallbacks(refreshLockText);
+        boolean awake=getSystemService(PowerManager.class).isInteractive();
+        if(displayedDeadline==deadline&&!awake)return;
+        if(displayedDeadline==deadline&&awake&&Build.VERSION.SDK_INT>=26){
+            boolean present=false;
+            for(android.service.notification.StatusBarNotification active:manager.getActiveNotifications()){
+                if(active.getId()==LOCK_TIMER){present=true;break;}
+            }
+            if(!present)return;
+        }
         String title="下次"+item.optString("title")+"提醒";
-        android.widget.RemoteViews content=new android.widget.RemoteViews(getPackageName(),R.layout.blink_lock_clock);
-        content.setTextViewText(R.id.blink_clock_title,title);
-        content.setChronometer(R.id.blink_clock_time,SystemClock.elapsedRealtime()+deadline-System.currentTimeMillis(),null,true);
-        content.setBoolean(R.id.blink_clock_time,"setCountDown",true);
+        long seconds=Math.max(0,(deadline-System.currentTimeMillis()+999)/1000);
+        String remaining=String.format(java.util.Locale.ROOT,"%d:%02d",seconds/60,seconds%60);
         Notification notification=new NotificationCompat.Builder(this,"blink-lock-clock")
             .setSmallIcon(R.drawable.blink_notification).setContentIntent(open(null)).setContentTitle(title)
             .setWhen(deadline).setUsesChronometer(true).setChronometerCountDown(true).setShowWhen(true)
-            .setCustomContentView(content).setStyle(new NotificationCompat.DecoratedCustomViewStyle())
+            .setGroup("blink-lock-countdown").setContentText("剩余 "+remaining)
             .setOnlyAlertOnce(true).setVisibility(NotificationCompat.VISIBILITY_PUBLIC).build();
         manager.notify(LOCK_TIMER,notification);
         displayedDeadline=deadline;
+        if(awake)handler.postDelayed(refreshLockText,1000);
     }
     private void advance(){
         handler.removeCallbacks(tick);
