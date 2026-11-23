@@ -130,6 +130,8 @@ public class BlinkTimerService extends Service {
             JSONObject item=items.optJSONObject(cursor);
             if(item==null){cursor++;continue;}
             long due=item.optLong("at");
+            if(ReminderAction.handled(this,item)&&due<Math.max(now,prefs.getLong("restUntil",0))){cursor++;continue;}
+            if(prefs.getLong("done:"+ReminderAction.id(item),0)>now){cursor++;continue;}
             if(due>now){
                 manager.notify(TIMER,timerNotification(item));
                 syncLockCard(item);
@@ -139,11 +141,8 @@ public class BlinkTimerService extends Service {
             }
             cursor++;
 
-            if(!MainActivity.visible&&item.optLong("expires")>now&&due>prefs.getLong("deliveredAt",0)){
-                manager.notify(ALERT,new NotificationCompat.Builder(this,prefs.getString("channel","blink-00"))
-                    .setSmallIcon(R.drawable.blink_notification).setContentTitle("Blink · "+item.optString("title"))
-                    .setContentText(item.optString("body")).setAutoCancel(true).setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                    .setContentIntent(open(item.optString("token"))).build());
+            if((!MainActivity.visible||screenLocked())&&item.optLong("expires")>now&&due>prefs.getLong("deliveredAt",0)){
+                ReminderAction.post(this,item,prefs.getString("channel","blink-00"),open(item.optString("token")));
                 prefs.edit().putLong("deliveredAt",due).apply();
             }
         }

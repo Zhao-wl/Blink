@@ -9,7 +9,7 @@ if(platform==='android'){
   const dir='android/app/src/main/res/raw';await mkdir(dir,{recursive:true});await copyFile('mobile/blink.wav',dir+'/blink.wav');
   await copyFile('mobile/quiet.wav',dir+'/quiet.wav');
   const java='android/app/src/main/java/com/zhaowl/blink';
-  for(const name of ['MainActivity','BlinkCloudPlugin','LockClockActivity','LockFace','BlinkTimerService','BlinkTimerPlugin'])await copyFile('mobile/android/'+name+'.java',java+'/'+name+'.java');
+  for(const name of ['MainActivity','BlinkCloudPlugin','LockClockActivity','LockFace','ReminderAction','BlinkTimerService','BlinkTimerPlugin'])await copyFile('mobile/android/'+name+'.java',java+'/'+name+'.java');
   await copyFile('mobile/android/blink_notification.xml','android/app/src/main/res/drawable/blink_notification.xml');
   const manifest='android/app/src/main/AndroidManifest.xml';
   const xml=await readFile(manifest,'utf8');
@@ -17,7 +17,9 @@ if(platform==='android'){
   const patched=xml.includes('.BlinkTimerService')?xml:xml.replace('</application>',service+'</application>').replace('</manifest>','<uses-permission android:name="android.permission.FOREGROUND_SERVICE"/><uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/></manifest>');
   const activity='<activity android:name=".LockClockActivity" android:exported="false" android:excludeFromRecents="true" android:theme="@android:style/Theme.Material.NoActionBar" android:showWhenLocked="true" />';
   const withClock=patched.includes('.LockClockActivity')?patched:patched.replace('</application>',activity+'</application>');
-  await writeFile(manifest,withClock.replace(/android:allowBackup="true"/,'android:allowBackup="false"'));
+  const receiver='<receiver android:name="com.zhaowl.blink.ReminderAction" android:exported="false"/>';
+  const actions=withClock.includes('com.zhaowl.blink.ReminderAction')?withClock:withClock.replace('</application>',receiver+'</application>').replace('</manifest>','<uses-permission android:name="android.permission.WAKE_LOCK"/><uses-permission android:name="android.permission.TURN_SCREEN_ON"/></manifest>');
+  await writeFile(manifest,actions.replace(/android:allowBackup="true"/,'android:allowBackup="false"'));
 }else{
   // The web bundle is a resources folder in the SPM-based Capacitor app.
   await copyFile('mobile/blink.wav','ios/App/App/public/blink.wav');

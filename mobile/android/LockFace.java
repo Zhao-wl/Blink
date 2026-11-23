@@ -30,13 +30,21 @@ public final class LockFace extends LinearLayout {
         return row!=null&&(row.optBoolean("work")?prefs(c).getBoolean("auto",true):prefs(c).getBoolean("timed",true));
     }
     private final TextView mode,label,clock;
+    private final Button confirm;
     private final Runnable close;
     private final boolean automatic;
     private final Runnable update=new Runnable(){public void run(){
         JSONObject row=current(getContext());
         if(row==null||(automatic&&!autoEnabled(getContext()))){close.run();return;}
         mode.setText(row.optBoolean("work")?"Blink  ·  工作":"非工作  ·  定时用眼");
-        label.setText(row.optString("label"));
+        JSONObject alert=ReminderAction.active(getContext());
+        confirm.setVisibility(alert==null?GONE:VISIBLE);
+        if(alert!=null){
+            int k=alert.optInt("k",0);
+            confirm.setText(ReminderAction.LABEL[k]);
+            confirm.setOnClickListener(v->{if(ReminderAction.confirm(getContext(),alert.optString("token")))confirm.setVisibility(GONE);});
+        }
+        label.setText(alert==null?row.optString("label"):alert.optString("title")+"提醒");
         long seconds=Math.max(0,(row.optLong("until")-System.currentTimeMillis()+999)/1000);
         clock.setText(String.format(Locale.ROOT,"%02d:%02d",seconds/60,seconds%60));
         postDelayed(this,500);
@@ -47,6 +55,7 @@ public final class LockFace extends LinearLayout {
         setClickable(true);setFocusable(true);setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES);
         mode=text(16,0xffa4d9c3);label=text(19,0xffd6ddda);label.setPadding(0,dp(45),0,0);
         clock=text(66,Color.WHITE);clock.setFontFeatureSettings("tnum");clock.setPadding(0,0,0,dp(42));
+        confirm=new Button(c);confirm.setVisibility(GONE);addView(confirm);
         Button exit=new Button(c);exit.setText("关闭计时页");exit.setTextColor(0xffc5d7ce);
         exit.setBackgroundColor(Color.TRANSPARENT);exit.setOnClickListener(v->close.run());addView(exit);
     }

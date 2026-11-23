@@ -146,6 +146,7 @@ function correct(day){settle();const initial=eyeDuration(day);
   el('minutes').value=Math.round(initial/minute);el('cancelFix').onclick=()=>modal.close();el('fix').onsubmit=e=>{e.preventDefault();settle();data.corrections[day]=Number(el('minutes').value)*minute-(data.totals[day]||0);save();modal.close();render()};modal.showModal()
 }
 function reminders(){return [0,1,2].filter(k=>frequency(k)>0).sort((a,b)=>left(a)-left(b))}
+function restDuration(k){return k===0?20000:k===1?data.breakMinutes*minute:0}
 function takeReminder(k){
   const round=data.card?.k===k?data.card.round:undefined;
   if(k<2){pauseFor(k,k?data.breakMinutes*minute:20000,round);return}
@@ -172,6 +173,9 @@ function deliverySettings(){
  if(window.blinkMobile){
    const label=document.createElement('label');label.className='field';label.textContent='锁屏显示倒计时';const toggle=document.createElement('input');toggle.type='checkbox';toggle.checked=pref.lock!==false;toggle.onchange=()=>{pref.lock=toggle.checked;save();syncBackground()};label.append(toggle);section.append(label);
    if(!window.blinkMobile.ios){
+     const wake=document.createElement('label');wake.className='field';wake.textContent='提醒时亮屏约 15 秒';
+     const wakeToggle=document.createElement('input');wakeToggle.type='checkbox';wakeToggle.checked=pref.wake!==false;wakeToggle.disabled=!pref.enabled;
+     wakeToggle.onchange=()=>{pref.wake=wakeToggle.checked;save();syncBackground()};wake.append(wakeToggle);section.append(wake);
      const field=document.createElement('label');field.className='field';field.textContent='工作时自动显示锁屏计时页';
      const auto=document.createElement('input');auto.type='checkbox';auto.checked=pref.autoFace!==false;
      auto.onchange=()=>{pref.autoFace=auto.checked;save();syncBackground()};field.append(auto);section.append(field);
@@ -200,7 +204,7 @@ async function postSystem(card){
  const id=card.id,token=id+':'+Number(!!card.retry);
  if(posted===token)return;posted=token;
  try{
-   if(window.blinkMobile){await window.blinkMobile.show(card,kinds[card.k],reminderMessages[card.k],data.delivery);return}
+   if(window.blinkMobile){await window.blinkMobile.show({...card,rest:restDuration(card.k)},kinds[card.k],reminderMessages[card.k],data.delivery);return}
    if(window.blinkDesktop){window.blinkDesktop.show({...card,sound:!!data.delivery.sound,theme:document.documentElement.dataset.theme});return}
    const reg=await registration();
    if(data.card?.id!==id||!systemEnabled())return;
@@ -441,7 +445,7 @@ function backgroundPlan(ms){
          for(const retry of [false,true]){
            const when=fire+(retry?5*minute:0);
            if(when>=stop||items.length>=60)break;
-           items.push({slot:items.length+1,token,k,round:st.work?roundId(k,t):undefined,at:when,expires:Math.min(stop,when+5*minute),retry,title:kinds[k],body:reminderMessages[k]});
+           items.push({slot:items.length+1,token,k,rest:restDuration(k),round:st.work?roundId(k,t):undefined,at:when,expires:Math.min(stop,when+5*minute),retry,title:kinds[k],body:reminderMessages[k]});
            lastDelivery=when;
          }
        }
@@ -470,6 +474,25 @@ function faceRows(ms,items){
  }
  return rows
 }
+// The native receipt survives process death. Persist the same round ID before acknowledging it.
+function applyLockConfirmation(row){
+ const {id,k,at,rest}=row;
+ if(typeof id!=='string'||![0,1,2].includes(k)||!Number.isFinite(at)||data.logs.some(l=>l.id===id))return;
+ const ms=Date.now(),end=at+Math.max(0,rest||0);
+ if(data.cursor<at)settle(at);
+ // Remove already accounted work inside the confirmed break, even if the app woke late.
+ const countedUntil=Math.min(data.cursor,end);
+ for(let t=at;t<countedUntil;){
+   const st=status(t),stop=boundary(t,countedUntil,st);
+   if(!st.meal&&!st.pause&&(st.work||st.timed||st.planned))
+     data.totals[st.day]=Math.max(0,(data.totals[st.day]||0)-(stop-t));
+   t=stop
+ }
+ if(end>data.cursor)data.pause={from:at,until:end,kind:k};
+ const sameContext=status(at).day===status(ms).day&&status(at).work===status(ms).work&&status(at).timed===status(ms).timed;
+ if(sameContext){restart(k);if(k===1)restart(0)}
+ data.logs.unshift({id,k,at})
+}
 function viewKey(){const st=status(Date.now());return [st.day,st.work,st.meal,st.pause?.from,st.planned,st.timed,sessionEndsFirst(st,reminders()[0]),...[0,1,2].map(k=>frequency(k)>0&&!left(k)),...todayBlocks().map(b=>b.at<=time(now()))].join('|')}
 let painted='',lastSaved=0;
 function render(persist=true){settle();if(persist)save();painted=viewKey();document.title='Blink · '+tabs[tab];Array.from(el('nav').children).forEach((b,i)=>{if(i===tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});[home,records,schedule][tab]();checkReminder();syncBackground()}
@@ -492,15 +515,26 @@ function syncBackground(){
  if(android)syncFace(ms,plan).catch(()=>say('锁屏计时页未能更新'));
  const st=status(ms),current=st.work||st.timed||st.planned;
  const display=current&&pref.enabled?items[0]:null;
- const fingerprint=JSON.stringify([pref.enabled,pref.sound,pref.buzz,pref.lock,items.map(i=>[i.k,Math.round(i.at/1000),i.retry]),display?.k]);
+ const fingerprint=JSON.stringify([pref.enabled,pref.sound,pref.buzz,pref.lock,pref.wake,data.breakMinutes,items.map(i=>[i.k,Math.round(i.at/1000),i.retry]),display?.k]);
  if(nativePlanSignature===fingerprint)return;
  nativePlanSignature=fingerprint;
  const old=JSON.parse(localStorage.getItem('blink-pending')||'[]').filter(i=>i.at<=ms&&i.expires>ms);
  localStorage.setItem('blink-pending',JSON.stringify([...old,...items]));
  window.blinkMobile.replace(items,pref,display).catch(()=>{nativePlanSignature='';say('后台提醒未启动，请检查系统权限')})
 }
+let importingConfirmations=false;
+async function importLockConfirmations(){
+ if(importingConfirmations||!window.blinkMobile||window.blinkMobile.ios)return;
+ importingConfirmations=true;
+ try{
+   const {rows}=await window.blinkMobile.confirmations();if(!rows.length)return;
+   rows.sort((a,b)=>a.at-b.at).forEach(applyLockConfirmation);settle();
+   localStorage.setItem(key,JSON.stringify(data));
+   await window.blinkMobile.acknowledge(rows.map(r=>r.id));render();window.blinkAccounts?.changed()
+ }finally{importingConfirmations=false}
+}
 if(window.blinkMobile){
- document.addEventListener('visibilitychange',()=>{if(!document.hidden)window.blinkMobile.consumeTap()});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden){importLockConfirmations().catch(()=>{});window.blinkMobile.consumeTap()}});
  window.blinkMobile.listen(token=>{
    if(data.card?.id===token){openReminder(token,false);return}
    const pending=JSON.parse(localStorage.getItem('blink-pending')||'[]'),ms=Date.now();
@@ -511,7 +545,7 @@ if(window.blinkMobile){
    data.progress[row.k]=Math.max(data.progress[row.k],frequency(row.k)*minute);
    data.card={id:token,k:row.k,round:row.round,until:ms+5*minute,retry:row.retry};openedReminder=token;tab=0;render()
  });
- window.blinkMobile.consumeTap().catch(()=>{});
+ importLockConfirmations().catch(()=>{});window.blinkMobile.consumeTap().catch(()=>{});
 }
 if(window.blinkDesktop)window.blinkDesktop.listen((id,yes)=>{
  if(yes)openReminder(id,true);else if(data.card?.id===id)deferReminder(data.card.k)

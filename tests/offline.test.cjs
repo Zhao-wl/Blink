@@ -71,3 +71,13 @@ test('lock screen follows work, dinner and explicit non-work sessions',()=>{
   advance('2026-11-23T19:05');run('startSession(30)');
   assert.equal(run('faceRows(Date.now(),backgroundPlan(Date.now()))[0].work'),false);
 });
+
+test('lock screen confirmation records its tap time once and excludes a remote break',()=>{
+  const {run,advance}=engine('2026-11-23T10:00');
+  advance('2026-11-23T10:10');
+  run("const tap={id:'test-round',k:1,at:Date.now()-5*minute,rest:10*minute};applyLockConfirmation(tap);applyLockConfirmation(tap)");
+  assert.equal(run('data.logs.length'),1);
+  assert.equal(run('data.logs[0].at'),Date.parse('2026-11-23T10:05+08:00'));
+  advance('2026-11-23T10:20');
+  assert.equal(run("eyeDuration('2026-11-23')/minute"),10);
+});
