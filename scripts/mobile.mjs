@@ -8,11 +8,17 @@ execFileSync(process.execPath,[cli,existsSync(platform)?'sync':'add',platform],{
 if(platform==='android'){
   const dir='android/app/src/main/res/raw';await mkdir(dir,{recursive:true});await copyFile('mobile/blink.wav',dir+'/blink.wav');
   await copyFile('mobile/quiet.wav',dir+'/quiet.wav');
+  const java='android/app/src/main/java/com/zhaowl/blink';
+  for(const name of ['MainActivity','BlinkTimerService','BlinkTimerPlugin'])await copyFile('mobile/android/'+name+'.java',java+'/'+name+'.java');
+  await copyFile('mobile/android/blink_notification.xml','android/app/src/main/res/drawable/blink_notification.xml');
   const manifest='android/app/src/main/AndroidManifest.xml';
   const xml=await readFile(manifest,'utf8');
-  await writeFile(manifest,xml.replace(/android:allowBackup="true"/,'android:allowBackup="false"'));
+  const service='<service android:name=".BlinkTimerService" android:exported="false" android:stopWithTask="false" android:foregroundServiceType="specialUse"><property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="User enabled work and break countdown with local reminders"/></service>';
+  const patched=xml.includes('.BlinkTimerService')?xml:xml.replace('</application>',service+'</application>').replace('</manifest>','<uses-permission android:name="android.permission.FOREGROUND_SERVICE"/><uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/></manifest>');
+  await writeFile(manifest,patched.replace(/android:allowBackup="true"/,'android:allowBackup="false"'));
 }else{
   // The web bundle is a resources folder in the SPM-based Capacitor app.
   await copyFile('mobile/blink.wav','ios/App/App/public/blink.wav');
 }
 execFileSync('python3',['scripts/icons.py',platform],{stdio:'inherit'});
+if(platform==='ios')execFileSync('ruby',['mobile/ios/widget.rb'],{stdio:'inherit'});

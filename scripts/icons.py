@@ -11,21 +11,31 @@ def chunk(kind, contents):
 
 
 def icon(file, size, scale=1):
-    ink, paper = bytes((49, 45, 58)), bytes((239, 232, 250))
+    # A crescent eyelid and a warm glint remain distinct at launcher sizes.
     raw = bytearray()
-    rim = [.182 * math.cos(min(abs((x + .5 - size / 2) / size / scale) / .34, 1) * math.pi / 2) for x in range(size)]
+    def bezier(t, a, b, c):
+        return (1-t)**2*a + 2*t*(1-t)*b + t*t*c
     for y in range(size):
         raw.append(0)
-        b = (y + .5 - size / 2) / size / scale
         for x in range(size):
-            a = (x + .5 - size / 2) / size / scale
-            eye = abs(abs(b) - rim[x]) < .023 and abs(a) < .35
-            raw.extend(paper if eye or a*a + b*b < .0055 else ink)
+            u = ((x+.5)/size-.5)/scale+.5
+            v = ((y+.5)/size-.5)/scale+.5
+            t = (u-.13)/.74
+            upper = bezier(t,.44,.79,.39)
+            lower = bezier(t,.52,1.03,.39)
+            edge = min(v-upper,lower-v,u-.13,.87-u)
+            lid = max(0,min(1,edge*size*scale+.5))
+            glow = max(0,min(1,(.106-math.hypot(u-.65,v-.31))*size*scale+.5))
+            base = (32+int(9*y/size),47+int(12*y/size),55+int(8*y/size))
+            for bg,fg,sun in zip(base,(151,226,195),(255,195,133)):
+                raw.append(round((bg*(1-lid)+fg*lid)*(1-glow)+sun*glow))
     file.write_bytes(b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', size, size, 8, 2, 0, 0, 0))
                      + chunk(b'IDAT', zlib.compress(raw)) + chunk(b'IEND', b''))
 
 
-if sys.argv[1] == 'ios':
+if sys.argv[1] == 'desktop':
+    icon(Path('desktop/icon.png'), 512)
+elif sys.argv[1] == 'ios':
     icon(Path('ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png'), 1024)
 else:
     for file in Path('android/app/src/main/res').glob('mipmap-*/ic_launcher*.png'):

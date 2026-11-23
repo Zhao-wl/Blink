@@ -28,7 +28,7 @@ ipcMain.on('reminder:show',(event,card)=>{
     webPreferences:{preload:path.join(__dirname,'popup-preload.cjs'),sandbox:true,contextIsolation:true}});
   popup=win;
   win.once('ready-to-show',()=>{if(popup===win){win.showInactive();if(card.sound)shell.beep()}});
-  win.loadFile(path.join(__dirname,'popup.html'),{query:{kind:String(card.k),retry:card.retry?'1':'0'}});
+  win.loadFile(path.join(__dirname,'popup.html'),{query:{kind:String(card.k),retry:card.retry?'1':'0',theme:card.theme==='dark'?'dark':'light'}});
 });
 ipcMain.on('reminder:action',(event,confirm)=>{
   if(!popup||event.sender!==popup.webContents)return;

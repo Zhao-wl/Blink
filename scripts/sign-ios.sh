@@ -19,7 +19,11 @@ identity="$(security find-identity -v -p codesigning "$keychain" | awk -F '"' '/
 profiles="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
 mkdir -p "$profiles"
 cp "$scratch/profile" "$profiles/$uuid.mobileprovision"
-xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -destination 'generic/platform=iOS' -derivedDataPath "$scratch/device" CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM="$team" PROVISIONING_PROFILE_SPECIFIER="$uuid" CODE_SIGN_IDENTITY="$identity" build
+printf '%s' "${IOS_WIDGET_PROFILE_BASE64:?Supply the countdown extension profile}" | base64 -D > "$scratch/widget-profile"
+security cms -D -i "$scratch/widget-profile" > "$scratch/widget.plist"
+widget_uuid="$(/usr/libexec/PlistBuddy -c 'Print UUID' "$scratch/widget.plist")"
+cp "$scratch/widget-profile" "$profiles/$widget_uuid.mobileprovision"
+xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -destination 'generic/platform=iOS' -derivedDataPath "$scratch/device" CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM="$team" BLINK_APP_PROFILE="$uuid" BLINK_WIDGET_PROFILE="$widget_uuid" CODE_SIGN_IDENTITY="$identity" build
 mkdir "$scratch/Payload"
 ditto "$scratch/device/Build/Products/Release-iphoneos/App.app" "$scratch/Payload/App.app"
 codesign --verify --deep --strict "$scratch/Payload/App.app"
