@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blink · 产品研究与交互设计</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f6f6ef;color:#24312c;font:17px/1.75 "Inter","PingFang SC","Microsoft YaHei",sans-serif}main{max-width:900px;margin:auto;padding:42px 24px 80px}h1,h2,h3,p{margin:0 0 .7em}h1{font-size:clamp(36px,7vw,68px);line-height:1.16;letter-spacing:-.045em}h2{font-size:1.6em;margin-top:2.2em;border-top:1px solid #a7b6a9;padding-top:.8em}h3{font-size:1.08em;margin-top:1.2em}small,.muted{color:#506158}a{color:#235643;text-underline-offset:.2em}nav,.actions,.selector{display:flex;flex-wrap:wrap;gap:8px}nav{gap:20px}button{font:inherit;border:1px solid #9da99e;border-radius:9px;padding:8px 15px;min-height:48px;background:#fff;color:#24312c;cursor:pointer}button[aria-pressed=true],button.primary{background:#285541;color:white}button:focus-visible,a:focus-visible{outline:3px solid #995010;outline-offset:3px}.card{margin:16px 0;padding:clamp(20px,4vw,38px);background:#fff;border:1px solid #c9d3c8;border-radius:18px}.card strong{font-size:1.65em;display:block;margin:.3em 0}.actions{margin-top:16px}.table{overflow:auto}table{border-collapse:collapse;width:100%;font-size:.95em}td,th{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid #c9d3c8}th:first-child{min-width:8em}li+li{margin-top:6px}footer{margin-top:40px;color:#506158}@media print{nav,.selector,.actions{display:none}main{max-width:none;padding:0}h2{break-after:avoid}}
+</style>
+<main>
+<header><small>Blink　/　产品研究与交互设计　·　2026.11.23</small><h1>让休息跟着日程走</h1><p>写到一半可以晚一点，已经离席可以直接记下，下班以后自动安静下来。Blink 面向日常使用电脑或手机的人，帮助安排远眺、活动和饮水。</p>
+<nav aria-label="文档目录"><a href="#demo">体验样稿</a><a href="#research">调查依据</a><a href="#rules">场景与规则</a><a href="#delivery">首版与验证</a></nav></header>
+<h2 id="demo">体验三种日程</h2><p>点选场景，再操作卡片。以下时间和记录都是示例，切换场景会重置演示。</p>
+<div class="selector" id="scenes" aria-label="示例场景"></div><section class="card" aria-label="今日提醒"><small id="context"></small><div aria-live="polite"><strong id="headline"></strong><p id="detail"></p></div><div class="actions" id="actions"></div></section><p class="muted" id="history" aria-live="polite"></p>
+<h2 id="research">哪些经验值得带进 Blink</h2><p>三组案头调查分别审阅产品官方资料、职业健康指南与研究、平台交互规范。竞品功能来自公开文档。以下预设和交互仍需通过原型试用验证。</p>
+<div class="table"><table><thead><tr><th>产品</th><th>已有体验</th><th>Blink 的选择</th></tr></thead><tbody>
+<tr><th><a href="https://github.com/hovancik/stretchly">Stretchly</a></th><td>托盘常驻，区分长短休息，支持推迟和跳过。</td><td>托盘第一行直接显示下一次休息。默认只提醒一次，省去到点前的预告。</td></tr>
+<tr><th><a href="https://dejal.com/timeout/">Time Out</a></th><td>可按星期和时段安排休息，也会考虑自然离席。</td><td>开箱提供三种日程，用户离开电脑回来后可以开启新一轮。</td></tr>
+<tr><th><a href="https://support.microsoft.com/en-us/windows/experience/focus-stay-on-task-without-distractions-in-windows">Windows Focus</a></th><td>专注会话可联动系统勿扰。</td><td>通知服从系统设置，专注结束后直接显示下一次安排。</td></tr>
+<tr><th><a href="https://waterminder.com/">WaterMinder</a></th><td>提醒与快速记录并存，可自定义杯量。</td><td>点「喝过了」就记一次，需要跟踪容量的人再设置杯量。</td></tr></tbody></table></div>
+<h3>专业证据决定提醒说什么</h3>
+<ul><li><b>用眼。</b>工作时可从每 20 分钟看约 6 米外 20 秒开始。小样本干预观察到自报症状改善，另一项实验未发现固定 20 秒休息的预期效果。把它作为可调的行为提示；应用展示实际记录，不推算视力变化。<a href="https://pubmed.ncbi.nlm.nih.gov/35963776/">两周提醒干预</a> · <a href="https://doi.org/10.1097/OPX.0000000000001971">固定间隔实验</a></li>
+<li><b>工休。</b>英国 HSE 建议短而频繁地休息，允许人选择时机，也认可离屏处理其他事务。将每小时活动 5 分钟作为试用起点。微休息荟萃分析发现精力和疲劳有小幅改善，整体任务表现的变化未达显著。<a href="https://www.hse.gov.uk/msd/dse/work-routine.htm">HSE 屏幕作业指引</a> · <a href="https://doi.org/10.1371/journal.pone.0272460">PLOS ONE 荟萃分析</a></li>
+<li><b>饮水。</b>需要量会随活动、环境和个人情况变化，食物和其他饮品也提供水分。默认不设每日毫升目标；喝水顺手记一次即可。<a href="https://www.cdc.gov/healthy-weight-growth/water-healthy-drinks/">CDC 饮水资料</a></li>
+<li><b>打断时机。</b>任务断点研究提示，同一条通知出现的时机也影响干扰程度。Blink 给用户「稍后」和「暂停到……」两个出口，让写完这段代码或结束通话的人自己选时机。<a href="https://doi.org/10.1145/1357054.1357070">CHI 任务断点研究</a></li></ul>
+<h2 id="rules">三种场景，共用一张日程</h2>
+<div class="table"><table><thead><tr><th>场景</th><th>何时生效</th><th>建议初值，可独立修改</th></tr></thead><tbody>
+<tr><th>工作时间</th><td>选定工作日中的工作段；示例为周一至五 09:00–12:00、13:00–18:00。</td><td>工作段内累计计时，20 分钟远眺、60 分钟离席。饮水可选，与离席合并。</td></tr>
+<tr><th>工作日非工作时间</th><td>工作日的午休、上班前和下班后。</td><td>自动提醒关闭；点「阅读 30 分钟」开启一轮，到点邀请远眺。可单独设置晚间轻提醒。</td></tr>
+<tr><th>休息日</th><td>非工作日，可把某一天单独改为上班或放假。</td><td>全天安静，保留手动记录和临时会话；愿意接收喝水提醒的人可单独选择时段。</td></tr></tbody></table></div>
+<p><b>判定顺序。</b>睡眠静默和手动暂停优先；其次为有明确结束时间的临时会话，再按单日例外、每周工作日及工作段判定。系统掌握通知最终呈现方式。夜班允许跨午夜并归属开班日；时区变更按当地日程重算。进入新场景取消旧提醒，恢复时从当前时间重新排程。</p>
+<h3>一次提醒走完的路径</h3><ol>
+<li>到期前只在首页或托盘显示「预计 10:20 远眺」。默认静音。活动与远眺在 5 分钟内到期时，以活动为主合为一条；启用饮水提示后，在休息卡里顺带显示「手边有水的话，可以喝一口」。5 分钟是待测的合并窗口。</li>
+<li>提醒只展示一个建议和两个动作。例如「方便的话，看看窗外的远处」配「开始休息」「稍后 5 分钟」。开始后可放下设备；到时卡片静默更新。随时可以结束，或在托盘点「刚休息过」。</li>
+<li>稍后只重排这一条。每轮最多主动再提醒一次；仍无响应就进入下一轮。主动跳过只影响本轮。锁屏与睡眠期间不累计工作时间；可取得空闲信号的桌面端在长离席后重算，未确认的离席只用于排程。</li>
+<li>用户可从托盘或首页暂停 30 分钟、到下一个工作段，或选结束时间。卡片始终显示恢复时间并允许立即恢复。处于系统勿扰时沿用原生投递规则，不弹自制浮窗。</li></ol>
+<h2>界面与三端分工</h2>
+<p><b>首次使用。</b>第一屏显示工作日和两个工作段，按钮「按此日程开始」。点选后再解释通知用途并按平台需要申请权限。拒绝时仍能手动使用，首页注明「系统提醒已关闭」，提供系统设置入口。首版免登录。</p>
+<p><b>今日、记录、日程。</b>「今日」只有当前场景、下一条安排和当前可执行的动作，次要操作收进菜单。「记录」先看今天，再按周查看远眺、活动和喝水的次数，可回看和撤销误记。「日程」先改一周，点开某个场景才展开各类频率、静默与单日例外。</p>
+<div class="table"><table><thead><tr><th>入口</th><th>交互与限制</th></tr></thead><tbody>
+<tr><th>Android</th><td>首页与系统通知提供直接操作。Android 13+ 按需申请通知权限，8+ 提供分类型渠道；合并提醒归主类型且服从各类别的启用状态。后台使用可延迟调度，页面写「预计」。只按日程或主动开启的会话估算，不申请全机使用记录权限。<a href="https://developer.android.com/develop/ui/compose/notifications/notification-permission">通知权限</a> · <a href="https://developer.android.com/develop/ui/compose/notifications/channels">渠道</a> · <a href="https://developer.android.com/develop/background-work/services/alarms">后台调度</a></td></tr>
+<tr><th>Windows 11</th><td>系统托盘一键查看或暂停，普通系统通知承载快捷动作。完成后移除过期卡片，尊重专注与勿扰。<a href="https://learn.microsoft.com/en-us/windows/apps/develop/notifications/app-notifications/app-notifications-ux-guidance">Microsoft 通知体验指南</a></td></tr>
+<tr><th>macOS</th><td>菜单栏显示下一条安排，点击展开动作。使用普通通知，不申请时间敏感或关键提醒。<a href="https://developer.apple.com/design/human-interface-guidelines/managing-notifications">Apple 通知管理</a> · <a href="https://developer.apple.com/design/human-interface-guidelines/notifications">通知交互</a></td></tr></tbody></table></div>
+<p><b>无障碍。</b>用文字标明场景与暂停状态；正文对比度至少 4.5:1，Android 触控区至少 48 × 48 dp。桌面所有动作可键盘访问，焦点清楚可见。休息倒计时只播报起止，尊重系统字号和减少动态效果设置。<a href="https://developer.android.com/guide/topics/ui/accessibility/apps">Android 无障碍指南</a> · <a href="https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html">W3C 对比度准则</a></p>
+<h2>记录什么，用户能看懂什么</h2>
+<p>每轮生成唯一编号，记录设备本地时间、时区、场景、计划类别、预计时间、提交系统时间和用户动作。重复点击只入账一次。「开始休息」记开始；只有「已休息」或「刚休息过」才计入确认次数。计时结束本身只表示计时走完。忽略记为未回应；系统接收通知不能证明人看到了。合并提醒中的饮水仍要单独确认。</p>
+<p>周视图按三类场景展开，例如「工作时段 · 确认远眺 8 次，活动 3 次，喝水 4 次」，下方给出每天的记录，支持单条更正、撤销和清空。示例数字仅用于展示。设备离线可用，默认本机保存；首版各端独立，在常用设备开启计划，其余设备可选「仅手动记录」。跨端自动去重与合并周报留待后续验证。</p>
+<h2 id="delivery">首版范围与验收</h2>
+<p>首版交付三端本地日程引擎、三套可调预设、系统通知及暂停、手动补记与本地周视图。优先做通「排好一天 → 收到一次 → 稍后或完成 → 回看」全链路。未来是否加入同步、自动识别会议，取决于多设备重复提醒和会议打断在试用中出现的频率。</p>
+<ol><li><b>首次使用成本。</b>安排 6–8 位有不同作息的用户，在各自常用平台冷启动，观察能否无需指导在 60 秒内启用日程；建议验收目标为至少 80%。记录卡在哪一步。</li>
+<li><b>提醒是否体贴。</b>一周试用覆盖午休、临时会议、调休上班与休息日。记录打断的具体时刻和原因；一次操作即可稍后或确认喝水。退出暂停或唤醒后，过期提醒补发目标为零。</li>
+<li><b>数据能否相信。</b>逐端验证跳过、无回应、重复点击、跨午夜、睡眠恢复和拒绝通知。查看本周记录时应能区分已确认行为与排程次数。以日志核对汇总，重复计数目标为零。</li>
+<li><b>速度与易用性。</b>以首个可操作画面为准，测量各端冷启动；首轮目标为代表性设备上 P95 不超过 2 秒。用键盘、读屏和大字号各走完一次「稍后 → 回看」。这些数字均为设计目标，尚无实测结果。</li></ol>
+<footer>Blink · 首轮设计提案　/　交互样稿在本页本地运行</footer></main>
+<script>
+const scenes = ['工作时间','工作日非工作时间','休息日'];
+const times = ['周一 10:00','周一 18:30','周日 10:00'];
+let scene = 0;
+let water = 0;
+let rests = 0;
+const get = id => document.getElementById(id);
+function button(label, action, primary=false) {
+  const element = document.createElement('button');
+  element.textContent = label;
+  if (primary) element.className = 'primary';
+  element.onclick = action;
+  return element;
+}
+function card(title, detail, actions) {
+  get('headline').textContent = title;
+  get('detail').textContent = detail;
+  get('actions').replaceChildren(...actions);
+  get('history').textContent = '本场景示例记录　·　确认休息 '+rests+' 次　·　喝水 '+water+' 次';
+}
+function promptRest() {
+  card('方便的话，看看远处','可以看看窗外约 6 米外的物体，让眼睛离开近处约 20 秒。',[
+    button('开始休息', () => card('给眼睛一点空闲','可以放下设备，休息好了再回来。',[
+      button('已休息',()=>{rests++;home()},true)]),true),
+    button('稍后 5 分钟',()=>card('已延后 5 分钟','这一轮只再提醒一次。',[
+      button('预览延后提醒',()=>card('现在方便休息吗？','这轮结束后，按日程安排下一次。',[
+        button('刚休息过',()=>{rests++;home()},true),button('跳过这次',home)]),true),button('跳过这次',home)]))]);
+}
+function home() {
+  const drink=button('喝过了',()=>{water++;home()});
+  if(scene===0) card('预计 20 分钟后远眺','工作时段至 12:00。下一次活动休息预计在一小时后。',[
+    button('预览到点提醒',promptRest,true),drink]);
+  else if(scene===1) card('下班了，今晚按自己的节奏','晚间提醒已关闭。读书或看屏幕时，可以临时开启一轮。',[
+    button('阅读 30 分钟',()=>card('阅读会话已开始','预计 30 分钟后提醒远眺，结束后恢复晚间日程。',[
+      button('预览会话结束',promptRest,true),button('结束会话',home)]),true),drink]);
+  else card('今天休息','休息日提醒已关闭。随手记下的喝水和休息仍会出现在今天的记录里。',[
+    drink,button('刚休息过',()=>{rests++;home()})]);
+}
+function selectScene(index) {
+  scene=index;water=0;rests=0;
+  Array.from(get('scenes').children).forEach((element,i)=>element.setAttribute('aria-pressed',String(i===index)));
+  get('context').textContent=times[index]+'　/　'+scenes[index];home();
+}
+scenes.forEach((label,i)=>get('scenes').append(button(label,()=>selectScene(i))));
+selectScene(0);
+</script></html>

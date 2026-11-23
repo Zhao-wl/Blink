@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#faf9f6"><title>Blink · 今日</title>
+<style>
+:root{color-scheme:light;--ink:#302e38;--muted:#67636f;--paper:#faf9f6;--line:#dedbdc;--violet:#685689;--lilac:#eee9f5}*{box-sizing:border-box}body{margin:0;background:#eae9e5;color:var(--ink);font:15px/1.5 "Inter","PingFang SC","Microsoft YaHei",system-ui,sans-serif}button,input,select{font:inherit;color:inherit}button{cursor:pointer;background:none;border:0;min-height:48px}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--violet);outline-offset:2px}button:active{opacity:.75}svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round;flex:none}.shell{max-width:460px;background:var(--paper);margin:auto;min-height:100dvh;position:relative;padding:0 22px 100px}.brand{height:65px;display:flex;align-items:center;gap:9px;font-size:23px;font-weight:740;letter-spacing:-1.6px}.mark{width:32px;height:32px;border-radius:10px;background:var(--ink);display:grid;place-items:center;color:#eee8fa}.mark svg{width:23px}.top{display:flex;justify-content:space-between;align-items:baseline;margin:6px 0 18px}h1{font-size:31px;letter-spacing:-1.5px;margin:0}h2{font-size:17px;margin:0}small,.muted{color:var(--muted);font-size:13px}.hero{background:var(--lilac);border-radius:25px;padding:18px 18px 14px}.hero-head,.row,.bar{display:flex;align-items:center;justify-content:space-between;gap:12px}.hero-head{font-size:14px}.state{display:flex;align-items:center;gap:7px;color:#514561}.state:before{content:"";width:7px;height:7px;border-radius:50%;background:#817094}.dial{width:190px;height:190px;position:relative;margin:12px auto;display:grid;place-content:center;text-align:center}.dial:before{content:"";position:absolute;inset:0;border-radius:100%;background:repeating-conic-gradient(from -1deg,#b6a8c8 0 1.25deg,transparent 1.25deg 6deg);mask:radial-gradient(circle,transparent 64%,#000 65%)}.dial:after{content:"";position:absolute;inset:11px;border:1px solid #d6ccdf;border-radius:50%;pointer-events:none}.digits{font:500 clamp(35px,10vw,47px)/1.25 "Inter",system-ui,sans-serif;letter-spacing:-2.8px;font-variant-numeric:tabular-nums}.dial small{font-size:12px;color:#5c5366}.hero-actions{display:flex;gap:8px}.hero-actions button{border-radius:14px;flex:1;font-size:14px;background:#ffffff83}.hero-actions .primary,.primary{background:var(--ink);color:white}.section{margin:22px 0 6px}.row{width:100%;text-align:left;padding:10px 0;min-height:62px;border-bottom:1px solid var(--line)}.lead{display:flex;align-items:center;gap:13px}.tile{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:#e3ede8;color:#456859}.tile.sand{background:#f1e7d8;color:#836847}.row strong{font-size:15px;font-weight:600}.row small{display:block}.end{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:13px}.end svg{width:16px}.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(460px,100%);background:#faf9f6f5;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 10px max(7px,env(safe-area-inset-bottom));z-index:2}.nav button{flex:1;display:grid;justify-items:center;gap:2px;font-size:12px;color:var(--muted)}.nav i{display:grid;place-items:center;width:50px;height:27px;border-radius:20px}.nav [aria-current=page]{color:var(--ink);font-weight:650}.nav [aria-current=page] i{background:#e6deee}.panel{padding:16px;border:1px solid var(--line);border-radius:17px;margin:12px 0}.panel p{margin:6px 0}.field{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:56px;border-bottom:1px solid var(--line)}select,input[type=time]{border:1px solid var(--line);border-radius:8px;background:white;padding:7px;min-height:42px}input[type=checkbox]{width:21px;height:21px;accent-color:var(--violet)}.days{display:flex;justify-content:space-between;gap:2px}.days button{flex:1;padding:0;border-radius:12px}.days [aria-pressed=true]{background:var(--lilac);color:#544566}.empty{margin:35px 0;color:var(--muted)}dialog{border:0;border-radius:22px;background:var(--paper);color:var(--ink);padding:22px;width:min(380px,calc(100% - 32px))}dialog::backdrop{background:#28233060}dialog button{display:block;width:100%;border-radius:12px;margin-top:5px}dialog p{color:var(--muted)}.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);width:max-content;max-width:90%;border-radius:12px;color:white;background:var(--ink);padding:8px 14px;pointer-events:none}.toast:empty{display:none}.record-time{font-variant-numeric:tabular-nums;color:var(--muted)}@media(min-width:600px){.shell{box-shadow:0 0 50px #36323a0b}}@media(max-height:720px){.brand{height:52px}.dial{width:154px;height:154px}.section{margin-top:16px}}
+.scene-tabs{background:#efede9;padding:4px;border-radius:16px}.scene-tabs button{font-size:14px}.scene-tabs [aria-pressed=true]{background:white;box-shadow:0 1px 4px #32283e19}.scene-note{display:flex;justify-content:space-between;align-items:center;min-height:48px}.scene-note button{font-size:13px;color:var(--violet)}.timeline{display:grid;gap:12px;margin-top:12px}.slot{display:grid;grid-template-columns:46px 1fr;gap:14px;align-items:start}.stamp{font-size:13px;font-variant-numeric:tabular-nums;padding-top:16px;color:var(--muted)}.strip{position:relative;background:#eee9f5;border-radius:16px;padding:13px 16px}.strip:before{content:"";position:absolute;top:21px;left:-10px;width:5px;height:5px;border-radius:50%;background:#89779e}.strip.k1{background:#f3eade}.strip.k2{background:#e5eee8}.strip p{font-size:13px;margin:3px 0;color:#57545d}.strip button{font-size:14px;min-height:44px;padding:4px 9px;color:#514361}.strip .controls{margin:5px -7px -5px}.stamp{align-self:stretch;border-right:1px solid var(--line)}.strip strong{font-size:16px}.strip small{font-size:12px}.section-line{display:flex;align-items:center;justify-content:space-between}.section-line button{font-size:13px;color:var(--violet)}.strip.due{outline:2px solid #776389}.nav [data-due=true] i{outline:2px solid #806699}.meter{background:#eee9f5;padding:14px 16px;border-radius:17px;display:flex;align-items:center;justify-content:space-between;margin:0 0 18px}.meter strong{display:block;font-size:24px;font-variant-numeric:tabular-nums}.meter button{border-radius:12px;background:white;padding:0 12px}.field input{max-width:55%}.bar span{font-variant-numeric:tabular-nums}.focus-clock{text-align:center;padding:clamp(65px,17dvh,150px) 0 40px}.focus-clock h1{font-size:17px;font-weight:500;letter-spacing:.03em;color:var(--muted)}#countdown{font:500 clamp(68px,18vw,94px)/1.3 system-ui,sans-serif;letter-spacing:-.065em;font-variant-numeric:tabular-nums;margin:4px 0 22px}#clockActions button{padding:0 20px;border-radius:24px;color:var(--violet)}#clockActions button:first-child{background:var(--lilac)}.scene-note>strong{font-weight:550}.feed{list-style:none;padding:0;margin:4px 0}.feed-row{width:100%;display:grid;grid-template-columns:47px 14px 1fr auto;align-items:center;gap:9px;min-height:57px;text-align:left;padding:0;color:var(--ink)}.feed-row time{font-size:13px;font-variant-numeric:tabular-nums}.feed li{position:relative}.feed li:not(:last-child):after{content:"";position:absolute;top:50%;height:100%;left:62px;border-left:1px solid var(--line);pointer-events:none}.feed-row i{justify-self:center;z-index:1;width:10px;height:10px;border:1.5px solid currentColor;border-radius:50%;background:var(--paper)}.recorded .feed-row i{background:#537160;color:#537160}.due .feed-row i{background:#807198;outline:3px solid #e4deec}.upcoming .feed-row{color:var(--muted)}.upcoming .feed-row strong{font-weight:450}.due .feed-row small{color:#634d81;font-weight:650}.hours{margin-top:8px}.hours-row{display:grid;grid-template-columns:minmax(44px,1fr) minmax(0,98px) auto minmax(0,98px);gap:6px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}.hours-row input{width:100%;min-width:0;box-sizing:border-box;font:inherit}#workPrefs{border-top:1px solid var(--line);margin-top:16px}#workPrefs summary{padding:14px 0;cursor:pointer;font-weight:600}#dayException{color:var(--muted);font-size:13px}#nudge{position:fixed;z-index:4;bottom:calc(80px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(408px,calc(100% - 32px));box-sizing:border-box;padding:16px;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:18px;box-shadow:0 7px 28px #2923321c}.nudge-body{display:flex;align-items:center;gap:12px}.nudge-icon{display:grid;place-items:center;border-radius:50%;width:38px;height:38px;background:var(--lilac)}.nudge-body strong{display:block;font-size:16px}.nudge-actions{display:flex;gap:8px;margin-top:12px}.nudge-actions button{flex:1;border-radius:12px;min-height:48px}.nudge-actions button:first-child{background:var(--lilac);font-weight:600}@media(pointer:fine){#nudge{left:auto;right:20px;bottom:20px;transform:none}}#delivery summary{cursor:pointer;padding:14px 0}#delivery p{font-size:13px;color:var(--muted)}</style></head><body>
+<div class="shell"><header class="brand"><span class="mark" id="logo"></span>Blink</header><main id="app"></main><nav class="nav" aria-label="主导航" id="nav"></nav></div><dialog id="dialog"></dialog><aside id="nudge" hidden aria-label="休息与饮水提醒"><div class="nudge-body"><span class="nudge-icon" id="nudgeIcon" aria-hidden="true"></span><div role="status"><small id="nudgeType"></small><strong id="nudgeTitle"></strong></div></div><div class="nudge-actions"><button id="accept"></button><button id="postpone"></button></div></aside><div class="toast" id="toast" role="status"></div>
+<script>
+const icons={eye:'<path d="M2 12s3.6-6.3 10-6.3S22 12 22 12s-3.6 6.3-10 6.3S2 12 2 12Z"/><circle cx="12" cy="12" r="2.6"/>',today:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/>',record:'<path d="M5 4h14v16H5zM8.5 8h7M8.5 12h7M8.5 16h4"/>',plan:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18m-12 5h3"/>',water:'<path d="M12 3c-1.8 3.5-6 7.2-6 11a6 6 0 0 0 12 0c0-3.8-4.2-7.5-6-11Z"/>',rest:'<path d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5Zm12 1h2a2.5 2.5 0 0 1 0 5h-2M7 3v2m4-2v2M3 21h16"/>',plus:'<path d="M12 5v14M5 12h14"/>',arrow:'<path d="m9 5 7 7-7 7"/>'};
+const svg=k=>'<svg aria-hidden="true" viewBox="0 0 24 24">'+icons[k]+'</svg>';
+const el=id=>document.getElementById(id),app=el('app'),modal=el('dialog');
+const tabs=['今日','记录','日程'],kinds=['远眺','离席','喝水'];
+let tab=0, edit=0, notice, chosen;
+const key='blink-auto-v2', legacyKey='blink-mobile-v1';
+const dateFormat=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Shanghai'});
+const clockFormat=new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+const now=()=>new Date(),dayKey=d=>dateFormat.format(d),time=d=>clockFormat.format(d);
+const midnight=day=>Date.parse(day+'T00:00:00+08:00');
+const at=(day,hm)=>Date.parse(day+'T'+hm+':00+08:00');
+const minute=60000,dayMs=86400000;
+const calendar={
+  2026:{off:[[101,103],[215,223],[404,406],[501,505],[619,621],[925,927],[1001,1007]],on:[104,214,228,509,920,1010]},
+  2027:{off:[[101,103],[205,213],[403,405],[501,505],[609,609],[915,915],[1001,1007]],on:[131,214,508,926,1009]}
+};
+function dayType(date){
+  const rules=calendar[date.slice(0,4)],md=Number(date.slice(5).replace('-',''));
+  if(!rules)return '日历待更新';
+  if(rules.on.includes(md))return '调休上班';
+  if(rules.off.some(([start,end])=>md>=start&&md<=end))return '节假日';
+  return [0,6].includes(new Date(date+'T12:00:00Z').getUTCDay())?'周末':'工作日';
+}
+
+function createState(){
+  let old={};try{old=JSON.parse(localStorage.getItem(legacyKey))||{}}catch{}
+  const start=Date.now(),totals={};
+  const spans=[...(old.eyeSessions||[])];if(old.eyeStart!=null)spans.push([old.eyeStart,start]);
+  for(let [a,b] of spans){while(Number.isFinite(a)&&a<b){const day=dayKey(a),end=Math.min(b,midnight(day)+dayMs);totals[day]=(totals[day]||0)+end-a;a=end}}
+  return {start:old.start||'09:00',end:old.end||'18:00',lunchStart:old.lunchStart||'12:00',lunchEnd:old.lunchEnd||'13:00',
+    freq:[old.freq?.[0]??20,old.freq?.[1]||20],extraFreq:[[old.extraFreq?.[0]?.[0]??60,0],[old.extraFreq?.[1]?.[0]??90,0]],
+    breakMinutes:old.breakMinutes||10,logs:old.logs||[],blocks:old.blocks||[],totals,corrections:{},shift:null,pause:null,
+    cursor:start,progress:[0,0,0],context:'',snooze:[0,0,0]};
+}
+let data;try{data=JSON.parse(localStorage.getItem(key))}catch{}data??=createState();
+const save=()=>{try{localStorage.setItem(key,JSON.stringify(data))}catch{}};
+function status(ms){
+  const day=dayKey(ms),type=dayType(day),legal=type==='工作日'||type==='调休上班';
+  const shift=data.shift,override=shift&&ms>=shift.from&&ms<shift.until;
+  const work=override?shift.work:legal&&ms>=at(day,data.start)&&ms<at(day,data.end);
+  const lunch=work&&ms>=at(day,data.lunchStart)&&ms<at(day,data.lunchEnd);
+  const planned=!work&&data.blocks.some(b=>b.screen&&!b.done&&b.day===day&&ms>=at(day,b.at)&&ms<at(day,b.at)+b.minutes*minute);
+  const pause=data.pause&&ms>=data.pause.from&&ms<data.pause.until?data.pause:null;
+  const timed=!!(!work&&data.session&&ms>=data.session.from&&ms<data.session.until);
+  return {day,work,lunch,planned,pause,timed};
+}
+function boundary(ms,end,st){
+  const day=st.day,points=[end,midnight(day)+dayMs,...[data.start,data.lunchStart,data.lunchEnd,data.end].map(h=>at(day,h)),data.shift?.until,data.pause?.until,data.session?.until];
+  for(const b of data.blocks){if(b.day===day&&b.screen&&!b.done){const a=at(day,b.at);points.push(a,a+b.minutes*minute)}}
+  return Math.min(...points.filter(x=>x>ms));
+}
+function context(st){const tag=st.day+':'+st.work+(st.timed?':session':'');if(tag!==data.context){data.context=tag;clearSystemCard(data.card);data.card=null;data.progress=[0,0,0];data.snooze=[0,0,0]}}
+let lastVisibleSample=Date.now(), visible=!document.hidden;
+function settle(end=Date.now()){
+  // Visible time requires a recent observation. A suspended tab supplies none.
+  const observedFrom=visible&&end-lastVisibleSample<5000?lastVisibleSample:end;
+  let t=data.cursor;
+  while(t<end){
+    const st=status(t);context(st);const next=boundary(t,end,st);
+    if(!st.lunch&&!st.pause){
+      const delta=st.work||st.planned||st.timed?next-t:Math.max(0,next-Math.max(t,observedFrom));
+      data.totals[st.day]=(data.totals[st.day]||0)+delta;
+      data.progress=data.progress.map(x=>x+delta)
+    }
+    t=next
+  }
+  if(data.pause&&data.pause.until<=end)data.pause=null;
+  if(data.session&&(end>=data.session.until||status(end).work))data.session=null;
+  data.cursor=end;lastVisibleSample=end;context(status(end));
+}
+function scene(){return status(Date.now()).work?0:1}
+function reminderMode(){const st=status(Date.now());return st.work||st.timed?0:1}
+function frequency(k){const mode=reminderMode();return mode===1&&k!==0?0:(k?data.extraFreq[k-1]:data.freq)[mode]}
+function left(k){return Math.max(0,(data.snooze[k]||frequency(k)*minute)-data.progress[k])}
+function restart(k,delay=0){if(data.card?.k===k){clearSystemCard(data.card);data.card=null}data.progress[k]=0;data.snooze[k]=delay}
+function log(k){data.logs.unshift({id:crypto.randomUUID(),k,at:Date.now()});restart(k);save()}
+function eyeDuration(day){return Math.max(0,(data.totals[day]||0)+(data.corrections[day]||0))}
+function duration(ms){const m=Math.floor(ms/minute);return m>=60?Math.floor(m/60)+' 小时 '+m%60+' 分钟':m?m+' 分钟':Math.floor(ms/1000)+' 秒'}
+function clockShift(){settle();const ms=Date.now(),st=status(ms),end=at(st.day,data.end);
+  data.session=null;data.shift={from:ms,work:!st.work,until:!st.work&&ms<end?end:midnight(st.day)+dayMs};
+  data.pause=null;save();render()
+}
+function startSession(minutes){
+  settle();const from=Date.now();
+  if(status(from).work)return;
+  let until=from+minutes*minute;
+  // End at the next automatic shift even if the page is suspended during the handover.
+  for(let t=from;t<until;){const st=status(t);if(st.work){until=t;break}t=boundary(t,until,st)}
+  data.session={from,until};context(status(from));save();render()
+}
+function toggleSession(){
+  settle();
+  if(data.session){data.session=null;context(status(Date.now()));save();render();return}
+  sheet('定时用眼','选定时长后，熄屏也累计。远眺、离席和喝水沿用工作提醒；休息时间自动扣除。',
+    [30,60,90,120].map(n=>[n+' 分钟',()=>startSession(n)]))
+}
+function sessionEndsFirst(st,next){return st.timed&&!st.pause&&(next==null||data.session.until-Date.now()<=left(next))}
+function pauseFor(kind,length){settle();data.pause={from:Date.now(),until:Date.now()+length,kind};restart(kind);
+  if(kind===1)restart(0);log(kind);save();render()}
+function resume(){settle();data.pause=null;save();render()}
+function todayBlocks(){return data.blocks.filter(b=>b.day===dayKey(now())).sort((a,b)=>a.at.localeCompare(b.at))}
+function say(s){el('toast').textContent=s;clearTimeout(notice);notice=setTimeout(()=>el('toast').textContent='',2000)}
+function sheet(title,desc,options){chosen=document.activeElement;modal.innerHTML='<h2>'+title+'</h2><p>'+desc+'</p>';options.concat([['取消',()=>{}]]).forEach(([name,fn],i)=>{const b=document.createElement('button');b.textContent=name;if(!i)b.className='primary';b.onclick=()=>{modal.close();fn()};modal.append(b)});modal.showModal()}
+modal.addEventListener('close',()=>{if(chosen?.isConnected)chosen.focus()});
+const tile=(k,alt=false)=>'<span class="tile '+(alt?'sand':'')+'">'+svg(k)+'</span>';
+const bar=(title,extra='')=>'<div class="top"><h1>'+title+'</h1><small>'+extra+'</small></div>';
+
+function correct(day){settle();const initial=eyeDuration(day);
+  modal.innerHTML='<form id="fix"><h2>修正累计用眼</h2><p>'+day+' · 输入修正后的总分钟数。</p><label class="field">累计分钟<input id="minutes" type="number" min="0" max="1440" required></label><button class="primary">保存修正</button><button type="button" id="cancelFix">取消</button></form>';
+  el('minutes').value=Math.round(initial/minute);el('cancelFix').onclick=()=>modal.close();el('fix').onsubmit=e=>{e.preventDefault();settle();data.corrections[day]=Number(el('minutes').value)*minute-(data.totals[day]||0);save();modal.close();render()};modal.showModal()
+}
+function reminders(){return [0,1,2].filter(k=>frequency(k)>0).sort((a,b)=>left(a)-left(b))}
+function takeReminder(k){
+  if(k<2){pauseFor(k,k?data.breakMinutes*minute:20000);return}
+  settle();log(2);say('已记录喝水');render()
+}
+const reminderLabels=['开始远眺','开始离席','喝过了'];
+const reminderMessages=['方便的话，看看约 6 米外的地方。','起来走走，让眼睛和身体歇一会儿。','手边有水的话，喝一口吧。'];
+const mobileDevice=()=>navigator.userAgentData?.mobile??/Android|iPhone|iPad/i.test(navigator.userAgent);
+const supportsSystem=()=>window.isSecureContext&&/^https?:$/.test(location.protocol)&&'serviceWorker' in navigator&&'Notification' in window;
+const systemEnabled=()=>supportsSystem()&&data.delivery?.enabled&&Notification.permission==='granted';
+let worker,openedReminder=null,posted='',failed='',deliveryOpen=false;
+async function registration(){
+  if(!worker)worker=navigator.serviceWorker.register('./blink-notifications.js').then(()=>navigator.serviceWorker.ready).catch(e=>{worker=null;throw e});
+  return worker
+}
+function deliverySettings(){
+ const section=document.createElement('details');section.id='delivery';section.open=deliveryOpen;section.ontoggle=()=>{if(section.isConnected)deliveryOpen=section.open};
+ section.innerHTML='<summary>通知设置</summary><label class="field">系统通知<input type="checkbox" id="systemOn"></label><label class="field">提示音<input type="checkbox" id="soundOn"></label><label class="field">震动<input type="checkbox" id="buzzOn"></label><p id="deliveryHint"></p>';
+ el('app').append(section);const pref=data.delivery??={enabled:false,sound:false,buzz:false};
+ const enabled=el('systemOn');enabled.checked=!!systemEnabled();enabled.disabled=!supportsSystem();
+ el('deliveryHint').textContent=!supportsSystem()?'系统通知需要在支持通知的浏览器中通过 HTTPS 或 localhost 打开。':mobileDevice()?'锁屏显示、亮屏和声振组合由手机系统决定。':'窗口内在右下角提醒。切到其他窗口时，可通过系统通知打卡。';
+ enabled.onchange=async()=>{if(enabled.checked){try{if(await Notification.requestPermission()!=='granted')throw Error();await registration();pref.enabled=true}catch{pref.enabled=false;say('请检查浏览器的通知权限')}}else pref.enabled=false;save();render()};
+ for(const [id,k] of [['soundOn','sound'],['buzzOn','buzz']]){const input=el(id);input.checked=pref[k];input.disabled=!supportsSystem();input.onchange=()=>{pref[k]=input.checked;save()}}
+}
+function clearSystemCard(card){
+ if(!card?.system||!worker)return;
+ worker.then(reg=>reg.getNotifications({tag:'blink-current'})).then(items=>{
+   for(const item of items)if(item.data?.id===card.id)item.close()
+ }).catch(()=>{})
+}
+async function postSystem(card){
+ const id=card.id,token=id+':'+Number(!!card.retry);
+ if(posted===token)return;posted=token;
+ try{
+   const reg=await registration();
+   if(data.card?.id!==id||!systemEnabled())return;
+   const pref=data.delivery,options={tag:'blink-current',renotify:true,body:reminderMessages[card.k]+' 点开打卡。',data:{id},silent:!pref.sound};
+   if(pref.sound)options.vibrate=pref.buzz?[160,80,160]:[];
+   if(!mobileDevice())options.actions=[{action:'confirm',title:reminderLabels[card.k]}];
+   await reg.showNotification('Blink · '+(card.retry?'再次提醒 · ':'')+kinds[card.k],options);
+   if(!pref.sound&&pref.buzz&&!document.hidden)navigator.vibrate?.(160);
+ }catch{failed=id;if(!document.hidden)paintCard(card)}
+}
+function openReminder(id,confirm){
+ refreshStored();settle();const card=data.card,st=status(Date.now());
+ if(!card||card.id!==id||Date.now()>card.until||!frequency(card.k)||left(card.k)||st.lunch||st.pause){say('这条提醒已经结束');return}
+ openedReminder=id;tab=0;
+ if(confirm)takeReminder(card.k);else render()
+}
+function delayLabel(k){return data.snooze[k]||data.card?.k===k&&data.card.retry?'跳过本轮':'稍后 5 分钟'}
+function deferReminder(k){settle();restart(k,delayLabel(k)==='跳过本轮'?0:5*minute);render()}
+function paintCard(card){
+ const box=el('nudge');
+ if(!card){box.hidden=true;box.removeAttribute('data-display');return}
+ const k=card.k,again=!!data.snooze[k]||card.retry,display=[k,again,card.until].join('/');
+ if(!box.hidden&&box.dataset.display===display)return;
+ box.dataset.display=display;box.hidden=false;
+ el('nudgeIcon').innerHTML=svg(['eye','rest','water'][k]);
+ el('nudgeType').textContent=(again?'本轮最后一次 · ':'')+kinds[k]+'提醒';
+ el('nudgeTitle').textContent=reminderMessages[k];el('accept').textContent=reminderLabels[k];
+ el('postpone').textContent=again?'跳过本轮':'稍后 5 分钟';
+ function act(confirm){
+   settle();const st=status(Date.now());
+   if(data.card?.until!==card.until||st.lunch||st.pause||!frequency(k)||left(k)){render();return}
+   if(confirm)takeReminder(k);else deferReminder(k)
+ }
+ el('accept').onclick=()=>act(true);el('postpone').onclick=()=>act(false)
+}
+function checkReminder(){
+ const ms=Date.now(),st=status(ms);
+ if(modal.open&&!document.hidden){paintCard(null);return}
+ const useSystem=systemEnabled()&&(mobileDevice()||document.hidden||!document.hasFocus());
+ if(document.hidden&&!useSystem){paintCard(null);return}
+ let card=data.card;
+ if(card&&(st.pause||st.lunch||!frequency(card.k)||left(card.k))){clearSystemCard(card);data.card=null;card=null;save()}
+ if(st.pause||st.lunch){paintCard(null);return}
+ if(card&&!card.id){card.id=crypto.randomUUID();save()}
+ if(card&&ms>=card.until){
+   if(!document.hidden&&!el('nudge').hidden&&el('nudge').contains(document.activeElement))return;
+   if(card.system&&!card.retry&&!data.snooze[card.k]&&ms<card.until+5*minute){
+     card.retry=true;card.until=ms+5*minute;openedReminder=null;save()
+   }else{restart(card.k,card.system||data.snooze[card.k]?0:5*minute);save();card=null}
+ }
+ if(!card&&ms>=(data.nextCardAt||0)){
+   const due=reminders().find(k=>!left(k));
+   if(due!=null){card={id:crypto.randomUUID(),k:due,system:!!useSystem,until:ms+(useSystem?5*minute:20000)};data.card=card;data.nextCardAt=ms+2*minute;save()}
+ }
+ if(card&&useSystem&&openedReminder!==card.id&&failed!==card.id){
+   if(!card.system){card.system=true;card.until=ms+5*minute;save()}
+   postSystem(card);paintCard(null)
+ }else paintCard(document.hidden?null:card)
+}
+function home(){
+ const st=status(Date.now()),next=reminders()[0],resting=st.lunch||st.pause;
+ const label=sessionEndsFirst(st,next)?'距离定时结束':st.lunch?'午休结束':st.pause?(st.pause.kind===0?'远眺结束':'离席休息结束'):next==null?'当前提醒已关闭':(left(next)?'距离下次':'现在可以')+['远眺','离席休息','喝水'][next];
+ app.innerHTML='<div class="scene-note"><strong>'+ (st.work?'工作模式':st.timed?'定时用眼 · 至 '+time(data.session.until):'非工作模式')+'</strong><span>'+(!st.work?'<button id="sessionToggle">'+(st.timed?'结束定时':'定时用眼')+'</button>':'')+'<button id="shift">'+(st.work?'下班':'上班')+'</button></span></div><section class="focus-clock"><h1>'+label+'</h1><div id="countdown" role="timer"></div><div id="clockActions"></div></section>';
+ el('shift').onclick=clockShift;if(el('sessionToggle'))el('sessionToggle').onclick=toggleSession;
+ const actions=el('clockActions');
+ function action(text,fn){const btn=document.createElement('button');btn.textContent=text;btn.onclick=fn;actions.append(btn)}
+ if(st.pause&&!st.lunch)action('提前结束',resume);
+ else if(!resting&&next!=null){
+   action(['开始远眺','开始离席','喝过了'][next],()=>takeReminder(next));
+   if(!left(next))action(delayLabel(next),()=>deferReminder(next))
+ }else if(!resting)action('设置提醒',()=>{edit=scene();tab=2;render()});
+ updateText()
+}
+function updateText(){const ms=Date.now(),st=status(ms);
+ if(el('countdown')){
+   const k=reminders()[0],remaining=sessionEndsFirst(st,k)?data.session.until-ms:st.lunch?at(st.day,data.lunchEnd)-ms:st.pause?st.pause.until-ms:k==null?null:left(k);
+   const sec=Math.max(0,Math.ceil(remaining/1000));
+   el('countdown').textContent=remaining==null?'—':String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0')
+ }
+ if(el('total')){el('total').textContent=duration(eyeDuration(st.day));el('reason').textContent=st.pause||st.lunch?'休息中 · 已暂停':st.work?'按工作作息自动累计':st.timed?'按定时用眼区间累计':st.planned?'按今天的用眼安排累计':'按 Blink 页面可见时长累计'}
+
+}
+function blockEditor(existing){
+  const title=existing?.title||'',at=existing?.at||time(now());
+  modal.innerHTML='<form id="blockForm"><h2>仅限今天的安排</h2><label class="field">活动<input id="blockName" maxlength="24" required placeholder="例如 阅读、外出"></label><label class="field">提醒时间<input type="time" id="blockAt" required></label><label class="field">时长（分钟）<input id="blockLen" type="number" min="1" max="720" required></label><label class="field">这段活动需要用眼<input type="checkbox" id="usesScreen"></label><button class="primary">保存安排</button><button type="button" id="cancelBlock">取消</button></form>';
+  el('usesScreen').checked=existing?.screen??true;el('blockName').value=title;el('blockAt').value=at;el('blockLen').value=existing?.minutes||30;
+  el('cancelBlock').onclick=()=>modal.close();
+  el('blockForm').onsubmit=e=>{e.preventDefault();const name=el('blockName').value.trim();if(!name){el('blockName').focus();return}settle();const block={screen:el('usesScreen').checked,id:existing?.id||crypto.randomUUID(),day:dayKey(now()),title:name,at:el('blockAt').value,minutes:Number(el('blockLen').value)};
+    data.blocks=data.blocks.filter(b=>b.id!==block.id);data.blocks.push(block);save();modal.close();render()};
+  modal.showModal()
+}
+function drawBlocks(){
+  const list=el('blocks'),items=todayBlocks();
+  if(!items.length)list.innerHTML='<p class="muted">可添加阅读等用眼时段，仅今天有效。</p>';
+  items.forEach(b=>{const row=document.createElement('div');row.className='slot';const ready=b.at<=time(now())&&!b.done;
+    row.innerHTML='<span class="stamp"></span><div class="strip'+(ready?' due':'')+'"><strong></strong><p></p><div class="controls"></div></div>';
+    row.querySelector('.stamp').textContent=b.at;row.querySelector('strong').textContent=b.title;
+    row.querySelector('p').textContent=b.minutes+' 分钟 · '+(b.screen?'用眼 · ':'')+(b.done?'已完成':ready?'时间到了':'待开始');
+    const actions=row.querySelector('.controls');if(!b.done)option(actions,'完成',false,()=>{settle();b.done=true;save();render()});
+    option(actions,'调整',false,()=>blockEditor(b));option(actions,'移除',false,()=>{settle();data.blocks=data.blocks.filter(x=>x.id!==b.id);save();render()});list.append(row)})
+}
+function projectedTime(ms,remaining){
+ const initial=status(ms),end=midnight(initial.day)+dayMs;
+ let cursor=ms;
+ while(cursor<end){
+   const state=status(cursor);
+   if(state.work!==initial.work||state.timed!==initial.timed)return null;
+   const next=boundary(cursor,end,state);
+   if(!state.lunch&&!state.pause){
+     if(remaining<next-cursor)return cursor+remaining;
+     remaining-=next-cursor;
+   }
+   cursor=next;
+ }
+ return null
+}
+function activityFeed(ms){
+ const day=dayKey(ms);
+ const rows=data.logs.filter(log=>dayKey(log.at)===day).map(log=>({k:log.k,at:log.at,state:'recorded',log}));
+ for(const k of reminders()){
+   const predicted=projectedTime(ms,left(k));
+   if(predicted!==null)rows.push({k,at:predicted,state:predicted===ms?'due':'upcoming'})
+ }
+ return rows.sort((a,b)=>a.at-b.at)
+}
+function showWeek(){
+ modal.innerHTML='<h2>近七天用眼估算</h2>';const today=midnight(dayKey(now()));
+ for(let i=0;i<7;i++){
+   const day=dayKey(today-i*dayMs),line=document.createElement('p');line.className='bar';
+   line.innerHTML='<span>'+day.slice(5)+'</span><strong>'+duration(eyeDuration(day))+'</strong>';modal.append(line)
+ }
+ const close=document.createElement('button');close.textContent='关闭';close.onclick=()=>modal.close();modal.append(close);modal.showModal()
+}
+function records(){
+ const ms=Date.now(),day=dayKey(ms);
+ app.innerHTML='<div class="section-line"><h1>记录</h1><button id="week">近七天</button></div>'+
+   '<section class="meter"><div><small>今日用眼总时长 · 估算</small><strong id="total"></strong><small id="reason"></small></div><button id="correct">修正</button></section>'+
+   '<div class="section-line section"><h2>今日时间轴</h2><button id="addActivity">记一次</button></div><ol id="feed" class="feed"></ol>';
+ el('week').onclick=showWeek;el('correct').onclick=()=>correct(day);
+ el('addActivity').onclick=()=>sheet('记录活动','选择刚做过的活动。',kinds.map((label,k)=>[label,()=>{settle();log(k);render()}]));
+ const feed=el('feed'),labels={recorded:'已记录',due:'已到点 · 待处理',upcoming:'预计提醒'};
+ for(const item of activityFeed(ms)){
+   const li=document.createElement('li'),row=document.createElement(item.state==='upcoming'?'div':'button');
+   li.className=item.state;row.className='feed-row';
+   row.innerHTML='<time>'+(item.state==='due'?'现在':time(item.at))+'</time><i aria-hidden="true"></i><strong>'+kinds[item.k]+'</strong><small>'+labels[item.state]+'</small>';
+   if(item.state==='recorded')row.onclick=()=>sheet(kinds[item.k],time(item.at)+' · 已记录',[['撤销这条记录',()=>{data.logs=data.logs.filter(l=>l.id!==item.log.id);render()}]]);
+   if(item.state==='due')row.onclick=()=>sheet(kinds[item.k],'提醒已到点。',[[['开始远眺','开始离席','喝过了'][item.k],()=>takeReminder(item.k)],[delayLabel(item.k),()=>deferReminder(item.k)]]);
+   li.append(row);feed.append(li)
+ }
+ if(!feed.children.length){const empty=document.createElement('li');empty.className='muted';empty.textContent='今天暂无活动记录或即将到来的提醒。';feed.append(empty)}
+ updateText()
+}
+function option(parent,name,on,fn){const b=document.createElement('button');b.textContent=name;b.setAttribute('aria-pressed',String(on));b.onclick=fn;parent.append(b)}
+
+let frequenciesOpen=false;
+function frequencyField(parent,title,kind,mode){
+  const values=kind===0?data.freq:data.extraFreq[kind-1];
+  const label=document.createElement('label'),select=document.createElement('select');
+  label.className='field';label.textContent=title;
+  for(const n of [0,20,30,45,60,90,120])select.add(new Option(n?'每 '+n+' 分钟':'关闭',n));
+  select.value=values[mode];
+  select.onchange=()=>{settle();values[mode]=Number(select.value);if(scene()===mode)restart(kind);render()};
+  label.append(select);parent.append(label)
+}
+function schedule(){
+  app.innerHTML=bar('日程')+'<div class="days scene-tabs" id="planMode" role="group" aria-label="日程模式"></div><section id="planBody"></section>';
+  deliverySettings();
+  ['工作日','非工作'].forEach((name,index)=>option(el('planMode'),name,edit===index,()=>{edit=index;render()}));
+  const body=el('planBody');
+  if(edit===1){
+    body.innerHTML='<h2 class="section">用屏提醒</h2><div id="screenFreq"></div><small>按页面可见或已安排的用眼时长累计。</small><div class="section-line section"><h2>今天的临时安排</h2><button id="newBlock">添加</button></div><div id="blocks"></div>';
+    frequencyField(el('screenFreq'),'提醒远眺',0,1);
+    el('newBlock').onclick=()=>blockEditor();drawBlocks();return
+  }
+  body.innerHTML='<h2 class="section">固定作息</h2><small>按中国大陆节假日及调休安排 · 北京时间</small><div id="hours" class="hours"></div><button id="dayException"></button><details id="workPrefs"><summary>提醒频率</summary><div id="freqs"></div></details>';
+  for(const [title,fields] of [['上下班',[['start','上班'],['end','下班']]],['午休',[['lunchStart','午休开始'],['lunchEnd','午休结束']]]]){
+    const row=document.createElement('div');row.className='hours-row';
+    const caption=document.createElement('span');caption.textContent=title;row.append(caption);
+    for(const [key,name] of fields){
+      const input=document.createElement('input');input.type='time';input.value=data[key];input.setAttribute('aria-label',name);
+      input.onchange=()=>{const next={...data,[key]:input.value};
+        if(!input.value||!(next.start<=next.lunchStart&&next.lunchStart<=next.lunchEnd&&next.lunchEnd<=next.end&&next.start<next.end)){input.value=data[key];say('午休需在上下班时间内，结束时间应晚于开始时间');return}
+        settle();data[key]=input.value;render()
+      };
+      if(key===fields[1][0]){const dash=document.createElement('span');dash.textContent='–';row.append(dash)}
+      row.append(input)
+    }
+    el('hours').append(row)
+  }
+  const exception=el('dayException'),hasOverride=data.shift&&data.shift.until>Date.now();
+  exception.textContent=hasOverride?'恢复今天的自动作息':'今天取消自动上班';
+  exception.onclick=()=>{settle();const ms=Date.now();data.shift=hasOverride?null:{from:ms,until:midnight(dayKey(ms))+dayMs,work:false};data.pause=null;render()};
+  const details=el('workPrefs');details.open=frequenciesOpen;details.ontoggle=()=>{if(details.isConnected)frequenciesOpen=details.open};
+  const prefs=el('freqs');
+  ['远眺','离席休息','喝水'].forEach((name,k)=>frequencyField(prefs,name,k,0));
+  const label=document.createElement('label'),select=document.createElement('select');
+  label.className='field';label.textContent='每次离席时长';
+  for(const n of [5,10,15,20])select.add(new Option(n+' 分钟',n));
+  select.value=data.breakMinutes;select.onchange=()=>{data.breakMinutes=Number(select.value);save()};label.append(select);prefs.append(label)
+}
+
+function viewKey(){const st=status(Date.now());return [st.day,st.work,st.lunch,st.pause?.from,st.planned,st.timed,sessionEndsFirst(st,reminders()[0]),...[0,1,2].map(k=>frequency(k)>0&&!left(k)),...todayBlocks().map(b=>b.at<=time(now()))].join('|')}
+let painted='',lastSaved=0;
+function render(persist=true){settle();if(persist)save();painted=viewKey();document.title='Blink · '+tabs[tab];Array.from(el('nav').children).forEach((b,i)=>{if(i===tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});[home,records,schedule][tab]();checkReminder()}
+el('logo').innerHTML=svg('eye');tabs.forEach((label,i)=>{const b=document.createElement('button');b.innerHTML='<i>'+svg(['today','record','plan'][i])+'</i>'+label;b.onclick=()=>{if(i===2&&tab!==2){edit=scene();frequenciesOpen=false}tab=i;window.scrollTo(0,0);render()};el('nav').append(b)});
+function refreshStored(){try{const saved=JSON.parse(localStorage.getItem(key));if(saved&&saved.cursor>data.cursor)data=saved}catch{}}
+document.addEventListener('visibilitychange',()=>{refreshStored();settle();visible=!document.hidden;render()});
+window.addEventListener('pagehide',()=>{if(visible){refreshStored();settle();save()}});
+window.addEventListener('storage',e=>{if(e.key===key&&e.newValue){const latest=JSON.parse(e.newValue);if(latest.cursor>=data.cursor){data=latest;if(!document.hidden)render(false)}}});
+if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',event=>{
+ if(event.data?.type==='blink-reminder')openReminder(event.data.id,event.data.confirm)
+});
+render();
+const landing=new URLSearchParams(location.hash.slice(1));
+if(landing.has('reminder')){openReminder(landing.get('reminder'),landing.get('action')==='confirm');history.replaceState(null,'',location.href.split('#')[0])}
+setInterval(()=>{if(document.hidden&&!systemEnabled())return;settle();checkReminder();
+ if(viewKey()!==painted){render()}else updateText();
+ if(Date.now()-lastSaved>=10000){save();lastSaved=Date.now()}},1000);
+</script></body></html>
