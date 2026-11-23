@@ -19,6 +19,13 @@ try {
   await page.locator('#workMode').click();
   assert.equal(await page.locator('#workMode').getAttribute('aria-pressed'),'true');
   await page.getByRole('button',{name:'日程',exact:true}).click();
+  await page.locator('#planMode').getByRole('button',{name:'工作日',exact:true}).click();
+  await page.locator('#otEdit').click();
+  await page.locator('#otScope').selectOption('repeat');
+  await page.locator('#otStart').fill('19:15');
+  await page.locator('#otEnd').fill('21:30');
+  await page.getByRole('button',{name:'保存加班'}).click();
+  assert.match(await page.locator('#otEdit').innerText(),/每个工作日 19:15–21:30/);
   await page.locator('#appearance').selectOption('dark');
   assert.equal(await page.locator('html').getAttribute('data-theme'),'dark');
   await page.getByRole('button',{name:'记录',exact:true}).click();
@@ -34,7 +41,11 @@ try {
   assert.equal(await page.locator('html').getAttribute('data-theme'),'dark');
   assert.match(await page.locator('#feed .recorded').innerText(),/喝水/);
   await page.getByRole('button',{name:'日程',exact:true}).click();
-  await page.locator('#planMode').waitFor();
+  await page.locator('#planMode').getByRole('button',{name:'工作日',exact:true}).click();
+  assert.match(await page.locator('#otEdit').innerText(),/19:15–21:30/);
+  await page.locator('#otEdit').click();
+  await page.getByRole('button',{name:'移除加班'}).click();
+  assert.match(await page.locator('#otEdit').innerText(),/设置加班时段/);
   console.log('Packaged app opened offline; one drink survived restart.');
 } finally {
   if(instance)await instance.close().catch(()=>{});
