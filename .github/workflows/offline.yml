@@ -36,29 +36,62 @@ jobs:
           java-version: 21
       - if: matrix.target == 'Android'
         shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           npm run android
           cd android
-          ./gradlew :app:assembleDebug
           mkdir -p ../out
-          cp app/build/outputs/apk/debug/app-debug.apk ../out/Blink-Android.apk
+          if [[ -n "$ANDROID_KEYSTORE_BASE64" ]]; then
+            printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/blink.jks"
+            ./gradlew :app:assembleRelease
+            sdk="$ANDROID_HOME/build-tools/36.0.0"
+            "$sdk/zipalign" -f -p 4 app/build/outputs/apk/release/app-release-unsigned.apk "$RUNNER_TEMP/aligned.apk"
+            "$sdk/apksigner" sign --ks "$RUNNER_TEMP/blink.jks" --ks-key-alias "$ANDROID_KEY_ALIAS" --ks-pass env:ANDROID_KEYSTORE_PASSWORD --key-pass env:ANDROID_KEY_PASSWORD --out ../out/Blink-Android.apk "$RUNNER_TEMP/aligned.apk"
+          else
+            ./gradlew :app:assembleDebug
+            cp app/build/outputs/apk/debug/app-debug.apk ../out/Blink-Android.apk
+          fi
+          unzip -p ../out/Blink-Android.apk assets/public/index.html | grep -q '</html>'
       - if: matrix.target == 'iOS'
         shell: bash
         run: |
           npm run ios
           xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -destination 'generic/platform=iOS Simulator' -derivedDataPath out/build CODE_SIGNING_ALLOWED=NO build
           ditto -c -k --keepParent out/build/Build/Products/Release-iphonesimulator/App.app out/Blink-iOS-simulator.zip
+          device=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; print(next(d["udid"] for runtime,ds in json.load(sys.stdin)["devices"].items() if ".iOS-" in runtime for d in ds if d["name"].startswith("iPhone")))')
+          xcrun simctl boot "$device"
+          xcrun simctl bootstatus "$device" -b
+          xcrun simctl install "$device" out/build/Build/Products/Release-iphonesimulator/App.app
+          xcrun simctl launch "$device" com.zhaowl.blink
           xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -destination 'generic/platform=iOS' -derivedDataPath out/device CODE_SIGNING_ALLOWED=NO build
           mkdir -p out/Payload
           ditto out/device/Build/Products/Release-iphoneos/App.app out/Payload/App.app
           cd out
           ditto -c -k --keepParent Payload Blink-iOS-device-unsigned.ipa
+      - if: matrix.target == 'iOS'
+        name: Sign device IPA when signing credentials are configured
+        env:
+          IOS_P12_BASE64: ${{ secrets.IOS_P12_BASE64 }}
+          IOS_P12_PASSWORD: ${{ secrets.IOS_P12_PASSWORD }}
+          IOS_PROFILE_BASE64: ${{ secrets.IOS_PROFILE_BASE64 }}
+        run: |
+          if [[ -n "$IOS_P12_BASE64" || -n "$IOS_PROFILE_BASE64" ]]; then
+            bash scripts/sign-ios.sh
+          fi
       - if: matrix.target == 'macOS'
         run: npm run pack:desktop -- --mac --universal
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
       - if: matrix.target == 'Windows11'
         run: npm run pack:desktop -- --win --x64
+      - if: matrix.target == 'Windows11'
+        run: node scripts/desktop-smoke.mjs out/win-unpacked/Blink.exe
+      - if: matrix.target == 'macOS'
+        run: node scripts/desktop-smoke.mjs out/mac-universal/Blink.app/Contents/MacOS/Blink
       - uses: actions/upload-artifact@v4
         with:
           name: Blink-${{ matrix.target }}-${{ github.run_number }}

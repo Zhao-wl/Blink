@@ -14,7 +14,7 @@ function engine(initial) {
   const src=readFileSync('index.html','utf8').split('<script>')[1].split('</script>')[0];
   new Function(src);
   const run=code=>vm.runInContext(code,ctx);
-  run(src.slice(0,src.indexOf("el('logo').innerHTML"))+src.slice(src.indexOf('function backgroundPlan'),src.indexOf('function syncBackground')));
+  run(src.slice(0,src.indexOf("el('logo').innerHTML")));
   run('render=()=>{};visible=false');
   return {run, advance(time){ms=Date.parse(time+'+08:00');run('settle()')}};
 }

@@ -23,3 +23,9 @@
 在「日程 → 通知设置」启用系统通知。移动端切入后台时向本机系统登记一个有界队列，最多 60 条、覆盖未来三天，回到应用后按当前作息重新排程。锁屏能否点亮、响铃、震动和准点显示受系统权限、省电与专注设置控制。桌面关闭窗口后在托盘继续运行，完整退出后停止提醒。非工作模式仅使用 Blink 可观察到的前台时长、当天用眼活动或定时用眼区间估算。
 
 账号、跨设备同步与在线更新服务属于二期。
+
+### 签名与测试安装
+
+iOS 真机打包支持三个 GitHub Actions Secrets：`IOS_P12_BASE64`（签名证书及私钥导出的 P12）、`IOS_P12_PASSWORD`、`IOS_PROFILE_BASE64`（与 com.zhaowl.blink 匹配的 mobileprovision）。配置后再次运行会额外生成 signed IPA。可安装的设备与分发范围由描述文件决定。证书和密码只应存入仓库 Secrets。
+
+Android 默认 APK 使用运行器的测试签名。需要连续覆盖安装时请在仓库 Secrets 中配置固定的 `ANDROID_KEYSTORE_BASE64`、`ANDROID_KEYSTORE_PASSWORD`、`ANDROID_KEY_ALIAS`、`ANDROID_KEY_PASSWORD`；工作流将改用该密钥签名 release 包。不同签名之间无法覆盖安装。

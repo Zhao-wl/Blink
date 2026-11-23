@@ -7,6 +7,7 @@ const cli='./node_modules/@capacitor/cli/bin/capacitor';
 execFileSync(process.execPath,[cli,existsSync(platform)?'sync':'add',platform],{stdio:'inherit'});
 if(platform==='android'){
   const dir='android/app/src/main/res/raw';await mkdir(dir,{recursive:true});await copyFile('mobile/blink.wav',dir+'/blink.wav');
+  await copyFile('mobile/quiet.wav',dir+'/quiet.wav');
   const manifest='android/app/src/main/AndroidManifest.xml';
   const xml=await readFile(manifest,'utf8');
   await writeFile(manifest,xml.replace(/android:allowBackup="true"/,'android:allowBackup="false"'));
@@ -14,3 +15,4 @@ if(platform==='android'){
   // The web bundle is a resources folder in the SPM-based Capacitor app.
   await copyFile('mobile/blink.wav','ios/App/App/public/blink.wav');
 }
+execFileSync('python3',['scripts/icons.py',platform],{stdio:'inherit'});
