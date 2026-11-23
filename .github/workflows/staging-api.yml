@@ -5,23 +5,39 @@ on:
     branches: [main]
     paths: ['server/api.py', 'server/cloud.py', 'server/test_api.py', 'server/test_cloud.py']
 permissions:
-  contents: read
+  contents: write
 concurrency:
   group: staging-api
   cancel-in-progress: false
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
       - run: python3 -B -m unittest discover -s server -p 'test_*.py'
-      - name: Deploy verified commit
+      - name: Sign tested revision for the ECS pull service
         env:
           KEY: ${{ secrets.BLINK_STAGE_DEPLOY_KEY }}
-          HOSTKEY: ${{ vars.BLINK_STAGE_HOSTKEY }}
-          HOST: ${{ vars.BLINK_STAGE_HOST }}
         run: |
-          umask 077
-          printf '%s\n' "$KEY" > "$RUNNER_TEMP/stage-key"
-          printf '%s %s\n' "$HOST" "$HOSTKEY" > "$RUNNER_TEMP/hostkeys"
-          ssh -o BatchMode=yes -o ConnectTimeout=15 -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/hostkeys" -i "$RUNNER_TEMP/stage-key" "blink-publish@$HOST" "$GITHUB_SHA"
+          python3 - <<'PYCODE'
+          import base64,json,os
+          from cryptography.hazmat.primitives.serialization import load_ssh_private_key
+          sha=os.environ['GITHUB_SHA']
+          serial=int(os.environ['GITHUB_RUN_NUMBER'])
+          key=load_ssh_private_key(os.environ['KEY'].encode(),password=None)
+          signature=key.sign(f'blink-staging-v1 {serial} {sha}'.encode())
+          with open('/tmp/blink-release.json','w') as f:
+              json.dump(dict(sha=sha,serial=serial,signature=base64.b64encode(signature).decode()),f)
+          PYCODE
+          blob=$(git hash-object -w /tmp/blink-release.json)
+          tree=$(printf '100644 blob %s\trelease.json\n' "$blob" | git mktree)
+          parent=()
+          if git ls-remote --exit-code origin refs/heads/staging-api-channel >/dev/null; then
+            git fetch --depth=1 origin staging-api-channel
+            parent=(-p FETCH_HEAD)
+          fi
+          git config user.name 'Blink staging CI'
+          git config user.email 'blink-ci@users.noreply.github.com'
+          commit=$(git commit-tree "$tree" "${parent[@]}" -m "Stage $GITHUB_SHA")
+          git push origin "$commit:refs/heads/staging-api-channel"
