@@ -13,6 +13,6 @@ if(!manifest.includes('REQUEST_INSTALL_PACKAGES'))manifest=manifest.replace('</m
 await writeFile(xml,manifest);
 const config='android/app/src/main/assets/capacitor.config.json';
 const settings=JSON.parse(await readFile(config,'utf8'));settings.loggingBehavior='none';await writeFile(config,JSON.stringify(settings));
-await writeFile('android/app/src/main/res/xml/blink_stage_network.xml','<network-security-config><base-config cleartextTrafficPermitted="false"/><domain-config cleartextTrafficPermitted="true"><domain>127.0.0.1</domain></domain-config></network-security-config>');
+await writeFile('android/app/src/main/res/xml/blink_stage_network.xml','<network-security-config><base-config cleartextTrafficPermitted="false"/></network-security-config>');
 const strings='android/app/src/main/res/values/strings.xml';
 await writeFile(strings,(await readFile(strings,'utf8')).replace(/>Blink<\/string>/g,'>Blink 内测</string>'));

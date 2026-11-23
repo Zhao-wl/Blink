@@ -87,7 +87,7 @@ public class BlinkCloudPlugin extends Plugin {
             boolean login=route.equals("v1/login")||route.equals("v1/register");
             if(login){body.put("device",device());body.put("label",Build.MODEL);}
             if(!login&&!route.equals("v2/reset")&&!s.optString("account").equals(call.getString("account",""))){call.reject("账号已切换");return;}
-            c=(HttpURLConnection)new URL("http://127.0.0.1:18765/"+route).openConnection(Proxy.NO_PROXY);
+            c=(HttpURLConnection)new URL("https://47.108.62.243/"+route).openConnection(Proxy.NO_PROXY);
             c.setConnectTimeout(4000);c.setReadTimeout(12000);c.setInstanceFollowRedirects(false);c.setRequestMethod("POST");c.setDoOutput(true);
             c.setRequestProperty("Content-Type","application/json");
             if(!login&&!route.equals("v2/reset"))c.setRequestProperty("Authorization","Bearer "+s.optString("token"));
@@ -102,7 +102,7 @@ public class BlinkCloudPlugin extends Plugin {
                 prefs().edit().remove("sealed").commit();
             }
             call.resolve(new JSObject(json.toString()));
-        }catch(Exception e){call.reject("无法连接内网服务");}finally{if(c!=null)c.disconnect();}
+        }catch(Exception e){call.reject("无法连接 Blink 服务，请检查网络后重试");}finally{if(c!=null)c.disconnect();}
     });}
     @PluginMethod public void forget(PluginCall call){io.execute(()->{prefs().edit().remove("sealed").commit();call.resolve();});}
     @PluginMethod public void exportFile(PluginCall call){
