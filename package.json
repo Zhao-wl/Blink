@@ -1,0 +1,55 @@
+{
+  "name": "blink-offline",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Blink 离线工休与用眼提醒",
+  "author": "Zhao-wl",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.cjs",
+    "start": "npm run build && electron .",
+    "pack:desktop": "npm run build && electron-builder --publish never",
+    "android": "npm run build && node scripts/mobile.mjs android",
+    "ios": "npm run build && node scripts/mobile.mjs ios"
+  },
+  "build": {
+    "appId": "com.zhaowl.blink",
+    "productName": "Blink",
+    "directories": {
+      "output": "out"
+    },
+    "files": [
+      "desktop/**/*",
+      "www/**/*",
+      "!node_modules/**/*"
+    ],
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.productivity",
+      "icon": "desktop/icon.png"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "desktop/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "devDependencies": {
+    "@capacitor/android": "8.6.2",
+    "@capacitor/cli": "8.6.2",
+    "@capacitor/core": "8.6.2",
+    "@capacitor/ios": "8.6.2",
+    "@capacitor/local-notifications": "8.3.1",
+    "electron": "45.4.1",
+    "electron-builder": "26.18.0",
+    "esbuild": "0.28.2"
+  }
+}

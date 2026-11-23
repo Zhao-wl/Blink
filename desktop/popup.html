@@ -1,0 +1,7 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>Blink 提醒</title>
+<style>*{box-sizing:border-box}body{background:#faf9f6;color:#302e38;font:15px system-ui;margin:12px 16px}small{color:#675d76}p{margin:5px 0 8px}button{font:inherit;min-height:38px;padding:4px 14px;border:0;border-radius:9px;background:#eee9f5;margin-right:6px}</style>
+<small>Blink</small><p></p><button id="yes"></button><button id="later"></button><script>
+const params=new URLSearchParams(location.search),k=Number(params.get('kind'));
+document.querySelector('p').textContent=['看看远处，让眼睛休息 20 秒。','方便的话，起来走动一下。','方便的话，喝一口水。'][k];
+yes.textContent=['开始远眺','开始离席','喝过了'][k];later.textContent=params.get('retry')==='1'?'跳过本轮':'稍后 5 分钟';yes.onclick=()=>respond(true);later.onclick=()=>respond(false)
+</script></html>

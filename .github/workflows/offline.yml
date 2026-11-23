@@ -1,0 +1,71 @@
+name: Blink offline packages
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: offline-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {target: Android, os: ubuntu-latest}
+          - {target: iOS, os: macos-15}
+          - {target: Windows11, os: windows-latest}
+          - {target: macOS, os: macos-15}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - if: matrix.target == 'Android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - if: matrix.target == 'Android'
+        shell: bash
+        run: |
+          npm run android
+          cd android
+          ./gradlew :app:assembleDebug
+          mkdir -p ../out
+          cp app/build/outputs/apk/debug/app-debug.apk ../out/Blink-Android.apk
+      - if: matrix.target == 'iOS'
+        shell: bash
+        run: |
+          npm run ios
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -destination 'generic/platform=iOS Simulator' -derivedDataPath out/build CODE_SIGNING_ALLOWED=NO build
+          ditto -c -k --keepParent out/build/Build/Products/Release-iphonesimulator/App.app out/Blink-iOS-simulator.zip
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -destination 'generic/platform=iOS' -derivedDataPath out/device CODE_SIGNING_ALLOWED=NO build
+          mkdir -p out/Payload
+          ditto out/device/Build/Products/Release-iphoneos/App.app out/Payload/App.app
+          cd out
+          ditto -c -k --keepParent Payload Blink-iOS-device-unsigned.ipa
+      - if: matrix.target == 'macOS'
+        run: npm run pack:desktop -- --mac --universal
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - if: matrix.target == 'Windows11'
+        run: npm run pack:desktop -- --win --x64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Blink-${{ matrix.target }}-${{ github.run_number }}
+          if-no-files-found: error
+          path: |
+            out/*.apk
+            out/*.ipa
+            out/*.zip
+            out/*.exe
+            out/*.dmg

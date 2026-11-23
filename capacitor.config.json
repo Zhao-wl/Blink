@@ -1,0 +1,1 @@
+{"appId":"com.zhaowl.blink","appName":"Blink","webDir":"www","plugins":{"LocalNotifications":{"presentationOptions":["badge","sound","alert"]}}}

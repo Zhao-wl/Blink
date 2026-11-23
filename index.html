@@ -124,8 +124,8 @@ function takeReminder(k){
 const reminderLabels=['开始远眺','开始离席','喝过了'];
 const reminderMessages=['方便的话，看看约 6 米外的地方。','起来走走，让眼睛和身体歇一会儿。','手边有水的话，喝一口吧。'];
 const mobileDevice=()=>navigator.userAgentData?.mobile??/Android|iPhone|iPad/i.test(navigator.userAgent);
-const supportsSystem=()=>window.isSecureContext&&/^https?:$/.test(location.protocol)&&'serviceWorker' in navigator&&'Notification' in window;
-const systemEnabled=()=>supportsSystem()&&data.delivery?.enabled&&Notification.permission==='granted';
+const supportsSystem=()=>!!window.blinkMobile||!!window.blinkDesktop||window.isSecureContext&&/^https?:$/.test(location.protocol)&&'serviceWorker' in navigator&&'Notification' in window;
+const systemEnabled=()=>supportsSystem()&&data.delivery?.enabled&&(window.blinkMobile||window.blinkDesktop||Notification.permission==='granted');
 let worker,openedReminder=null,posted='',failed='',deliveryOpen=false;
 async function registration(){
   if(!worker)worker=navigator.serviceWorker.register('./blink-notifications.js').then(()=>navigator.serviceWorker.ready).catch(e=>{worker=null;throw e});
@@ -137,10 +137,11 @@ function deliverySettings(){
  el('app').append(section);const pref=data.delivery??={enabled:false,sound:false,buzz:false};
  const enabled=el('systemOn');enabled.checked=!!systemEnabled();enabled.disabled=!supportsSystem();
  el('deliveryHint').textContent=!supportsSystem()?'系统通知需要在支持通知的浏览器中通过 HTTPS 或 localhost 打开。':mobileDevice()?'锁屏显示、亮屏和声振组合由手机系统决定。':'窗口内在右下角提醒。切到其他窗口时，可通过系统通知打卡。';
- enabled.onchange=async()=>{if(enabled.checked){try{if(await Notification.requestPermission()!=='granted')throw Error();await registration();pref.enabled=true}catch{pref.enabled=false;say('请检查浏览器的通知权限')}}else pref.enabled=false;save();render()};
+ enabled.onchange=async()=>{if(enabled.checked){try{if(window.blinkMobile||window.blinkDesktop){if(!await (window.blinkMobile||window.blinkDesktop).request())throw Error()}else{if(await Notification.requestPermission()!=='granted')throw Error();await registration()}pref.enabled=true}catch{pref.enabled=false;say('请检查浏览器的通知权限')}}else pref.enabled=false;save();render()};
  for(const [id,k] of [['soundOn','sound'],['buzzOn','buzz']]){const input=el(id);input.checked=pref[k];input.disabled=!supportsSystem();input.onchange=()=>{pref[k]=input.checked;save()}}
 }
 function clearSystemCard(card){
+ if(card&&window.blinkDesktop){window.blinkDesktop.clear(card.id);return}
  if(!card?.system||!worker)return;
  worker.then(reg=>reg.getNotifications({tag:'blink-current'})).then(items=>{
    for(const item of items)if(item.data?.id===card.id)item.close()
@@ -150,6 +151,7 @@ async function postSystem(card){
  const id=card.id,token=id+':'+Number(!!card.retry);
  if(posted===token)return;posted=token;
  try{
+   if(window.blinkDesktop){window.blinkDesktop.show({...card,sound:!!data.delivery.sound});return}
    const reg=await registration();
    if(data.card?.id!==id||!systemEnabled())return;
    const pref=data.delivery,options={tag:'blink-current',renotify:true,body:reminderMessages[card.k]+' 点开打卡。',data:{id},silent:!pref.sound};
@@ -187,7 +189,7 @@ function paintCard(card){
 function checkReminder(){
  const ms=Date.now(),st=status(ms);
  if(modal.open&&!document.hidden){paintCard(null);return}
- const useSystem=systemEnabled()&&(mobileDevice()||document.hidden||!document.hasFocus());
+ const useSystem=!window.blinkMobile&&systemEnabled()&&(window.blinkDesktop||mobileDevice()||document.hidden||!document.hasFocus());
  if(document.hidden&&!useSystem){paintCard(null);return}
  let card=data.card;
  if(card&&(st.pause||st.lunch||!frequency(card.k)||left(card.k))){clearSystemCard(card);data.card=null;card=null;save()}
@@ -358,13 +360,69 @@ function refreshStored(){try{const saved=JSON.parse(localStorage.getItem(key));i
 document.addEventListener('visibilitychange',()=>{refreshStored();settle();visible=!document.hidden;render()});
 window.addEventListener('pagehide',()=>{if(visible){refreshStored();settle();save()}});
 window.addEventListener('storage',e=>{if(e.key===key&&e.newValue){const latest=JSON.parse(e.newValue);if(latest.cursor>=data.cursor){data=latest;if(!document.hidden)render(false)}}});
-if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',event=>{
+// Native mobile OS timers outlive the web view. Queue only a bounded local schedule.
+function backgroundPlan(ms){
+ const items=[],end=ms+3*dayMs;
+ let next=data.progress.map((_,k)=>left(k)),lastContext=data.context,lastDelivery=0;
+ for(let t=ms;t<end&&items.length<60;){
+   const st=status(t),stop=boundary(t,end,st),tag=st.day+':'+st.work+(st.timed?':session':'');
+   const mode=st.work||st.timed?0:1;
+   const periods=[data.freq[mode],mode===0?data.extraFreq[0][0]:0,mode===0?data.extraFreq[1][0]:0].map(n=>n*minute);
+   if(lastContext!==tag){next=periods.slice();lastContext=tag}
+   if(!st.pause&&!st.lunch&&(st.work||st.planned||st.timed)){
+     const start=t;
+     while(t<stop&&items.length<60){
+       const due=Math.min(...next.filter((_,k)=>periods[k]>0));
+       if(!Number.isFinite(due)||t+due>=stop){next=next.map(n=>Math.max(0,n-(stop-t)));break}
+       t+=due;next=next.map(n=>Math.max(0,n-due));
+       const k=next.findIndex((n,k)=>periods[k]>0&&n===0);
+       const fire=Math.max(t,ms+2000,lastDelivery+2*minute);
+       if(fire<stop){
+         const token=crypto.randomUUID();
+         for(const retry of [false,true]){
+           const when=fire+(retry?5*minute:0);
+           if(when>=stop||items.length>=60)break;
+           items.push({slot:items.length+1,token,k,at:when,expires:Math.min(stop,when+5*minute),retry,title:kinds[k],body:reminderMessages[k]});
+           lastDelivery=when;
+         }
+       }
+       next[k]=periods[k]+5*minute;
+     }
+     t=start;
+   }
+   t=stop
+ }
+ return items
+}
+function syncBackground(){
+ if(!window.blinkMobile)return;
+ const items=document.hidden&&data.delivery?.enabled?backgroundPlan(Date.now()):[];
+ if(items.length)localStorage.setItem('blink-pending',JSON.stringify(items));
+ window.blinkMobile.replace(items,data.delivery||{}).catch(()=>say('本机通知排程失败，请检查系统权限'))
+}
+if(window.blinkMobile){
+ document.addEventListener('visibilitychange',syncBackground);
+ window.blinkMobile.listen(token=>{
+   const pending=JSON.parse(localStorage.getItem('blink-pending')||'[]'),ms=Date.now();
+   const row=pending.find(x=>x.token===token&&x.at<=ms&&ms<=x.expires);
+   if(!row){say('这条提醒已结束');return}
+   localStorage.setItem('blink-pending',JSON.stringify(pending.filter(x=>x.token!==token)));
+   settle();const st=status(ms);if(st.pause||st.lunch||!frequency(row.k))return;
+   data.progress[row.k]=Math.max(data.progress[row.k],frequency(row.k)*minute);
+   data.card={id:token,k:row.k,until:ms+5*minute,retry:row.retry};openedReminder=token;tab=0;render()
+ });
+ window.blinkMobile.replace([],{}).catch(()=>{});
+}
+if(window.blinkDesktop)window.blinkDesktop.listen((id,yes)=>{
+ if(yes)openReminder(id,true);else if(data.card?.id===id)deferReminder(data.card.k)
+});
+if(!window.blinkMobile&&!window.blinkDesktop&&'serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',event=>{
  if(event.data?.type==='blink-reminder')openReminder(event.data.id,event.data.confirm)
 });
 render();
 const landing=new URLSearchParams(location.hash.slice(1));
 if(landing.has('reminder')){openReminder(landing.get('reminder'),landing.get('action')==='confirm');history.replaceState(null,'',location.href.split('#')[0])}
-setInterval(()=>{if(document.hidden&&!systemEnabled())return;settle();checkReminder();
+setInterval(()=>{if(document.hidden&&(window.blinkMobile||!systemEnabled()))return;settle();checkReminder();
  if(viewKey()!==painted){render()}else updateText();
  if(Date.now()-lastSaved>=10000){save();lastSaved=Date.now()}},1000);
 </script></body></html>
