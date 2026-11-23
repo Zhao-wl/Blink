@@ -10,7 +10,7 @@ class BlinkViewController: CAPBridgeViewController {
 public class BlinkLive: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "BlinkLive"
     public let jsName = "BlinkLive"
-    public let pluginMethods = [CAPPluginMethod(name: "setTimer",returnType: CAPPluginReturnPromise)]
+    public let pluginMethods: [CAPPluginMethod] = [CAPPluginMethod(name: "setTimer",returnType: CAPPluginReturnPromise)]
     @objc func setTimer(_ call: CAPPluginCall) {
         guard #available(iOS 16.2, *) else { call.resolve(); return }
         let deadline = Date(timeIntervalSince1970:(call.getDouble("at") ?? 0)/1000)
