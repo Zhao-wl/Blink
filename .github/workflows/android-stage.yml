@@ -1,0 +1,44 @@
+name: Android staging
+on:
+  workflow_dispatch:
+concurrency:
+  group: android-staging-release
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci && npm test && python3 -B server/test_api.py
+      - run: npm run android && node scripts/android-stage.mjs
+      - run: cd android && ./gradlew :app:assembleDebug
+      - name: Sign and publish Android testing channel
+        env:
+          P12: ${{ secrets.BLINK_STAGE_P12 }}
+          PASSWORD: ${{ secrets.BLINK_STAGE_PASSWORD }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          printf '%s' "$P12" | base64 -d > "$RUNNER_TEMP/stage.p12"
+          sdk="$ANDROID_HOME/build-tools/36.0.0"
+          apk=Blink-Android-stage.apk
+          "$sdk/apksigner" sign --ks "$RUNNER_TEMP/stage.p12" --ks-type PKCS12 --ks-key-alias blink-stage --ks-pass env:PASSWORD --key-pass env:PASSWORD --out "$apk" android/app/build/outputs/apk/debug/app-debug.apk
+          "$sdk/apksigner" verify "$apk"
+          tag="android-stage-$GITHUB_RUN_NUMBER"
+          gh release create "$tag" "$apk" --prerelease --target "$GITHUB_SHA" --title "Android 内测 0.2.$GITHUB_RUN_NUMBER" --notes "Blink Android 内网测试包。"
+          jq -n --argjson version "$GITHUB_RUN_NUMBER" --arg sha "$(sha256sum "$apk" | cut -d' ' -f1)" --arg url "https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/$apk" '{version:$version,sha256:$sha,url:$url}' > android-stage.json
+          if ! gh release view android-stage-channel >/dev/null 2>&1; then
+            gh release create android-stage-channel --prerelease --target "$GITHUB_SHA" --title 'Android 内测更新清单' --notes '固定内测渠道'
+          fi
+          gh release upload android-stage-channel android-stage.json --clobber
