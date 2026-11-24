@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="horizontal" android:gravity="center_vertical" android:padding="14dp"
+    android:background="@drawable/blink_widget_bg">
+    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+        <TextView android:id="@+id/widget_title" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:textColor="#302e38" android:textSize="14sp" android:text="Blink"/>
+        <Chronometer android:id="@+id/widget_timer" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:textColor="#302e38" android:textSize="28sp" android:fontFamily="sans-serif-medium"/>
+    </LinearLayout>
+    <TextView android:id="@+id/widget_action" android:layout_width="wrap_content" android:layout_height="40dp"
+        android:gravity="center" android:paddingStart="16dp" android:paddingEnd="16dp" android:textColor="#ffffff"
+        android:textSize="14sp" android:background="@drawable/blink_widget_button" android:text="打开"/>
+</LinearLayout>

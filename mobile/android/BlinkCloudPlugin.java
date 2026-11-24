@@ -36,8 +36,13 @@ public class BlinkCloudPlugin extends Plugin {
     private static final String ALIAS="blink-account-session-v1";
     private static final String CLOUD="https://47.108.62.243/";
     private static final String RELEASE="https://github.com/Zhao-wl/Blink/releases/download/";
-    private static final Set<String> ROUTES=new HashSet<>(Arrays.asList("v1/login","v1/register","v1/logout","v1/sync","v2/sync","v2/devices","v2/revoke","v2/reset","v2/password","v2/delete","v2/recovery-code"));
+    private static final Set<String> ROUTES=new HashSet<>(Arrays.asList("v1/login","v1/register","v1/logout","v1/sync","v2/sync","v2/devices","v2/revoke","v2/reset","v2/password","v2/delete","v2/recovery-code","v2/presence","v2/rename","v2/pair/new","v2/pair/poll","v2/pair/approve"));
     private boolean stage(){return getContext().getPackageName().equals("com.zhaowl.blink.stage");}
+    private static final Set<String> OPEN=new HashSet<>(Arrays.asList("v1/login","v1/register","v2/reset","v2/pair/new","v2/pair/poll"));
+    static String label(Context c){
+        String name=Settings.Global.getString(c.getContentResolver(),Settings.Global.DEVICE_NAME);
+        return name==null||name.trim().isEmpty()?Build.MODEL:name.trim();
+    }
     private static SharedPreferences prefs(Context context){return context.getSharedPreferences("blink-account",Context.MODE_PRIVATE);}
     private SharedPreferences prefs(){return prefs(getContext());}
     private static SecretKey key() throws Exception {
@@ -77,64 +82,34 @@ public class BlinkCloudPlugin extends Plugin {
             return out.toByteArray();
         }
     }
-    private static void localizeLease(Context context,JSONObject json,long startedAt,long startedElapsed) throws JSONException {
-        long remaining=Math.max(0,json.getLong("expiresAt")-json.getLong("serverTime"));
-        json.put("localExpires",startedAt+remaining);
-        json.put("elapsedExpires",startedElapsed+remaining);
-        json.put("boot",ReminderAction.bootCount(context));
-    }
-    private static boolean isSafeInteger(Object value) {
-        if(!(value instanceof Number))return false;
-        double n=((Number)value).doubleValue();
-        return n>=0&&n<=9007199254740991d&&n==Math.floor(n);
-    }
-    static boolean legacyReminderReply(JSONObject reply) {
-        JSONArray devices=reply.optJSONArray("devices");
-        if(reply.has("revision")||reply.has("expiresAt")||devices==null)return false;
-        for(int i=0;i<devices.length();i++){
-            JSONObject row=devices.optJSONObject(i);
-            if(row==null||!(row.opt("id") instanceof String)||!(row.opt("label") instanceof String)
-                ||!isSafeInteger(row.opt("expires"))||!(row.opt("current") instanceof Boolean))return false;
-        }
-        return true;
-    }
-    private static boolean localizeReminderReply(Context context,JSONObject reply,long startedAt,long startedElapsed) throws JSONException {
-        if(isSafeInteger(reply.opt("revision"))&&isSafeInteger(reply.opt("expiresAt"))
-            &&isSafeInteger(reply.opt("serverTime"))
-            &&reply.has("device")&&(reply.isNull("device")||reply.opt("device") instanceof String)
-            &&reply.has("requested")&&(reply.isNull("requested")||reply.opt("requested") instanceof String)){
-            localizeLease(context,reply,startedAt,startedElapsed);
-        }else if(legacyReminderReply(reply)){
-            reply.put("boot",ReminderAction.bootCount(context));
-        }else return false;
-        reply.put("checkedElapsed",startedElapsed);
-        return true;
-    }
     static String callerDevice(Context context){return prefs(context).getString("device","");}
-    static JSONObject reminderState(Context context,String owner,String action,long revision) throws Exception {
-        JSONObject session=session(context);
-        if(!owner.equals("blink-profile-"+session.optString("account"))||!session.has("token"))return null;
-        long startedAt=System.currentTimeMillis(),startedElapsed=android.os.SystemClock.elapsedRealtime();
-        HttpURLConnection connection=(HttpURLConnection)new URL(CLOUD+"v2/devices").openConnection(Proxy.NO_PROXY);
+    /**
+     * Asks the server whether this device should show a work reminder now (the device in use
+     * reminds). Returns null when offline or signed out, in which case the caller reminds anyway.
+     */
+    static Boolean presence(Context context,String owner,String round){
+        HttpURLConnection connection=null;
         try{
+            JSONObject session=session(context);
+            if(!owner.equals("blink-profile-"+session.optString("account"))||!session.has("token"))return null;
+            long idle=Math.max(0,System.currentTimeMillis()-ReminderAction.prefs(context).getLong("lastActive",0));
+            connection=(HttpURLConnection)new URL(CLOUD+"v2/presence").openConnection(Proxy.NO_PROXY);
             connection.setConnectTimeout(2000);connection.setReadTimeout(2500);
             connection.setInstanceFollowRedirects(false);connection.setRequestMethod("POST");connection.setDoOutput(true);
             connection.setRequestProperty("Content-Type","application/json");
             connection.setRequestProperty("Authorization","Bearer "+session.getString("token"));
-            JSONObject body=new JSONObject().put("action",action).put("revision",revision);
+            JSONObject body=new JSONObject().put("idle",idle).put("platform","android");
+            if(round!=null&&!round.isEmpty())body.put("round",round);
             try(OutputStream out=connection.getOutputStream()){out.write(body.toString().getBytes(StandardCharsets.UTF_8));}
-            int status=connection.getResponseCode();
-            if(!session.optString("token").equals(session(context).optString("token")))return null;
-            if(status==401)return new JSONObject().put("revoked",true).put("checkedElapsed",startedElapsed)
-                .put("boot",ReminderAction.bootCount(context));
-            if(status!=200)return null;
-            JSONObject reply=new JSONObject(new String(read(connection.getInputStream(),8192),StandardCharsets.UTF_8));
-            return localizeReminderReply(context,reply,startedAt,startedElapsed)?reply:null;
-        }finally{connection.disconnect();}
+            if(connection.getResponseCode()!=200)return null;
+            JSONObject reply=new JSONObject(new String(read(connection.getInputStream(),16384),StandardCharsets.UTF_8));
+            return reply.has("deliver")?reply.optBoolean("deliver",true):null;
+        }catch(Exception e){return null;}
+        finally{if(connection!=null)connection.disconnect();}
     }
     @PluginMethod public void info(PluginCall call){io.execute(()->{try{
         JSONObject s=session();s.remove("token");JSObject result=new JSObject(s.toString());
-        result.put("device",device());result.put("enabled",stage());
+        result.put("device",device());result.put("enabled",true);result.put("stage",stage());result.put("label",label(getContext()));
         result.put("version",getContext().getPackageManager().getPackageInfo(getContext().getPackageName(),0).versionCode);
         call.resolve(result);
     }catch(Exception e){call.reject("凭证不可用");}});}
@@ -142,45 +117,33 @@ public class BlinkCloudPlugin extends Plugin {
         HttpURLConnection c=null;
         try{
             String route=call.getString("route","");
-            if(!stage()||!ROUTES.contains(route)){call.reject("内测服务不可用");return;}
+            if(!ROUTES.contains(route)){call.reject("服务不可用");return;}
             JSONObject s=session(),body=call.getObject("body",new JSObject());
-            boolean login=route.equals("v1/login")||route.equals("v1/register");
-            if(login){body.put("device",device());body.put("label",Build.MODEL);}
-            if(!login&&!route.equals("v2/reset")&&!s.optString("account").equals(call.getString("account",""))){call.reject("账号已切换");return;}
-            long startedAt=System.currentTimeMillis(),startedElapsed=android.os.SystemClock.elapsedRealtime();
+            boolean open=OPEN.contains(route);
+            boolean login=route.equals("v1/login")||route.equals("v1/register")||route.equals("v2/pair/poll");
+            if(login||route.equals("v2/pair/new")){body.put("device",device());body.put("label",label(getContext()));body.put("platform","android");}
+            if(!open&&!s.optString("account").equals(call.getString("account",""))){call.reject("账号已切换");return;}
             c=(HttpURLConnection)new URL(CLOUD+route).openConnection(Proxy.NO_PROXY);
             c.setConnectTimeout(4000);c.setReadTimeout(12000);c.setInstanceFollowRedirects(false);c.setRequestMethod("POST");c.setDoOutput(true);
             c.setRequestProperty("Content-Type","application/json");
-            if(!login&&!route.equals("v2/reset"))c.setRequestProperty("Authorization","Bearer "+s.optString("token"));
+            if(!open)c.setRequestProperty("Authorization","Bearer "+s.optString("token"));
             try(OutputStream out=c.getOutputStream()){out.write(body.toString().getBytes(StandardCharsets.UTF_8));}
             int status=c.getResponseCode();
             JSONObject json=new JSONObject(new String(read(status>=400?c.getErrorStream():c.getInputStream(),4*1024*1024),StandardCharsets.UTF_8));
-            if(status>=400){
-                if(status==401&&route.equals("v2/devices")&&body.has("action")
-                    &&s.optString("token").equals(session().optString("token"))){
-                    String owner="blink-profile-"+s.optString("account");
-                    JSONObject revoked=new JSONObject().put("revoked",true).put("checkedElapsed",startedElapsed)
-                        .put("boot",ReminderAction.bootCount(getContext()));
-                    getActivity().runOnUiThread(()->BlinkTimerService.applyWorkDevice(getContext(),owner,revoked));
-                }
-                call.reject(json.optString("error","request_failed"),Integer.toString(status));return;
-            }
-            if(login){
+            if(status>=400){call.reject(json.optString("error","request_failed"),Integer.toString(status));return;}
+            if(login&&json.has("token")){
                 session(new JSONObject().put("account",json.getString("account")).put("name",json.getString("name")).put("token",json.getString("token")));
-                ReminderAction.prefs(getContext()).edit().remove("revoked:blink-profile-"+json.getString("account")).apply();
                 json.remove("token");
             }else if(route.equals("v1/logout")||route.equals("v2/delete")){
                 prefs().edit().remove("sealed").commit();
-            }else if(route.equals("v2/devices")&&body.has("action")){
-                localizeReminderReply(getContext(),json,startedAt,startedElapsed);
             }
             call.resolve(new JSObject(json.toString()));
         }catch(Exception e){call.reject("无法连接 Blink 服务，请检查网络后重试");}finally{if(c!=null)c.disconnect();}
     });}
     @PluginMethod public void forget(PluginCall call){io.execute(()->{prefs().edit().remove("sealed").commit();call.resolve();});}
     @PluginMethod public void exportFile(PluginCall call){
-        Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("application/json").addCategory(Intent.CATEGORY_OPENABLE);
-        i.putExtra(Intent.EXTRA_TITLE,"Blink-backup.json");startActivityForResult(call,i,"savedFile");
+        Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT).setType(call.getString("type","application/json")).addCategory(Intent.CATEGORY_OPENABLE);
+        i.putExtra(Intent.EXTRA_TITLE,call.getString("name","Blink-backup.json"));startActivityForResult(call,i,"savedFile");
     }
     @ActivityCallback private void savedFile(PluginCall call, ActivityResult result){
         if(call==null)return;

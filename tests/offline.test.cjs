@@ -10,8 +10,8 @@ function engine(initial) {
     static now(){return ms}
   }
   const storage=new Map();
-  const ctx=vm.createContext({Date:Clock,crypto,window:{},document:{hidden:false,
-    getElementById:()=>({addEventListener(){}})},
+  const ctx=vm.createContext({Date:Clock,crypto,setTimeout,clearTimeout,window:{},document:{hidden:false,
+    getElementById:()=>({addEventListener(){},hidden:true})},
     localStorage:{getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,value)}});
   const src=readFileSync('index.html','utf8').split('<script>')[1].split('</script>')[0];
   new Function(src);
@@ -53,87 +53,6 @@ test('background notifications skip lunch and pair a reminder with one retry',()
   for(const item of plan){const hour=new Date(item.at+8*3600000).getUTCHours();assert.ok(hour>=9&&hour<18&&hour!==12)}
 });
 
-test('work reminders require the current account to own an unexpired authorization',()=>{
-  const {run}=engine('2026-11-23T09:00');
-  assert.equal(run('workAllowed()'),true);
-  run("key='blink-profile-example';data.cloud={device:'a'}");
-  assert.equal(run('workAllowed()'),false);
-  run("data.cloud.reminder={device:'a',requested:null,localExpires:Date.now()+60000}");
-  assert.equal(run('workAllowed()'),true);
-  run("data.cloud.reminder.requested='b'");
-  assert.equal(run('workAllowed()'),false);
-  run('data.cloud.reminder.requested=null');
-  // Advance the clock directly so the test does not require a cloud observer.
-  assert.equal(run('workAllowed(Date.now()+60000)'),false);
-});
-
-test('Android sends next-day work candidates even when the current lease expires overnight',()=>{
-  const {run}=engine('2026-11-23T18:00');
-  run(`let native;
-    window.blinkMobile={replace:(items,pref,display,authority)=>{native={items,authority};return Promise.resolve()}};
-    key='blink-profile-test';data.delivery={enabled:true};
-    data.cloud={device:'a',reminder:{device:'a',requested:null,revision:2,localExpires:Date.now()+12*60*minute}};
-    settle();syncBackground()`);
-  assert.equal(run('native.authority.monitorWork'),true);
-  assert.equal(run('native.items[0].at'),Date.parse('2026-11-24T09:20:00+08:00'));
-  assert.equal(run('native.items[0].at>native.authority.lease.localExpires'),true);
-  assert.equal(run('native.items.every(item=>item.shared)'),true);
-});
-
-test('locked Android takeover candidates stay gated until native authorizes the new primary',()=>{
-  const {run}=engine('2026-11-23T09:00');
-  run(`let native;
-    window.blinkMobile={replace:(items,pref,display,authority)=>{native={items,display,authority};return Promise.resolve()}};
-    key='blink-profile-test';data.delivery={enabled:true};
-    data.cloud={device:'b',reminder:{device:'a',requested:'b',revision:3,localExpires:Date.now()+minute},
-      reminderCheckedElapsed:10,reminderBoot:4};
-    settle();syncBackground()`);
-  assert.equal(run('workAllowed()'),false);
-  assert.equal(run('native.authority.monitorWork'),true);
-  assert.equal(run('native.items[0].shared'),true);
-  assert.equal(run('native.display'),undefined);
-  run(`applyNativeReminderAuthority({boot:4,checkedElapsed:11,
-    lease:{device:'b',requested:null,revision:4,localExpires:Date.now()+60*minute}})`);
-  assert.equal(run('workAllowed()'),true);
-  run('applyNativeReminderAuthority({boot:4,checkedElapsed:9,legacy:true})');
-  assert.equal(run('data.cloud.reminder.revision'),4);
-});
-
-test('opening a shared Android alert uses the renewed native lease without a network request',async()=>{
-  const {run}=engine('2026-11-23T09:20');
-  run(`let allowed=false,message='';
-    say=text=>{message=text};key='blink-profile-test';data.cloud={device:'b'};
-    localStorage.setItem('blink-pending:'+key,JSON.stringify([
-      {token:'tap',k:0,round:'round',at:Date.now(),expires:Date.now()+minute,shared:true}
-    ]));
-    window.blinkMobile={validateTap:async()=>({valid:allowed,authority:{
-      boot:4,checkedElapsed:11,lease:{device:'b',requested:null,revision:4,localExpires:Date.now()+60*minute}
-    }})};`);
-  await run("openMobileReminder('tap')");
-  assert.equal(run('workAllowed()'),false);
-  assert.equal(run('data.card??null'),null);
-  assert.equal(run('message'),'这条提醒已结束');
-  run('allowed=true');
-  await run("openMobileReminder('tap')");
-  assert.equal(run('data.card.id'),'tap');
-  assert.equal(run('workAllowed()'),true);
-});
-
-test('legacy Android work reminders still carry account scope and stop when notifications are disabled',()=>{
-  const {run}=engine('2026-11-23T09:00');
-  run(`let native;
-    window.blinkMobile={replace:(items,pref,display,authority)=>{native={items,display,authority};return Promise.resolve()}};
-    key='blink-profile-test';data.delivery={enabled:true};data.cloud={device:'a',reminderLegacy:true};
-    settle();syncBackground()`);
-  assert.equal(run('workAllowed()'),true);
-  assert.equal(run('native.authority.legacyWork'),true);
-  assert.equal(run('native.authority.lease'),null);
-  assert.equal(run('native.display.shared'),true);
-  run('data.delivery.enabled=false;syncBackground()');
-  assert.equal(run('native.authority.monitorWork'),false);
-  assert.equal(run('native.items.length'),0);
-});
-
 test('dinner pauses eye time and reminders, then resumes the remaining interval',()=>{
   const {run,advance}=engine('2026-11-23T17:50');
   run("data.end='20:00';settle()");
@@ -164,4 +83,29 @@ test('lock screen confirmation records its tap time once and excludes a remote b
   assert.equal(run('data.logs[0].at'),Date.parse('2026-11-23T10:05+08:00'));
   advance('2026-11-23T10:20');
   assert.equal(run("eyeDuration('2026-11-23')/minute"),10);
+});
+
+test('Android receives a plan with first-delivery wake flags and pauses it while away',()=>{
+  const {run,advance}=engine('2026-11-23T09:00');
+  run(`let native;
+    window.blinkMobile={replace:(items,pref,display,authority)=>{native={items,authority};return Promise.resolve()}};
+    data.delivery={enabled:true};data.confirmStart=false;settle();syncBackground()`);
+  assert.equal(run('native.items[0].wake'),true);
+  assert.equal(run('native.items[1].wake'),false);
+  assert.equal(run('native.authority.owner'),'blink-auto-v2');
+  advance('2026-11-23T09:10');run('say=()=>{};enterAway(Date.now()-60000);nativePlanSignature="";syncBackground()');
+  assert.equal(run('native.items.length'),0);
+  assert.equal(run('native.authority.awaySince'),Date.parse('2026-11-23T09:09:00+08:00'));
+});
+
+test('a signed-in work reminder is skipped when the server says another device is in use',async()=>{
+  const {run,advance}=engine('2026-11-23T09:00');
+  run(`say=()=>{};paintCard=()=>{};key='blink-profile-x';data.confirmStart=false;data.extraFreq=[[0,0],[0,0]];
+    window.blinkAccounts={presence:()=>Promise.resolve({deliver:false})}`);
+  advance('2026-11-23T09:20');run('checkReminder()');
+  assert.equal(run('data.card.checking'),true);
+  await new Promise(r=>setImmediate(r));
+  assert.equal(run('data.card'),null);
+  assert.equal(run('data.logs.length'),0);
+  assert.equal(run('left(0)'),20*60000);
 });

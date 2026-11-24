@@ -3,9 +3,10 @@
 <style>
 :root{color-scheme:light;--ink:#302e38;--muted:#67636f;--paper:#faf9f6;--line:#dedbdc;--violet:#685689;--lilac:#eee9f5}*{box-sizing:border-box}body{margin:0;background:#eae9e5;color:var(--ink);font:15px/1.5 "Inter","PingFang SC","Microsoft YaHei",system-ui,sans-serif}button,input,select{font:inherit;color:inherit}button{cursor:pointer;background:none;border:0;min-height:48px}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--violet);outline-offset:2px}button:active{opacity:.75}svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round;flex:none}.shell{max-width:460px;background:var(--paper);margin:auto;min-height:100dvh;position:relative;padding:0 22px 100px}.brand{height:65px;display:flex;align-items:center;gap:9px;font-size:23px;font-weight:740;letter-spacing:-1.6px}.mark{width:32px;height:32px;border-radius:10px;background:var(--ink);display:grid;place-items:center;color:#eee8fa}.mark svg{width:23px}.top{display:flex;justify-content:space-between;align-items:baseline;margin:6px 0 18px}h1{font-size:31px;letter-spacing:-1.5px;margin:0}h2{font-size:17px;margin:0}small,.muted{color:var(--muted);font-size:13px}.hero{background:var(--lilac);border-radius:25px;padding:18px 18px 14px}.hero-head,.row,.bar{display:flex;align-items:center;justify-content:space-between;gap:12px}.hero-head{font-size:14px}.state{display:flex;align-items:center;gap:7px;color:#514561}.state:before{content:"";width:7px;height:7px;border-radius:50%;background:#817094}.dial{width:190px;height:190px;position:relative;margin:12px auto;display:grid;place-content:center;text-align:center}.dial:before{content:"";position:absolute;inset:0;border-radius:100%;background:repeating-conic-gradient(from -1deg,#b6a8c8 0 1.25deg,transparent 1.25deg 6deg);mask:radial-gradient(circle,transparent 64%,#000 65%)}.dial:after{content:"";position:absolute;inset:11px;border:1px solid #d6ccdf;border-radius:50%;pointer-events:none}.digits{font:500 clamp(35px,10vw,47px)/1.25 "Inter",system-ui,sans-serif;letter-spacing:-2.8px;font-variant-numeric:tabular-nums}.dial small{font-size:12px;color:#5c5366}.hero-actions{display:flex;gap:8px}.hero-actions button{border-radius:14px;flex:1;font-size:14px;background:#ffffff83}.hero-actions .primary,.primary{background:var(--ink);color:white}.section{margin:22px 0 6px}.row{width:100%;text-align:left;padding:10px 0;min-height:62px;border-bottom:1px solid var(--line)}.lead{display:flex;align-items:center;gap:13px}.tile{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:#e3ede8;color:#456859}.tile.sand{background:#f1e7d8;color:#836847}.row strong{font-size:15px;font-weight:600}.row small{display:block}.end{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:13px}.end svg{width:16px}.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(460px,100%);background:#faf9f6f5;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 10px max(7px,env(safe-area-inset-bottom));z-index:2}.nav button{flex:1;display:grid;justify-items:center;gap:2px;font-size:12px;color:var(--muted)}.nav i{display:grid;place-items:center;width:50px;height:27px;border-radius:20px}.nav [aria-current=page]{color:var(--ink);font-weight:650}.nav [aria-current=page] i{background:#e6deee}.panel{padding:16px;border:1px solid var(--line);border-radius:17px;margin:12px 0}.panel p{margin:6px 0}.field{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:56px;border-bottom:1px solid var(--line)}select,input[type=time]{border:1px solid var(--line);border-radius:8px;background:white;padding:7px;min-height:42px}input[type=checkbox]{width:21px;height:21px;accent-color:var(--violet)}.days{display:flex;justify-content:space-between;gap:2px}.days button{flex:1;padding:0;border-radius:12px}.days [aria-pressed=true]{background:var(--lilac);color:#544566}.empty{margin:35px 0;color:var(--muted)}dialog{border:0;border-radius:22px;background:var(--paper);color:var(--ink);padding:22px;width:min(380px,calc(100% - 32px))}dialog::backdrop{background:#28233060}dialog button{display:block;width:100%;border-radius:12px;margin-top:5px}dialog p{color:var(--muted)}.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);width:max-content;max-width:90%;border-radius:12px;color:white;background:var(--ink);padding:8px 14px;pointer-events:none}.toast:empty{display:none}.record-time{font-variant-numeric:tabular-nums;color:var(--muted)}@media(min-width:600px){.shell{box-shadow:0 0 50px #36323a0b}}@media(max-height:720px){.brand{height:52px}.dial{width:154px;height:154px}.section{margin-top:16px}}
 .scene-tabs{background:#efede9;padding:4px;border-radius:16px}.scene-tabs button{font-size:14px}.scene-tabs [aria-pressed=true]{background:white;box-shadow:0 1px 4px #32283e19}.scene-note{display:flex;justify-content:space-between;align-items:center;min-height:48px}.scene-note button{font-size:13px;color:var(--violet)}.timeline{display:grid;gap:12px;margin-top:12px}.slot{display:grid;grid-template-columns:46px 1fr;gap:14px;align-items:start}.stamp{font-size:13px;font-variant-numeric:tabular-nums;padding-top:16px;color:var(--muted)}.strip{position:relative;background:#eee9f5;border-radius:16px;padding:13px 16px}.strip:before{content:"";position:absolute;top:21px;left:-10px;width:5px;height:5px;border-radius:50%;background:#89779e}.strip.k1{background:#f3eade}.strip.k2{background:#e5eee8}.strip p{font-size:13px;margin:3px 0;color:#57545d}.strip button{font-size:14px;min-height:44px;padding:4px 9px;color:#514361}.strip .controls{margin:5px -7px -5px}.stamp{align-self:stretch;border-right:1px solid var(--line)}.strip strong{font-size:16px}.strip small{font-size:12px}.section-line{display:flex;align-items:center;justify-content:space-between}.section-line button{font-size:13px;color:var(--violet)}.strip.due{outline:2px solid #776389}.nav [data-due=true] i{outline:2px solid #806699}.meter{background:#eee9f5;padding:14px 16px;border-radius:17px;display:flex;align-items:center;justify-content:space-between;margin:0 0 18px}.meter strong{display:block;font-size:24px;font-variant-numeric:tabular-nums}.meter button{border-radius:12px;background:white;padding:0 12px}.field input{max-width:55%}.bar span{font-variant-numeric:tabular-nums}.focus-clock{text-align:center;padding:clamp(65px,17dvh,150px) 0 40px}.focus-clock h1{font-size:17px;font-weight:500;letter-spacing:.03em;color:var(--muted)}#countdown{font:500 clamp(68px,18vw,94px)/1.3 system-ui,sans-serif;letter-spacing:-.065em;font-variant-numeric:tabular-nums;margin:4px 0 22px}#clockActions button{padding:0 20px;border-radius:24px;color:var(--violet)}#clockActions button:first-child{background:var(--lilac)}.scene-note>strong{font-weight:550}.feed{list-style:none;padding:0;margin:4px 0}.feed-row{width:100%;display:grid;grid-template-columns:47px 14px 1fr auto;align-items:center;gap:9px;min-height:57px;text-align:left;padding:0;color:var(--ink)}.feed-row time{font-size:13px;font-variant-numeric:tabular-nums}.feed li{position:relative}.feed li:not(:last-child):after{content:"";position:absolute;top:50%;height:100%;left:62px;border-left:1px solid var(--line);pointer-events:none}.feed-row i{justify-self:center;z-index:1;width:10px;height:10px;border:1.5px solid currentColor;border-radius:50%;background:var(--paper)}.recorded .feed-row i{background:#537160;color:#537160}.due .feed-row i{background:#807198;outline:3px solid #e4deec}.upcoming .feed-row{color:var(--muted)}.upcoming .feed-row strong{font-weight:450}.due .feed-row small{color:#634d81;font-weight:650}.hours{margin-top:8px}.hours-row{display:grid;grid-template-columns:minmax(44px,1fr) minmax(0,98px) auto minmax(0,98px);gap:6px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}.hours-row input{width:100%;min-width:0;box-sizing:border-box;font:inherit}#workPrefs{border-top:1px solid var(--line);margin-top:16px}#workPrefs summary{padding:14px 0;cursor:pointer;font-weight:600}#dayException{color:var(--muted);font-size:13px}#nudge{position:fixed;z-index:4;bottom:calc(80px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(408px,calc(100% - 32px));box-sizing:border-box;padding:16px;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:18px;box-shadow:0 7px 28px #2923321c}.nudge-body{display:flex;align-items:center;gap:12px}.nudge-icon{display:grid;place-items:center;border-radius:50%;width:38px;height:38px;background:var(--lilac)}.nudge-body strong{display:block;font-size:16px}.nudge-actions{display:flex;gap:8px;margin-top:12px}.nudge-actions button{flex:1;border-radius:12px;min-height:48px}.nudge-actions button:first-child{background:var(--lilac);font-weight:600}@media(pointer:fine){#nudge{left:auto;right:20px;bottom:20px;transform:none}}#delivery summary{cursor:pointer;padding:14px 0}#delivery p{font-size:13px;color:var(--muted)}.shell{padding-top:env(safe-area-inset-top)}.nudge-actions button:focus-visible{outline:2px solid currentColor}.mode-tabs{display:flex;padding:4px;border-radius:17px;background:var(--lilac)}.mode-tabs button{flex:1;border-radius:13px;font-weight:600}.mode-tabs [aria-pressed=true]{background:var(--ink);color:var(--paper)}.mode-tabs [aria-pressed=true]::before{content:'✓';margin-right:8px}.mark{background:#24343a}.brand .mark svg{width:30px;height:30px}
+.capsule-row{display:flex;justify-content:center;margin-top:8px}.capsule{display:inline-flex;align-items:center;gap:9px;padding:0 18px;border-radius:24px;background:var(--lilac);font-weight:600;font-size:15px}.capsule .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}.capsule .dot.on{background:#4f9a76;box-shadow:0 0 0 4px #4f9a7626}.hint{min-height:22px;margin:-12px 0 16px;color:var(--muted);font-size:14px}#clockActions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}#clockActions button.main{background:var(--ink);color:var(--paper);min-width:150px;font-weight:600;touch-action:manipulation;user-select:none;-webkit-user-select:none}#clockActions button:not(.main){background:none}.breathing #countdown{animation:breathe 5s ease-in-out infinite}@keyframes breathe{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.07);opacity:.75}}@media(prefers-reduced-motion:reduce){.breathing #countdown{animation:none}}.toast.actionable{pointer-events:auto;display:flex;align-items:center;gap:14px}.toast button{min-height:32px;color:#cfc2ff;font-weight:650;padding:0 4px}.ring{--p:0;width:74px;height:74px;border-radius:50%;background:conic-gradient(#4f9a76 calc(var(--p)*1%),var(--line) 0);display:grid;place-items:center;flex:none}.ring span{width:58px;height:58px;border-radius:50%;background:var(--lilac);display:grid;place-items:center;font-weight:650;font-variant-numeric:tabular-nums}.counts{display:flex;gap:8px;margin:0 0 18px}.counts div{flex:1;border:1px solid var(--line);border-radius:14px;padding:10px 12px}.counts strong{display:block;font-size:20px;font-variant-numeric:tabular-nums}.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:130px;margin:10px 0 4px}.week button{display:grid;align-content:end;justify-items:center;gap:4px;height:100%;min-height:0;padding:0;font-size:11px;color:var(--muted)}.week i{display:block;width:70%;border-radius:6px 6px 3px 3px;background:#b6a8c8;min-height:3px}.week [aria-pressed=true]{color:var(--ink);font-weight:650}.week [aria-pressed=true] i{background:var(--violet)}.auto .feed-row i{border-style:dashed;background:var(--paper);color:#537160}.group{margin:22px 0 4px;font-size:13px;color:var(--muted);font-weight:600;letter-spacing:.04em}.health-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:56px;border-bottom:1px solid var(--line)}.health-row b{width:10px;height:10px;border-radius:50%;flex:none;background:#c4513f}.health-row b.ok{background:#4f9a76}.health-row b.unknown{background:#c9a24a}.health-row span{flex:1}.health-row button{color:var(--violet);font-size:14px;min-height:40px}.account-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px 16px;border-radius:17px;background:var(--lilac);margin:6px 0 4px}.account-card>span:first-child{flex:1}.account-card strong{display:block}.presets{display:grid;gap:8px;margin:10px 0}.presets button{text-align:left;border:1px solid var(--line);border-radius:14px;padding:10px 14px}.presets [aria-pressed=true]{border-color:var(--violet);background:var(--lilac)}.presets small{display:block}.onboard{padding:30px 0}.onboard h1{margin-bottom:6px}.onboard .steps{color:var(--muted);font-size:13px}.onboard footer{display:flex;gap:10px;margin-top:22px}.onboard footer button{flex:1;border-radius:14px}.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chips button{border:1px solid var(--line);border-radius:20px;padding:0 14px;min-height:40px}.chips [aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}.banner{background:#f6ecd8;color:#5d4520;border-radius:14px;padding:10px 14px;margin:8px 0;font-size:14px;display:flex;justify-content:space-between;gap:10px;align-items:center}.banner button{min-height:36px;color:inherit;font-weight:600}
 :root[data-theme=dark]{color-scheme:dark;--ink:#edeef1;--paper:#191b21;--muted:#b3b4bf;--line:#393c45;--violet:#d3c2ef;--lilac:#35313f}
-[data-theme=dark] body{background:#101116}[data-theme=dark] .nav{background:var(--paper)}[data-theme=dark] :is(.scene-tabs,.meter,.strip,.nav [aria-current=page] i){background:var(--lilac)}[data-theme=dark] :is(input,select,.meter button,.scene-tabs [aria-pressed=true]){background:#262930;color:var(--ink)}[data-theme=dark] :is(.strip p,.strip button,.days [aria-pressed=true],.due .feed-row small){color:var(--violet)}[data-theme=dark] :is(.primary,.toast){color:var(--paper)}[data-theme=dark] .tile{color:#9ddbba;background:#253d32}[data-theme=dark] .tile.sand{color:#e3c599;background:#3c332a}</style><link rel="stylesheet" href="desktop-ui.css"></head><body>
-<div class="shell"><header class="brand"><span class="mark" id="logo"></span>Blink</header><main id="app"></main><nav class="nav" aria-label="主导航" id="nav"></nav></div><dialog id="dialog"></dialog><aside id="nudge" hidden aria-label="休息与饮水提醒"><div class="nudge-body"><span class="nudge-icon" id="nudgeIcon" aria-hidden="true"></span><div role="status"><small id="nudgeType"></small><strong id="nudgeTitle"></strong></div></div><div class="nudge-actions"><button id="accept"></button><button id="postpone"></button></div></aside><div class="toast" id="toast" role="status"></div>
+[data-theme=dark] body{background:#101116}[data-theme=dark] .nav{background:var(--paper)}[data-theme=dark] :is(.scene-tabs,.meter,.strip,.nav [aria-current=page] i){background:var(--lilac)}[data-theme=dark] :is(input,select,.meter button,.scene-tabs [aria-pressed=true]){background:#262930;color:var(--ink)}[data-theme=dark] :is(.strip p,.strip button,.days [aria-pressed=true],.due .feed-row small){color:var(--violet)}[data-theme=dark] :is(.primary,.toast){color:var(--paper)}[data-theme=dark] .tile{color:#9ddbba;background:#253d32}[data-theme=dark] .tile.sand{color:#e3c599;background:#3c332a}[data-theme=dark] .banner{background:#3b3222;color:#ecd6a8}[data-theme=dark] .ring span{background:var(--paper)}</style><link rel="stylesheet" href="desktop-ui.css"></head><body>
+<div class="shell"><header class="brand"><span class="mark" id="logo"></span>Blink</header><main id="app"></main><nav class="nav" aria-label="主导航" id="nav"></nav></div><dialog id="dialog"></dialog><aside id="nudge" hidden aria-label="休息与饮水提醒"><div class="nudge-body"><span class="nudge-icon" id="nudgeIcon" aria-hidden="true"></span><div role="status"><small id="nudgeType"></small><strong id="nudgeTitle"></strong></div></div><div class="nudge-actions" id="nudgeActions"></div></aside><div class="toast" id="toast" role="status"></div>
 <script src="sync.js"></script><script src="account.js"></script><script>
 const icons={eye:'<path d="M2 12s3.6-6.3 10-6.3S22 12 22 12s-3.6 6.3-10 6.3S2 12 2 12Z"/><circle cx="12" cy="12" r="2.6"/>',today:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/>',record:'<path d="M5 4h14v16H5zM8.5 8h7M8.5 12h7M8.5 16h4"/>',plan:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18m-12 5h3"/>',water:'<path d="M12 3c-1.8 3.5-6 7.2-6 11a6 6 0 0 0 12 0c0-3.8-4.2-7.5-6-11Z"/>',rest:'<path d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5Zm12 1h2a2.5 2.5 0 0 1 0 5h-2M7 3v2m4-2v2M3 21h16"/>',plus:'<path d="M12 5v14M5 12h14"/>',arrow:'<path d="m9 5 7 7-7 7"/>'};
 const svg=k=>'<svg aria-hidden="true" viewBox="0 0 24 24">'+icons[k]+'</svg>';
@@ -15,7 +16,7 @@ if(desktop){
  document.documentElement.dataset.platform='desktop';
  app.before(el('nav'));
 }
-const tabs=['今日','记录','日程'],kinds=['远眺','离席','喝水'];
+const tabs=['今日','记录','设置'],kinds=['远眺','离席','喝水'];
 let tab=0, edit=0, notice, chosen;
 const guestKey='blink-auto-v2';let key=localStorage.getItem('blink-active-profile')||guestKey;
 const legacyKey='blink-mobile-v1';
@@ -29,12 +30,31 @@ const calendar={
   2026:{off:[[101,103],[215,223],[404,406],[501,505],[619,621],[925,927],[1001,1007]],on:[104,214,228,509,920,1010]},
   2027:{off:[[101,103],[205,213],[403,405],[501,505],[609,609],[915,915],[1001,1007]],on:[131,214,508,926,1009]}
 };
+// A newer holiday table is fetched into localStorage; the built-in years remain the fallback.
+function validCalendar(table){
+  const md=v=>Number.isInteger(v)&&v>=101&&v<=1231;
+  return table&&typeof table==='object'&&Object.entries(table).every(([year,rules])=>/^\d{4}$/.test(year)&&rules&&
+    Array.isArray(rules.on)&&rules.on.every(md)&&Array.isArray(rules.off)&&rules.off.every(r=>Array.isArray(r)&&r.length===2&&md(r[0])&&md(r[1])&&r[0]<=r[1]))
+}
+try{const extra=JSON.parse(localStorage.getItem('blink-calendar')||'null');if(validCalendar(extra?.years))Object.assign(calendar,extra.years)}catch{}
+const weekday=date=>new Date(date+'T12:00:00Z').getUTCDay();
 function dayType(date){
   const rules=calendar[date.slice(0,4)],md=Number(date.slice(5).replace('-',''));
-  if(!rules)return '日历待更新';
-  if(rules.on.includes(md))return '调休上班';
-  if(rules.off.some(([start,end])=>md>=start&&md<=end))return '节假日';
-  return [0,6].includes(new Date(date+'T12:00:00Z').getUTCDay())?'周末':'工作日';
+  if(rules&&data?.holidays!==false){
+    if(rules.on.includes(md))return '调休上班';
+    if(rules.off.some(([start,end])=>md>=start&&md<=end))return '节假日';
+  }
+  return weekdayWorks(date)?'工作日':'周末';
+}
+const calendarMissing=date=>data?.holidays!==false&&!calendar[date.slice(0,4)];
+// Workday rules: mon-fri, single (Mon–Sat), alt (Saturday every other week), or a custom weekday list.
+function weekdayWorks(date){
+  const d=weekday(date),rule=data?.workdays||'mon-fri';
+  if(Array.isArray(rule))return rule.includes(d);
+  if(rule==='single')return d!==0;
+  if(rule==='alt'){if(d===0)return false;if(d!==6)return true;
+    const weeks=Math.floor((midnight(date)-midnight(data.altSaturday||'2026-01-03'))/(7*dayMs));return weeks%2===0}
+  return d!==0&&d!==6;
 }
 
 function createState(useLegacy=true){
@@ -45,34 +65,47 @@ function createState(useLegacy=true){
   return {start:old.start||'09:00',end:old.end||'18:00',lunchStart:old.lunchStart||'12:00',lunchEnd:old.lunchEnd||'13:00',
     freq:[old.freq?.[0]??20,old.freq?.[1]||20],extraFreq:[[old.extraFreq?.[0]?.[0]??60,0],[old.extraFreq?.[1]?.[0]??90,0]],
     breakMinutes:old.breakMinutes||10,logs:old.logs||[],blocks:old.blocks||[],totals,corrections:{},shift:null,pause:null,
-    cursor:start,progress:[0,0,0],context:'',snooze:[0,0,0]};
+    cursor:start,progress:[0,0,0],context:'',snooze:[0,0,0],days:{},away:null,lastActive:start,createdAt:start};
 }
-let data;try{data=JSON.parse(localStorage.getItem(key))}catch{}data??=createState();
+let data;try{data=JSON.parse(localStorage.getItem(key))}catch{}
+const returning=!!data;data??=createState();
 function loadMealTimes(state){
   state.dinnerStart??=state.lunchEnd>'18:00'?state.lunchEnd:'18:00';
   state.dinnerEnd??=state.dinnerStart>'18:30'?state.dinnerStart:'18:30';
   delete state.overtime;
+  state.days??={};state.away??=null;state.lastActive??=Date.now();state.eyeSeconds??=20;
+  // People who already used Blink keep their settings and skip the first-run guide.
+  state.onboarded??=state.logs.length>0||Object.keys(state.totals).length>1;
   return state
 }
-loadMealTimes(data);
+loadMealTimes(data);if(returning)data.onboarded=true;
 const save=()=>{if(data.cloud)window.BlinkSync.observe(data);try{localStorage.setItem(key,JSON.stringify(data));return true}catch{say('本机存储空间不足，请导出备份');return false}};
+// Each day may override the fixed schedule: start/end times, a day off, extra work day,
+// a pending end question (ask) or an unconfirmed late start (hold).
+function dayPlan(day){
+  const o=data.days[day]||{},type=dayType(day),legal=o.off?false:!!(o.work||type==='工作日'||type==='调休上班');
+  return {o,type,legal,start:o.start||data.start,end:o.end||data.end};
+}
 function status(ms){
-  const day=dayKey(ms),type=dayType(day),legal=type==='工作日'||type==='调休上班';
+  const day=dayKey(ms),plan=dayPlan(day),o=plan.o;
   const shift=data.shift,override=shift&&ms>=shift.from&&ms<shift.until;
-  const work=override?shift.work:legal&&ms>=at(day,data.start)&&ms<at(day,data.end);
+  const start=at(day,plan.start),end=at(day,plan.end);
+  const scheduled=plan.legal&&ms>=start&&(ms<end||!!o.ask&&ms>=o.ask);
+  const work=override?shift.work:scheduled&&!o.hold;
   let meal='',mealUntil=0;
   if(work){
     if(ms>=at(day,data.lunchStart)&&ms<at(day,data.lunchEnd)){meal='午休';mealUntil=at(day,data.lunchEnd)}
     else if(ms>=at(day,data.dinnerStart)&&ms<at(day,data.dinnerEnd)){meal='晚餐';mealUntil=at(day,data.dinnerEnd)}
-    if(meal)mealUntil=Math.min(mealUntil,override?shift.until:at(day,data.end))
+    if(meal&&!o.ask)mealUntil=Math.min(mealUntil,override?shift.until:end)
   }
   const planned=!work&&data.blocks.some(b=>b.screen&&!b.done&&b.day===day&&ms>=at(day,b.at)&&ms<at(day,b.at)+b.minutes*minute);
   const pause=data.pause&&ms>=data.pause.from&&ms<data.pause.until?data.pause:null;
   const timed=!!(!work&&data.session&&ms>=data.session.from&&ms<data.session.until);
-  return {day,work,meal,mealUntil,planned,pause,timed};
+  const away=!!(data.away&&ms>=data.away.from);
+  return {day,work,meal,mealUntil,planned,pause,timed,away,hold:!!(o.hold&&plan.legal&&ms>=start&&ms<end)};
 }
 function boundary(ms,end,st){
-  const day=st.day,points=[end,midnight(day)+dayMs,...[data.start,data.lunchStart,data.lunchEnd,data.dinnerStart,data.dinnerEnd,data.end].map(h=>at(day,h)),data.shift?.until,data.pause?.until,data.session?.until];
+  const day=st.day,plan=dayPlan(day),points=[end,midnight(day)+dayMs,...[plan.start,data.lunchStart,data.lunchEnd,data.dinnerStart,data.dinnerEnd,plan.end].map(h=>at(day,h)),data.shift?.from,data.shift?.until,data.pause?.until,data.session?.from,data.session?.until,data.away?.from,plan.o.ask];
   for(const b of data.blocks){if(b.day===day&&b.screen&&!b.done){const a=at(day,b.at);points.push(a,a+b.minutes*minute)}}
   return Math.min(...points.filter(x=>x>ms));
 }
@@ -86,7 +119,7 @@ function settle(end=Date.now()){
   let t=data.cursor;
   while(t<end){
     const st=status(t);context(st);const next=boundary(t,end,st);
-    if(!st.meal&&!st.pause){
+    if(!st.meal&&!st.pause&&!st.away){
       const delta=st.work||st.planned||st.timed?next-t:Math.max(0,next-Math.max(t,observedFrom));
       data.totals[st.day]=(data.totals[st.day]||0)+delta;
       if(data.cloud&&delta){window.BlinkSync.span(data,st.day,next-delta,next,midnight(st.day));window.BlinkSync.rebuild(data,st.day)}
@@ -95,7 +128,7 @@ function settle(end=Date.now()){
     t=next
   }
   if(data.pause&&data.pause.until<=end)data.pause=null;
-  if(data.session&&(end>=data.session.until||status(end).work))data.session=null;
+  if(data.session&&(end>=data.session.until||end>=data.session.from&&status(end).work))data.session=null;
   data.cursor=end;lastVisibleSample=end;context(status(end));
 }
 function scene(){return status(Date.now()).work?0:1}
@@ -112,30 +145,194 @@ function log(k,id=crypto.randomUUID()){
 }
 function eyeDuration(day){return Math.max(0,(data.totals[day]||0)+(data.corrections[day]||0))}
 function duration(ms){const m=Math.floor(ms/minute);return m>=60?Math.floor(m/60)+' 小时 '+m%60+' 分钟':m?m+' 分钟':Math.floor(ms/1000)+' 秒'}
-function clockShift(){settle();const ms=Date.now(),st=status(ms),end=at(st.day,data.end);
-  data.session=null;data.shift={from:ms,work:!st.work,until:!st.work&&ms<end?end:midnight(st.day)+dayMs};
-  data.pause=null;save();render()
+function desktopUpdates(parent){
+  const status=document.createElement('small');status.className='muted';status.style.display='block';status.textContent=window.blinkDesktop.updateState?.()||'';
+  const b=document.createElement('button');b.className='row';b.textContent='检查更新';
+  b.onclick=async()=>{status.textContent='正在检查…';status.textContent=await window.blinkDesktop.checkUpdate()};
+  parent.append(b,status)
 }
-function startSession(minutes){
-  settle();const from=Date.now();
-  if(status(from).work)return;
+// Desktop asks once whether to start with Windows.
+function askAutoStart(){
+  if(!desktop||data.autoStartAsked||!data.onboarded||modal.open||window.blinkDesktop.autoStart?.())return;
+  data.autoStartAsked=true;save();
+  sheet('开机自动启动 Blink？','启动后在托盘中运行，到点提醒，不打开窗口。',[['开启',()=>window.blinkDesktop.setAutoStart(true).then(()=>say('已开启开机自动启动'))],['暂不',()=>{}]])
+}
+// ---- Presence: time nobody answered is neither eye use nor a reminder backlog ----
+const counted=st=>!st.meal&&!st.pause&&!st.away&&(st.work||st.timed||st.planned);
+function uncount(from,to){
+  let total=0;
+  for(let t=from;t<to;){const st=status(t),stop=boundary(t,to,st);
+    if(counted(st)){data.totals[st.day]=Math.max(0,(data.totals[st.day]||0)-(stop-t));total+=stop-t;
+      if(data.cloud){window.BlinkSync.unspan(data,st.day,t,stop,midnight(st.day));window.BlinkSync.rebuild(data,st.day)}}
+    t=stop}
+  return total
+}
+function recount(from,to){
+  for(let t=from;t<to;){const st=status(t),stop=boundary(t,to,st);
+    if(counted(st)){data.totals[st.day]=(data.totals[st.day]||0)+stop-t;
+      if(data.cloud){window.BlinkSync.span(data,st.day,t,stop,midnight(st.day));window.BlinkSync.rebuild(data,st.day)}}
+    t=stop}
+}
+const autoId=when=>'a11e0000-0000-8000-8001-'+Math.round(when/minute).toString(16).padStart(12,'0');
+const inferred=row=>row.auto||row.id.startsWith('a11e0000-');
+function enterAway(from){
+  settle();if(data.away)return;
+  const st=status(Date.now());if(!(st.work||st.timed||st.planned))return;
+  from=Math.max(Math.min(from,Date.now()),data.lastActive||0,midnight(st.day));
+  const removed=uncount(from,data.cursor);
+  data.progress=data.progress.map(x=>Math.max(0,x-removed));
+  data.away={from};data.unanswered=(data.unanswered||0)+1;
+  if(data.card){clearSystemCard(data.card);data.card=null}
+  save();render()
+}
+function returnFromAway(t=Date.now()){
+  if(!data.away)return;
+  settle(Math.max(t,data.cursor));
+  const from=data.away.from,gone=t-from,before=status(from-1);data.away=null;
+  if(gone>=data.breakMinutes*minute&&(before.work||before.timed||before.planned)){
+    const id=autoId(from);
+    if(!data.logs.some(r=>r.id===id))data.logs.unshift({id,k:1,at:from,auto:true});
+    restart(0);restart(1);
+    say('欢迎回来，已离开 '+duration(gone)+'，记为一次离席',{undo:()=>{data.logs=data.logs.filter(r=>r.id!==id);save();render();window.blinkAccounts?.changed()}});
+  }else if(gone>=minute)say('欢迎回来');
+  data.nextCardAt=0;save();window.blinkAccounts?.changed();render()
+}
+let lastActiveSaved=0;
+function markActive(t=Date.now()){
+  data.lastActive=Math.max(data.lastActive||0,t);data.unanswered=0;
+  if(data.away){returnFromAway(t);return}
+  if(t-lastActiveSaved>60000){lastActiveSaved=t;save();window.blinkMobile?.active?.().catch(()=>{})}
+  checkDay()
+}
+for(const name of ['pointerdown','keydown','touchstart'])document.addEventListener?.(name,()=>markActive(),{passive:true,capture:true});
+
+// ---- Day overrides: leave early, overtime, late start, a day off ----
+const clampHm=ms=>ms>=midnight(dayKey(ms))+dayMs-minute?'23:59':time(ms);
+function setDay(day,patch){
+  const o={...(data.days[day]||{}),...patch};
+  for(const k of Object.keys(o))if(o[k]==null||o[k]===false)delete o[k];
+  if(Object.keys(o).length)data.days[day]=o;else delete data.days[day];
+}
+function changeDay(label,fn){
+  settle();const day=dayKey(Date.now()),before=JSON.stringify({days:data.days,shift:data.shift,session:data.session});
+  fn(day);data.pause=null;dismissPrompt();save();render();window.blinkAccounts?.changed();
+  say(label,{undo:()=>{settle();Object.assign(data,JSON.parse(before));save();render();window.blinkAccounts?.changed()}});
+}
+function offNow(){changeDay('已下班',day=>{
+  const ms=Date.now(),plan=dayPlan(day);data.session=null;
+  if(data.shift&&ms<data.shift.until){data.shift=null;if(!status(ms).work)return}
+  if(clampHm(ms)<=plan.start)setDay(day,{off:true,ask:null,hold:null});
+  else setDay(day,{end:clampHm(ms),ask:null,hold:null,endDone:true});
+})}
+function workUntil(until){changeDay('已开始工作 · 至 '+time(until),day=>{data.session=null;data.shift={from:Date.now(),work:true,until:Math.min(until,midnight(day)+dayMs)}})}
+function workNow(){
+  const ms=Date.now(),day=dayKey(ms),plan=dayPlan(day),fixedEnd=at(day,data.end);
+  const workday=plan.type==='工作日'||plan.type==='调休上班'||plan.o.work;
+  if(workday&&ms<fixedEnd){changeDay('已开始工作 · 至 '+data.end,d=>{data.session=null;data.shift=null;
+    setDay(d,{off:null,hold:null,confirmed:true,endDone:null,ask:null,start:clampHm(ms),end:null})});return}
+  sheet('现在上班','选择这段工作的结束时间，到时会问你是否下班。',[[30,'30 分钟'],[60,'1 小时'],[120,'2 小时'],[240,'4 小时']].map(([n,l])=>[l,()=>workUntil(ms+n*minute)]))
+}
+function overtime(){
+  const ms=Date.now(),day=dayKey(ms),end=at(day,dayPlan(day).end),base=Math.max(ms,end);
+  sheet('加班到…','到时会再问你一次。',[[30,'再 30 分钟'],[60,'再 1 小时'],[120,'再 2 小时']].map(([n,l])=>[l,()=>changeDay('已延长至 '+clampHm(base+n*minute),d=>{
+    if(data.shift&&ms<data.shift.until)data.shift.until=Math.min(data.shift.until+n*minute,midnight(d)+dayMs);
+    else setDay(d,{end:clampHm(base+n*minute),ask:null,endDone:null})})]))
+}
+function restToday(){changeDay('今天休息',day=>{data.shift=null;setDay(day,{off:true,ask:null,hold:null})})}
+function resetToday(){changeDay('已恢复今天的固定作息',day=>{data.shift=null;delete data.days[day]})}
+function lateStart(){
+  const tomorrow=nextWorkday(dayKey(Date.now()+dayMs));
+  timePrompt((tomorrow===dayKey(Date.now()+dayMs)?'明天':tomorrow.slice(5))+'几点上班？',dayPlan(tomorrow).start,hm=>{
+    if(hm>=dayPlan(tomorrow).end){say('上班时间需早于下班时间');return}
+    changeDay(tomorrow.slice(5)+' '+hm+' 上班',()=>setDay(tomorrow,{start:hm,confirmed:true}))})
+}
+function nextWorkday(day){for(let i=0;i<14;i++){const d=dayKey(midnight(day)+i*dayMs+3600000);if(dayPlan(d).legal)return d}return day}
+function timePrompt(title,value,fn){
+  chosen=document.activeElement;modal.innerHTML='<form id="timeForm"><h2></h2><label class="field">时间<input type="time" id="timeValue" required></label><button class="primary">确定</button><button type="button" id="timeCancel">取消</button></form>';
+  modal.querySelector('h2').textContent=title;el('timeValue').value=value;el('timeCancel').onclick=()=>modal.close();
+  el('timeForm').onsubmit=e=>{e.preventDefault();modal.close();fn(el('timeValue').value)};modal.showModal()
+}
+// Called on every tick: start/end questions happen at the schedule's edges.
+function checkDay(){
+  const ms=Date.now(),day=dayKey(ms),plan=dayPlan(day),o=plan.o;
+  if(!plan.legal||data.shift&&ms>=data.shift.from&&ms<data.shift.until)return;
+  const start=at(day,plan.start),end=at(day,plan.end);
+  if(!data.onboarded)return;
+  if(data.confirmStart!==false&&ms>=start&&ms<end&&!o.confirmed&&!o.hold){
+    settle();
+    // A fresh install during work hours: the person is clearly here.
+    if(ms-start<=3*minute&&data.lastActive>=start-15*minute||(data.createdAt||0)>=start)setDay(day,{confirmed:true});
+    else{uncount(start,data.cursor);setDay(day,{hold:true})}
+    save();render();return
+  }
+  if(o.hold&&ms<end&&data.lastActive>=start&&ms-data.lastActive<2*minute&&data.prompt?.kind!=='start')
+    showPrompt({kind:'start',title:'上班了吗？',body:'今天 '+plan.start+' 到点时没有检测到操作。',actions:[['start-now','现在开始'],['start-plan','从 '+plan.start+' 算'],['start-off','今天休息']]});
+  if(!o.hold&&!o.ask&&!o.endDone&&ms>=end&&ms<end+30*minute&&start<end&&!(data.shift&&data.shift.until>ms)){
+    settle();
+    if(data.lastActive>=end-10*minute){setDay(day,{ask:end});recount(end,data.cursor);
+      showPrompt({kind:'end',title:o.end&&o.end>data.end?'还在工作吗？':'下班了？',body:'到 '+plan.end+' 了。',actions:[['end-off','下班'],['end-30','再 30 分钟'],['end-60','再 1 小时']]})}
+    else setDay(day,{endDone:true});
+    save();return
+  }
+  if(o.ask&&ms-o.ask>=30*minute){settle();uncount(o.ask,data.cursor);setDay(day,{end:clampHm(o.ask),ask:null,endDone:true});dismissPrompt();save();render();return}
+  if(ms<start&&ms>=start-60*minute&&!o.early&&!o.start&&earlySignal(ms)&&!data.prompt)
+    showPrompt({kind:'early',title:'提前开始工作？',body:'今天 '+plan.start+' 上班。',actions:[['early-yes','开始'],['early-no','不用']]});
+}
+let activeSince=null,quietUntil=0;
+const earlySignal=ms=>desktop?activeSince!=null&&ms-activeSince>=5*minute:!pageHidden()&&ms-data.lastActive<minute;
+function answerPrompt(id,code){
+  const p=data.prompt;if(!p||p.id!==id)return;dismissPrompt();
+  settle();const ms=Date.now(),day=dayKey(ms),plan=dayPlan(day);
+  if(code==='start-now')changeDay('已开始上班',d=>setDay(d,{start:clampHm(ms)<plan.end?clampHm(ms):plan.start,hold:null,confirmed:true}));
+  else if(code==='start-plan')changeDay('从 '+plan.start+' 开始计时',d=>{setDay(d,{hold:null,confirmed:true});recount(at(d,plan.start),data.cursor)});
+  else if(code==='start-off')restToday();
+  else if(code==='end-off')changeDay('已下班',d=>setDay(d,{end:clampHm(Math.max(ms,at(d,plan.end))),ask:null,endDone:true}));
+  else if(code==='end-30'||code==='end-60')changeDay('已延长至 '+clampHm(ms+(code==='end-30'?30:60)*minute),d=>setDay(d,{end:clampHm(ms+(code==='end-30'?30:60)*minute),ask:null}));
+  else if(code==='early-yes')changeDay('已提前开始工作',d=>setDay(d,{start:clampHm(ms),confirmed:true}));
+  else if(code==='early-no'){setDay(day,{early:'no'});save()}
+  render()
+}
+function showPrompt(p){
+  p.id=crypto.randomUUID();p.at=Date.now();data.prompt=p;save();
+  if(pageHidden()||desktop){
+    if(window.blinkMobile?.prompt)window.blinkMobile.prompt(p).catch(()=>{});
+    if(window.blinkDesktop?.prompt)window.blinkDesktop.prompt({...p,theme:document.documentElement.dataset.theme,screen:data.popupScreen||'cursor'});
+  }
+  render(false)
+}
+function dismissPrompt(){
+  const p=data.prompt;if(!p)return;data.prompt=null;
+  window.blinkMobile?.clearPrompt?.(p.id).catch(()=>{});window.blinkDesktop?.clearPrompt?.(p.id);
+}
+function startSession(minutes,from=Date.now()){
+  settle();
+  if(from<=Date.now()&&status(from).work){say('工作时段已按工作提醒');return}
   let until=from+minutes*minute;
   // End at the next automatic shift even if the page is suspended during the handover.
   for(let t=from;t<until;){const st=status(t);if(st.work){until=t;break}t=boundary(t,until,st)}
-  data.session={from,until};context(status(from));save();render()
+  if(until<=from){say('这段时间已在工作时段内');return}
+  data.session={from,until};context(status(Date.now()));save();render();window.blinkAccounts?.changed();
+  say(from>Date.now()?'将于 '+time(from)+' 开始用眼计时':'用眼计时至 '+time(until),{undo:()=>{data.session=null;save();render()}})
 }
 function toggleSession(){
   settle();
-  if(data.session){data.session=null;context(status(Date.now()));save();render();return}
-  sheet('定时用眼','选定时长后，熄屏也累计。远眺、离席和喝水沿用工作提醒；休息时间自动扣除。',
-    [30,60,90,120].map(n=>[n+' 分钟',()=>startSession(n)]))
+  if(data.session){data.session=null;context(status(Date.now()));save();render();say('已结束用眼计时');return}
+  const lengths=from=>[30,60,90,120].map(n=>[n+' 分钟',()=>startSession(n,from)]);
+  sheet('用眼计时','阅读、看剧、打游戏时开启。期间按工作频率提醒远眺、离席和喝水，熄屏也累计。',
+    [...lengths(Date.now()),['预约开始时间…',()=>timePrompt('几点开始？',time(Date.now()+30*minute),hm=>{
+      let from=at(dayKey(Date.now()),hm);if(from<=Date.now())from+=dayMs;
+      sheet('从 '+hm+' 开始，持续多久？','到点会通知你。',lengths(from))})]])
 }
 function sessionEndsFirst(st,next){return st.timed&&!st.pause&&(next==null||data.session.until-Date.now()<=left(next))}
 function pauseFor(kind,length,round){settle();data.pause={from:Date.now(),until:Date.now()+length,kind};restart(kind);
   if(kind===1)restart(0);log(kind,round);save();render()}
 function resume(){settle();data.pause=null;save();render()}
 function todayBlocks(){return data.blocks.filter(b=>b.day===dayKey(now())).sort((a,b)=>a.at.localeCompare(b.at))}
-function say(s){el('toast').textContent=s;clearTimeout(notice);notice=setTimeout(()=>el('toast').textContent='',2000)}
+function say(s,opt={}){
+  const t=el('toast');t.textContent=s;if(!t.classList)return;t.classList.toggle('actionable',!!opt.undo);
+  if(opt.undo){const b=document.createElement('button');b.textContent='撤销';b.onclick=()=>{t.textContent='';t.classList.remove('actionable');opt.undo()};t.append(b)}
+  clearTimeout(notice);notice=setTimeout(()=>{t.textContent='';t.classList.remove('actionable')},opt.undo?5000:2000)
+}
 function sheet(title,desc,options){chosen=document.activeElement;modal.innerHTML='<h2>'+title+'</h2><p>'+desc+'</p>';options.concat([['取消',()=>{}]]).forEach(([name,fn],i)=>{const b=document.createElement('button');b.textContent=name;if(!i)b.className='primary';b.onclick=()=>{modal.close();fn()};modal.append(b)});modal.showModal()}
 modal.addEventListener('close',()=>{if(chosen?.isConnected)chosen.focus()});
 const tile=(k,alt=false)=>'<span class="tile '+(alt?'sand':'')+'">'+svg(k)+'</span>';
@@ -146,10 +343,10 @@ function correct(day){settle();const initial=eyeDuration(day);
   el('minutes').value=Math.round(initial/minute);el('cancelFix').onclick=()=>modal.close();el('fix').onsubmit=e=>{e.preventDefault();settle();data.corrections[day]=Number(el('minutes').value)*minute-(data.totals[day]||0);save();modal.close();render()};modal.showModal()
 }
 function reminders(){return [0,1,2].filter(k=>frequency(k)>0).sort((a,b)=>left(a)-left(b))}
-function restDuration(k){return k===0?20000:k===1?data.breakMinutes*minute:0}
+function restDuration(k){return k===0?(data.eyeSeconds||20)*1000:k===1?data.breakMinutes*minute:0}
 function takeReminder(k){
   const round=data.card?.k===k?data.card.round:undefined;
-  if(k<2){pauseFor(k,k?data.breakMinutes*minute:20000,round);return}
+  if(k<2){pauseFor(k,restDuration(k),round);return}
   settle();log(2,round);say('已记录喝水');render()
 }
 const reminderLabels=['开始远眺','开始离席','喝过了'];
@@ -164,13 +361,10 @@ async function registration(){
   return worker
 }
 function deliverySettings(parent){
- const section=document.createElement('details');section.id='delivery';section.open=deliveryOpen;section.ontoggle=()=>{if(section.isConnected)deliveryOpen=section.open};
- section.innerHTML='<summary>通知设置</summary><label class="field">系统通知<input type="checkbox" id="systemOn"></label><label class="field">提示音<input type="checkbox" id="soundOn"></label><label class="field">震动<input type="checkbox" id="buzzOn"></label><p id="deliveryHint"></p>';
- parent.append(section);const pref=data.delivery??={enabled:false,sound:false,buzz:false};
- const enabled=el('systemOn');enabled.checked=!!systemEnabled();enabled.disabled=!supportsSystem();
- el('deliveryHint').textContent=desktop?'开启后，即使 Blink 最小化，提醒也会出现在屏幕右下角。':!supportsSystem()?'系统通知需要在支持通知的浏览器中通过 HTTPS 或 localhost 打开。':mobileDevice()?'锁屏显示、亮屏和声振组合由手机系统决定。':'提醒在桌面右下角显示，可直接确认。';
- enabled.onchange=async()=>{
-   if(enabled.checked){
+ const section=document.createElement('div');section.id='delivery';parent.append(section);
+ const pref=data.delivery??={enabled:false,sound:false,buzz:false};
+ const enabled=toggleField(section,'系统通知',!!systemEnabled(),async(on)=>{
+   if(on){
      try{
        if(window.blinkMobile||desktop){
          if(!await (window.blinkMobile||window.blinkDesktop).request())throw Error();
@@ -186,24 +380,28 @@ function deliverySettings(parent){
      if(desktop){clearSystemCard(data.card);posted=''}
    }
    save();render();
- };
- for(const [id,k] of [['soundOn','sound'],['buzzOn','buzz']]){const input=el(id);input.checked=pref[k];input.disabled=!supportsSystem()||(k==='buzz'&&(window.blinkDesktop||window.blinkMobile?.ios));input.onchange=()=>{pref[k]=input.checked;save();syncBackground()}}
+ });
+ enabled.disabled=!supportsSystem();
+ const sound=toggleField(section,'提示音',!!pref.sound,on=>{pref.sound=on;save();syncBackground()});
+ sound.disabled=!supportsSystem();
+ if(!desktop&&!window.blinkMobile?.ios){const buzz=toggleField(section,'震动',!!pref.buzz,on=>{pref.buzz=on;save();syncBackground()});buzz.disabled=!supportsSystem()}
+ const hint=document.createElement('p');hint.className='muted';section.append(hint);
+ hint.textContent=desktop?'开启后，即使 Blink 在托盘中，提醒也会出现在屏幕右下角。':!supportsSystem()?'系统通知需要在支持通知的浏览器中通过 HTTPS 或 localhost 打开。':'提醒在桌面右下角显示，可直接确认。';
+ if(desktop){
+   toggleField(section,'开机自动启动',!!window.blinkDesktop.autoStart?.(),on=>window.blinkDesktop.setAutoStart(on));
+   choiceField(section,'提醒窗口位置',data.popupScreen||'cursor',[['cursor','鼠标所在屏幕'],['primary','主显示器']],v=>{data.popupScreen=v;save()});
+ }
  if(window.blinkMobile){
-   const label=document.createElement('label');label.className='field';label.textContent='锁屏显示倒计时';const toggle=document.createElement('input');toggle.type='checkbox';toggle.checked=pref.lock!==false;toggle.onchange=()=>{pref.lock=toggle.checked;save();syncBackground()};label.append(toggle);section.append(label);
+   toggleField(section,'锁屏显示倒计时',pref.lock!==false,on=>{pref.lock=on;save();syncBackground()});
    if(!window.blinkMobile.ios){
-     const wake=document.createElement('label');wake.className='field';wake.textContent='提醒时亮屏约 15 秒';
-     const wakeToggle=document.createElement('input');wakeToggle.type='checkbox';wakeToggle.checked=pref.wake===true;wakeToggle.disabled=!pref.enabled;
-     wakeToggle.onchange=()=>{pref.wake=wakeToggle.checked;save();syncBackground()};wake.append(wakeToggle);section.append(wake);
+     const wake=toggleField(section,'提醒时亮屏',pref.wake===true,on=>{pref.wake=on;save();syncBackground()},'只在首次到点时亮屏约 15 秒；连续两轮无人响应后当天不再亮屏');
+     wake.disabled=!pref.enabled;
+     toggleField(section,'关闭 Blink 后继续提醒',pref.persist===true,async on=>{
+       pref.persist=on;save();syncBackground();
+       if(on){await healthCheck(true)}
+     },'默认只在 Blink 运行（含切到后台、锁屏）时提醒；开启后从最近任务划掉或重启手机也会提醒');
    }
-   if(!window.blinkMobile.ios&&pref.enabled){
-     const exact=document.createElement('button');exact.textContent='允许锁屏准时提醒';exact.hidden=true;section.append(exact);
-     window.blinkMobile.exactAllowed().then(allowed=>{exact.hidden=allowed}).catch(()=>{});
-     exact.onclick=async()=>{try{
-       if(await window.blinkMobile.requestExact()){nativePlanSignature='';render()}
-     }catch{say('请在系统设置中允许 Blink 使用闹钟和提醒')}}
-   }
-   el('deliveryHint').textContent=window.blinkMobile.ios?'后台到点发送本地通知，iOS 16.2 起可显示实时活动。':'允许准时提醒后，系统闹钟会显示下次提醒时间。锁屏显示由系统通知设置决定。'
-   const hint=el('deliveryHint');
+   hint.textContent=window.blinkMobile.ios?'后台到点发送本地通知，iOS 16.2 起可显示实时活动。':'Blink 在前台、后台或锁屏时都会提醒；常驻通知显示下次提醒时间。';
    if(pref.enabled)window.blinkMobile.notificationAllowed().then(allowed=>{
      if(!allowed&&section.isConnected){
        enabled.checked=false;
@@ -211,6 +409,27 @@ function deliverySettings(parent){
      }
    }).catch(()=>{});
  }
+}
+// One page lists everything that silently breaks reminders, with a shortcut to each setting.
+async function healthCheck(persistGuide=false){
+ const rows=desktop?await window.blinkDesktop.health():await window.blinkMobile.health();
+ if(desktop&&!rows)return;
+ modal.replaceChildren();chosen=document.activeElement;
+ const title=document.createElement('h2');title.textContent=persistGuide?'关闭后继续提醒':'提醒健康检查';modal.append(title);
+ const note=document.createElement('p');note.textContent=persistGuide?'逐项授权后，划掉 Blink 或重启手机也能按时提醒。':'红色项会让提醒延迟或无法显示。';modal.append(note);
+ for(const row of rows){
+   if(persistGuide&&!row.persist)continue;
+   const line=document.createElement('div');line.className='health-row';
+   const dot=document.createElement('b');dot.className=row.state===true?'ok':row.state==null?'unknown':'';
+   const text=document.createElement('span');text.textContent=row.label;
+   if(row.hint){const small=document.createElement('small');small.className='muted';small.style.display='block';small.textContent=row.hint;text.append(small)}
+   line.append(dot,text);
+   if(row.action&&row.state!==true){const go=document.createElement('button');go.textContent=row.state==null?'去查看':'去开启';go.onclick=()=>{(desktop?window.blinkDesktop:window.blinkMobile).openSetting(row.action)};line.append(go)}
+   modal.append(line);
+ }
+ const recheck=document.createElement('button');recheck.className='primary';recheck.textContent='重新检测';recheck.onclick=()=>healthCheck(persistGuide);
+ const close=document.createElement('button');close.textContent='完成';close.onclick=()=>modal.close();
+ modal.append(recheck,close);if(!modal.open)modal.showModal();
 }
 function clearSystemCard(card){
  if(card&&typeof window!=='undefined'&&window.blinkDesktop){window.blinkDesktop.clear(card.id);return}
@@ -220,18 +439,15 @@ function clearSystemCard(card){
    for(const item of items)if(item.data?.id===card.id)item.close()
  }).catch(()=>{})
 }
-function workAllowed(at=Date.now()){
- if(key===guestKey)return true;
- if(data.cloud?.reminderLegacy===true)return true;
- const reminder=data.cloud?.reminder;
- return !!(reminder?.device&&reminder.device===data.cloud.device&&!reminder.requested&&at<reminder.localExpires);
-}
+// Work reminders go to the device in use. The server decides; offline or signed out always reminds.
+const presenceCheck=round=>key===guestKey||!window.blinkAccounts?.presence?Promise.resolve(true):
+  Promise.race([window.blinkAccounts.presence(round).then(r=>r?.deliver!==false).catch(()=>true),new Promise(done=>setTimeout(()=>done(true),3000))]);
 async function postSystem(card){
  const id=card.id,token=id+':'+Number(!!card.retry);
  if(posted===token)return;posted=token;
  try{
    if(window.blinkMobile){await window.blinkMobile.show({...card,owner:key,shared:key!==guestKey&&!!card.round,rest:restDuration(card.k)},kinds[card.k],reminderMessages[card.k],data.delivery);return}
-   if(window.blinkDesktop){window.blinkDesktop.show({...card,sound:!!data.delivery.sound,theme:document.documentElement.dataset.theme});return}
+   if(window.blinkDesktop){window.blinkDesktop.show({...card,sound:!!data.delivery.sound,theme:document.documentElement.dataset.theme,screen:data.popupScreen||'cursor',later:delayLabel(card.k)});return}
    const reg=await registration();
    if(data.card?.id!==id||!systemEnabled())return;
    const pref=data.delivery,options={tag:'blink-current',renotify:true,body:reminderMessages[card.k]+' 点开打卡。',data:{id},silent:!pref.sound};
@@ -247,91 +463,147 @@ function openReminder(id,confirm){
  openedReminder=id;tab=0;
  if(confirm)takeReminder(card.k);else render()
 }
-function delayLabel(k){return data.snooze[k]||data.card?.k===k&&data.card.retry?'跳过本轮':'稍后 5 分钟'}
+function delayLabel(k){return data.snooze[k]?'跳过本轮':'5 分钟后'}
 function deferReminder(k){
   settle();const round=data.card?.round,delay=delayLabel(k)==='跳过本轮'?0:5*minute;
   restart(k,delay);if(delay&&round)(data.deferredRounds??={})[k]=round;render()
 }
+function nudgeButtons(list){
+ el('nudgeActions').replaceChildren(...list.map(([label,fn])=>{const b=document.createElement('button');b.textContent=label;b.onclick=fn;return b}))
+}
 function paintCard(card){
  const box=el('nudge');
+ if(!card&&data.prompt&&!pageHidden()){
+   const p=data.prompt,display='prompt/'+p.id;
+   if(!box.hidden&&box.dataset.display===display)return;
+   box.dataset.display=display;box.hidden=false;el('nudgeIcon').innerHTML=svg('today');
+   el('nudgeType').textContent=p.body;el('nudgeTitle').textContent=p.title;
+   nudgeButtons(p.actions.map(([code,label])=>[label,()=>answerPrompt(p.id,code)]));return
+ }
  if(!card){box.hidden=true;box.removeAttribute('data-display');return}
  const k=card.k,again=!!data.snooze[k]||card.retry,display=[k,again,card.until].join('/');
  if(!box.hidden&&box.dataset.display===display)return;
  box.dataset.display=display;box.hidden=false;
  el('nudgeIcon').innerHTML=svg(['eye','rest','water'][k]);
- el('nudgeType').textContent=(again?'本轮最后一次 · ':'')+kinds[k]+'提醒';
- el('nudgeTitle').textContent=reminderMessages[k];el('accept').textContent=reminderLabels[k];
- el('postpone').textContent=again?'跳过本轮':'稍后 5 分钟';
+ el('nudgeType').textContent=(again?'再次提醒 · ':'')+kinds[k]+'提醒';
+ el('nudgeTitle').textContent=reminderMessages[k];
  function act(confirm){
    settle();const st=status(Date.now());
    if(data.card?.until!==card.until||st.meal||st.pause||!frequency(k)||left(k)){render();return}
    if(confirm)takeReminder(k);else deferReminder(k)
  }
- el('accept').onclick=()=>act(true);el('postpone').onclick=()=>act(false)
+ nudgeButtons([[reminderLabels[k],()=>act(true)],[delayLabel(k),()=>act(false)]])
 }
 function checkReminder(){
  const ms=Date.now(),st=status(ms);
- if(st.work&&!workAllowed(ms)){
-   if(data.card){clearSystemCard(data.card);data.card=null;save()}
-   paintCard(null);return
- }
  const hidden=pageHidden();
  if(modal.open&&!hidden){paintCard(null);return}
  const useSystem=systemEnabled()&&(window.blinkDesktop||mobileDevice()||hidden||!document.hasFocus());
  if(hidden&&!useSystem){paintCard(null);return}
  let card=data.card;
- if(card&&(st.pause||st.meal||!frequency(card.k)||left(card.k))){clearSystemCard(card);data.card=null;card=null;save()}
- if(st.pause||st.meal){paintCard(null);return}
+ if(card&&(st.pause||st.meal||st.away||!frequency(card.k)||left(card.k))){clearSystemCard(card);data.card=null;card=null;save()}
+ if(st.pause||st.meal||st.away){paintCard(null);return}
  if(card&&!card.id){card.id=crypto.randomUUID();save()}
  if(window.blinkMobile&&hidden){paintCard(null);return}
  if(card&&ms>=card.until){
    if(!hidden&&!el('nudge').hidden&&el('nudge').contains(document.activeElement))return;
-   if(card.system&&!card.retry&&!data.snooze[card.k]&&ms<card.until+5*minute){
-     card.retry=true;card.until=ms+5*minute;openedReminder=null;save()
-   }else{restart(card.k,card.system||data.snooze[card.k]?0:5*minute);save();card=null}
+   // One retry, then nobody is assumed to be present: pause instead of nagging.
+   if(!card.retry){card.retry=true;card.until=ms+5*minute;openedReminder=null;save()}
+   else{const from=card.firedAt||card.until-10*minute;clearSystemCard(card);data.card=null;enterAway(from);return}
  }
- if(!card&&ms>=(data.nextCardAt||0)){
+ if(!card&&ms>=(data.nextCardAt||0)&&!(desktop&&quietUntil>ms)){
    const due=reminders().find(k=>!left(k));
    if(due!=null){
      const period=data.snooze[due]||frequency(due)*minute;
      const round=st.work?(data.deferredRounds?.[due]||roundId(due,ms-Math.max(0,data.progress[due]-period))):undefined;
-     card={id:crypto.randomUUID(),k:due,round,system:!!useSystem,until:ms+(useSystem?5*minute:20000)};data.card=card;data.nextCardAt=ms+2*minute;save()}
+     card={id:crypto.randomUUID(),k:due,round,system:!!useSystem,firedAt:ms,until:ms+5*minute,checking:!!round&&key!==guestKey};data.card=card;data.nextCardAt=ms+2*minute;save();
+     if(card.checking){const id=card.id;presenceCheck(round).then(deliver=>{
+       if(data.card?.id!==id)return;
+       // Another device is in use: skip this round here without recording anything.
+       if(!deliver){restart(card.k);data.card=null;save();render();return}
+       data.card.checking=false;data.card.firedAt=Date.now();data.card.until=Date.now()+5*minute;save();checkReminder()})}
+   }
  }
+ if(card?.checking){paintCard(null);return}
  if(card?.round&&data.logs.some(row=>row.id===card.round)){
    restart(card.k);paintCard(null);save();return
  }
  if(card&&useSystem&&openedReminder!==card.id&&failed!==card.id){
-   if(!card.system){card.system=true;card.until=ms+5*minute;save()}
+   if(!card.system){card.system=true;save()}
    postSystem(card);paintCard(null)
  }else paintCard(hidden?null:card)
 }
+function capsuleText(st){
+ const ms=Date.now(),plan=dayPlan(st.day),shift=data.shift&&ms>=data.shift.from&&ms<data.shift.until?data.shift:null;
+ if(st.away)return '已暂停 · 回来后继续';
+ if(st.hold)return '等待确认上班';
+ if(st.work){
+   if(shift)return '加班至 '+time(shift.until);
+   if(plan.o.ask)return '下班时间到 · 待确认';
+   return plan.end>data.end?'加班至 '+plan.end:'上班中 · '+plan.end+' 下班';
+ }
+ if(st.timed)return '用眼计时 · 至 '+time(data.session.until);
+ if(data.session&&data.session.from>ms)return '用眼计时 · '+time(data.session.from)+' 开始';
+ if(!plan.legal)return plan.o.off?'今天休息':'休息日';
+ return ms<at(st.day,plan.start)?'今天 '+plan.start+' 上班':'已下班';
+}
+function capsuleMenu(){
+ settle();const ms=Date.now(),st=status(ms),plan=dayPlan(st.day),options=[];
+ if(st.work)options.push(['现在下班',offNow],['加班到…',overtime]);
+ else{
+   options.push(['现在上班',workNow]);
+   options.push([data.session?'结束用眼计时':'开始一段用眼计时',toggleSession]);
+ }
+ if(plan.legal)options.push(['今天休息',restToday]);
+ options.push(['明天晚点上班',lateStart]);
+ if(data.days[st.day]||data.shift&&data.shift.until>ms)options.push(['恢复今天的固定作息',resetToday]);
+ sheet(capsuleText(st),'上下班都可以在这里调整，操作后几秒内可撤销。',options)
+}
+function quickLog(){
+ sheet('记一次','选择刚做过的活动。',kinds.map((label,k)=>[label,()=>{
+   timePrompt('什么时候'+label+'？',time(now()),hm=>{
+     const ms=Date.now(),when=Math.min(ms,at(dayKey(ms),hm));settle();
+     const id=crypto.randomUUID();data.logs.unshift({id,k,at:when});data.logs.sort((a,b)=>b.at-a.at);
+     if(ms-when<5*minute)restart(k);save();window.blinkAccounts?.changed();render();
+     say('已记录'+label+' · '+time(when),{undo:()=>{data.logs=data.logs.filter(r=>r.id!==id);save();render();window.blinkAccounts?.changed()}})
+   })
+ }]))
+}
 function home(){
- const st=status(Date.now()),next=reminders()[0],resting=st.meal||st.pause;
+ const st=status(Date.now()),next=reminders()[0],resting=st.meal||st.pause||st.away;
  const heading=desktop?'h2':'h1';
- const label=sessionEndsFirst(st,next)?'距离定时结束':st.meal?st.meal+'结束':st.pause?(st.pause.kind===0?'远眺结束':'离席休息结束'):next==null?'当前提醒已关闭':(left(next)?'距离下次':'现在可以')+['远眺','离席休息','喝水'][next];
+ const label=st.away?'已暂停':sessionEndsFirst(st,next)?'距离定时结束':st.meal?st.meal+'结束':st.pause?(st.pause.kind===0?'看看远处':'离席休息结束'):next==null?'当前提醒已关闭':(left(next)?'距离下次':'现在可以')+['远眺','离席休息','喝水'][next];
+ const breathing=st.pause?.kind===0?' breathing':'';
  app.innerHTML=(desktop?bar('今日',st.day)+'<div class="timer-panel">':'')+
- '<div class="mode-tabs" role="group" aria-label="当前运行模式"><button id="workMode" aria-pressed="'+st.work+'">工作</button><button id="offMode" aria-pressed="'+!st.work+'">非工作</button></div>'+
- '<div class="scene-note"><small>'+ (st.meal?st.meal+'中':st.work?'工作计时中':st.timed?'定时用眼 · 至 '+time(data.session.until):'按用屏计时')+'</small>'+(!st.work?'<button id="sessionToggle">'+(st.timed?'结束定时':'定时用眼')+'</button>':'')+'</div><section class="focus-clock"><'+heading+'>'+label+'</'+heading+'><div id="countdown" role="timer"></div><div id="clockActions"></div></section>'+
+ '<div class="capsule-row"><button id="capsule" class="capsule" aria-haspopup="dialog"><span class="dot'+(st.work?' on':'')+'"></span><span id="capsuleText"></span><span aria-hidden="true">▾</span></button></div>'+
+ (data.notice?'<div class="banner" id="notice"><span></span><button>知道了</button></div>':'')+'<section class="focus-clock'+breathing+'"><'+heading+'>'+label+'</'+heading+'><div id="countdown" role="timer"></div><p class="hint" id="hint"></p><div id="clockActions"></div></section>'+
  (desktop?'</div>':'');
- el('workMode').onclick=()=>{if(!status(Date.now()).work)clockShift()};
- el('offMode').onclick=()=>{if(status(Date.now()).work)clockShift()};
- if(el('sessionToggle'))el('sessionToggle').onclick=toggleSession;
+ el('capsuleText').textContent=capsuleText(st);el('capsule').onclick=capsuleMenu;
+ if(data.notice){el('notice').querySelector('span').textContent=data.notice;el('notice').querySelector('button').onclick=()=>{data.notice=null;save();render()}}
+ el('hint').textContent=st.away?'没有响应提醒，计时已暂停。有任何操作即继续。':st.pause?.kind===0?'看约 6 米外的地方，眨眨眼。':st.pause?.kind===1?breakIdeas[Math.floor(Date.now()/86400000)%breakIdeas.length]:'';
  const actions=el('clockActions');
- function action(text,fn){const btn=document.createElement('button');btn.textContent=text;btn.onclick=fn;actions.append(btn)}
- if(st.pause&&!st.meal)action('提前结束',resume);
+ function action(text,fn,cls=''){const btn=document.createElement('button');btn.textContent=text;btn.className=cls;btn.onclick=fn;actions.append(btn);return btn}
+ if(st.away)action('我回来了',()=>markActive(),'main');
+ else if(st.pause&&!st.meal)action('提前结束',resume,'main');
  else if(!resting&&next!=null){
-   action(['开始远眺','开始离席','喝过了'][next],()=>takeReminder(next));
-   if(!left(next))action(delayLabel(next),()=>deferReminder(next))
- }else if(!resting)action('设置提醒',()=>{edit=scene();tab=2;render()});
+   const main=action(['开始远眺','开始离席','喝过了'][next],()=>{if(!pressed)takeReminder(next)},'main');
+   let pressed=false,timer;
+   main.title='长按记录其他活动';
+   main.onpointerdown=()=>{pressed=false;timer=setTimeout(()=>{pressed=true;quickLog()},550)};
+   main.onpointerup=main.onpointerleave=()=>clearTimeout(timer);
+   main.oncontextmenu=e=>{e.preventDefault();clearTimeout(timer);pressed=true;quickLog()};
+   if(!left(next))action(delayLabel(next),()=>deferReminder(next));
+ }else if(!resting)action('设置提醒',()=>{tab=2;render()},'main');
  updateText()
 }
+const breakIdeas=['起身走一走，接杯水。','活动一下肩颈和手腕。','去窗边站一会儿，看看远处。','伸个懒腰，深呼吸几次。'];
 function updateText(){const ms=Date.now(),st=status(ms);
  if(el('countdown')){
-   const k=reminders()[0],remaining=sessionEndsFirst(st,k)?data.session.until-ms:st.meal?st.mealUntil-ms:st.pause?st.pause.until-ms:k==null?null:left(k);
+   const k=reminders()[0],remaining=st.away?null:sessionEndsFirst(st,k)?data.session.until-ms:st.meal?st.mealUntil-ms:st.pause?st.pause.until-ms:k==null?null:left(k);
    const sec=Math.max(0,Math.ceil(remaining/1000));
    el('countdown').textContent=remaining==null?'—':String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0')
  }
- if(el('total')){el('total').textContent=duration(eyeDuration(st.day));el('reason').textContent=st.pause||st.meal?'休息中 · 已暂停':st.work?'按工作作息自动累计':st.timed?'按定时用眼区间累计':st.planned?'按今天的用眼安排累计':'按 Blink 页面可见时长累计'}
+ if(el('total')){el('total').textContent=duration(eyeDuration(recordDay||st.day));el('reason').textContent=st.pause||st.meal?'休息中 · 已暂停':st.work?'按工作作息自动累计':st.timed?'按定时用眼区间累计':st.planned?'按今天的用眼安排累计':'按 Blink 页面可见时长累计'}
 
 }
 function blockEditor(existing){
@@ -377,66 +649,107 @@ function activityFeed(ms){
  }
  return rows.sort((a,b)=>a.at-b.at)
 }
-function showWeek(){
- modal.innerHTML='<h2>近七天用眼估算</h2>';const today=midnight(dayKey(now()));
- for(let i=0;i<7;i++){
-   const day=dayKey(today-i*dayMs),line=document.createElement('p');line.className='bar';
-   line.innerHTML='<span>'+day.slice(5)+'</span><strong>'+duration(eyeDuration(day))+'</strong>';modal.append(line)
- }
- const close=document.createElement('button');close.textContent='关闭';close.onclick=()=>modal.close();modal.append(close);modal.showModal()
+let recordDay=null;
+function dayStats(day){
+  const logs=data.logs.filter(r=>dayKey(r.at)===day),counts=[0,1,2].map(k=>logs.filter(r=>r.k===k).length);
+  const used=eyeDuration(day),freqs=[data.freq[0],data.extraFreq[0][0],data.extraFreq[1][0]];
+  const expected=freqs.reduce((sum,f)=>sum+(f?Math.floor(used/(f*minute)):0),0);
+  const done=counts.reduce((sum,n,k)=>sum+(freqs[k]?n:0),0);
+  return {counts,used,expected,rate:expected?Math.min(100,Math.round(done/expected*100)):null};
+}
+function undoLog(row){
+  data.logs=data.logs.filter(l=>l.id!==row.id);save();render();window.blinkAccounts?.changed();
+  say('已撤销'+kinds[row.k],{undo:()=>{data.logs.push(row);data.logs.sort((a,b)=>b.at-a.at);save();render();window.blinkAccounts?.changed()}})
 }
 function records(){
- const ms=Date.now(),day=dayKey(ms);
- app.innerHTML='<div class="section-line"><h1>记录</h1><button id="week">近七天</button></div>'+
-   (desktop?'<div class="desktop-grid record-grid">':'')+
-   '<section class="meter"><div><small>今日用眼总时长 · 估算</small><strong id="total"></strong><small id="reason"></small></div><button id="correct">修正</button></section>'+
-   (desktop?'<section class="desktop-panel">':'')+
-   '<div class="section-line section"><h2>今日时间轴</h2><button id="addActivity">记一次</button></div><ol id="feed" class="feed"></ol>'+
+ const ms=Date.now(),today=dayKey(ms),day=recordDay||today,stats=dayStats(day);
+ app.innerHTML='<div class="section-line"><h1>记录</h1><button id="correct">修正时长</button></div>'+
+   (desktop?'<div class="desktop-grid record-grid"><div>':'')+
+   '<section class="meter"><div><small>'+(day===today?'今日':day.slice(5))+'用眼 · 估算</small><strong id="total"></strong><small id="reason"></small></div><div class="ring" style="--p:'+(stats.rate??0)+'" title="完成率"><span>'+(stats.rate==null?'—':stats.rate+'%')+'</span></div></section>'+
+   '<div class="counts">'+kinds.map((k,i)=>'<div><small>'+k+'</small><strong>'+stats.counts[i]+'</strong></div>').join('')+'</div>'+
+   '<div class="section-line"><h2>本周</h2><small class="muted">点一天查看明细</small></div><div class="week" id="week"></div>'+
+   (desktop?'</div><section class="desktop-panel">':'')+
+   '<div class="section-line section"><h2>'+(day===today?'今日':day.slice(5))+'时间轴</h2><button id="addActivity">记一次</button></div><ol id="feed" class="feed"></ol>'+
    (desktop?'</section></div>':'');
- el('week').onclick=showWeek;el('correct').onclick=()=>correct(day);
- el('addActivity').onclick=()=>sheet('记录活动','选择刚做过的活动。',kinds.map((label,k)=>[label,()=>{settle();log(k);render()}]));
+ el('correct').onclick=()=>correct(day);el('addActivity').onclick=quickLog;
+ const week=el('week'),base=midnight(today),values=[...Array(7)].map((_,i)=>dayKey(base-(6-i)*dayMs+3600000)),max=Math.max(60*minute,...values.map(eyeDuration));
+ for(const d of values){const b=document.createElement('button');b.setAttribute('aria-pressed',String(d===day));
+   b.innerHTML='<i style="height:'+Math.max(3,Math.round(eyeDuration(d)/max*96))+'px"></i>'+(d===today?'今天':'一二三四五六日'[(weekday(d)+6)%7]);
+   b.title=d+' · '+duration(eyeDuration(d));b.onclick=()=>{recordDay=d===today?null:d;render()};week.append(b)}
  const feed=el('feed'),labels={recorded:'已记录',due:'已到点 · 待处理',upcoming:'预计提醒'};
- for(const item of activityFeed(ms)){
+ const rows=day===today?activityFeed(ms):data.logs.filter(l=>dayKey(l.at)===day).map(log=>({k:log.k,at:log.at,state:'recorded',log})).sort((a,b)=>a.at-b.at);
+ for(const item of rows){
    const li=document.createElement('li'),row=document.createElement(item.state==='upcoming'?'div':'button');
-   li.className=item.state;row.className='feed-row';
-   row.innerHTML='<time>'+(item.state==='due'?'现在':time(item.at))+'</time><i aria-hidden="true"></i><strong>'+kinds[item.k]+'</strong><small>'+labels[item.state]+'</small>';
-   if(item.state==='recorded')row.onclick=()=>sheet(kinds[item.k],time(item.at)+' · 已记录',[['撤销这条记录',()=>{data.logs=data.logs.filter(l=>l.id!==item.log.id);render()}]]);
+   li.className=item.state+(item.log&&inferred(item.log)?' auto':'');row.className='feed-row';
+   row.innerHTML='<time>'+(item.state==='due'?'现在':time(item.at))+'</time><i aria-hidden="true"></i><strong>'+kinds[item.k]+'</strong><small>'+(item.log&&inferred(item.log)?'离开期间 · 推测':labels[item.state])+'</small>';
+   if(item.state==='recorded')row.onclick=()=>sheet(kinds[item.k],time(item.at)+(inferred(item.log)?' · 根据离开时长推测':' · 已记录'),[['撤销这条记录',()=>undoLog(item.log)]]);
    if(item.state==='due')row.onclick=()=>sheet(kinds[item.k],'提醒已到点。',[[['开始远眺','开始离席','喝过了'][item.k],()=>takeReminder(item.k)],[delayLabel(item.k),()=>deferReminder(item.k)]]);
    li.append(row);feed.append(li)
  }
- if(!feed.children.length){const empty=document.createElement('li');empty.className='muted';empty.textContent='今天暂无活动记录或即将到来的提醒。';feed.append(empty)}
+ if(!feed.children.length){const empty=document.createElement('li');empty.className='muted';empty.textContent=day===today?'今天暂无活动记录或即将到来的提醒。':'这一天没有记录。';feed.append(empty)}
  updateText()
 }
 function option(parent,name,on,fn){const b=document.createElement('button');b.textContent=name;b.setAttribute('aria-pressed',String(on));b.onclick=fn;parent.append(b)}
 
 let frequenciesOpen=false;
+const presets=[
+  {id:'eye',name:'护眼 20-20-20',desc:'每 20 分钟远眺 20 秒，每小时离席，90 分钟喝水',freq:20,rest:60,water:90,breakMinutes:10,eye:20},
+  {id:'pomodoro',name:'番茄 25/5',desc:'每 25 分钟离席 5 分钟，90 分钟喝水',freq:0,rest:25,water:90,breakMinutes:5,eye:20},
+  {id:'light',name:'轻度',desc:'每 30 分钟远眺，90 分钟离席，2 小时喝水',freq:30,rest:90,water:120,breakMinutes:10,eye:20}
+];
+const presetOf=()=>presets.find(p=>p.freq===data.freq[0]&&p.rest===data.extraFreq[0][0]&&p.water===data.extraFreq[1][0]&&p.breakMinutes===data.breakMinutes&&p.eye===(data.eyeSeconds||20));
+function applyPreset(p){settle();data.freq[0]=p.freq;data.extraFreq[0][0]=p.rest;data.extraFreq[1][0]=p.water;data.breakMinutes=p.breakMinutes;data.eyeSeconds=p.eye;[0,1,2].forEach(k=>restart(k));save();render();window.blinkAccounts?.changed()}
+function presetPicker(parent){
+  const box=document.createElement('div');box.className='presets';parent.append(box);const current=presetOf();
+  for(const p of presets){const b=document.createElement('button');b.setAttribute('aria-pressed',String(current===p));b.innerHTML='<strong></strong><small></small>';
+    b.querySelector('strong').textContent=p.name;b.querySelector('small').textContent=p.desc;b.onclick=()=>applyPreset(p);box.append(b)}
+}
 function frequencyField(parent,title,kind,mode){
   const values=kind===0?data.freq:data.extraFreq[kind-1];
   const label=document.createElement('label'),select=document.createElement('select');
   label.className='field';label.textContent=title;
-  for(const n of [0,20,30,45,60,90,120])select.add(new Option(n?'每 '+n+' 分钟':'关闭',n));
+  const choices=[0,15,20,25,30,45,60,90,120];if(!choices.includes(values[mode]))choices.push(values[mode]);
+  for(const n of choices.sort((a,b)=>a-b))select.add(new Option(n?'每 '+n+' 分钟':'关闭',n));
+  select.add(new Option('自定义…','custom'));
   select.value=values[mode];
-  select.onchange=()=>{settle();values[mode]=Number(select.value);if(scene()===mode)restart(kind);render()};
+  select.onchange=()=>{
+    if(select.value==='custom'){numberPrompt('每隔多少分钟提醒？',values[mode]||30,5,240,n=>{settle();values[mode]=n;if(scene()===mode)restart(kind);save();render();window.blinkAccounts?.changed()});select.value=values[mode];return}
+    settle();values[mode]=Number(select.value);if(scene()===mode)restart(kind);save();render();window.blinkAccounts?.changed()};
   label.append(select);parent.append(label)
 }
-function schedule(){
-  app.innerHTML=bar('日程')+
-    (desktop?'<div class="desktop-grid schedule-grid"><div class="desktop-panel">':'')+
-    '<div class="days scene-tabs" id="planMode" role="group" aria-label="日程模式"></div><section id="planBody"></section>'+
-    (desktop?'</div><section class="desktop-panel preferences" id="preferences"><h2>应用设置</h2></section></div>':'');
-  const preferences=desktop?el('preferences'):app;
-  deliverySettings(preferences);
-  if(window.blinkAccounts)window.blinkAccounts.settings(preferences);
-  const appearance=document.createElement('label');appearance.className='field';appearance.innerHTML='外观<select id="appearance"><option value="system">跟随系统</option><option value="light">亮色</option><option value="dark">暗色</option></select>';preferences.append(appearance);
-  el('appearance').value=data.theme||'system';el('appearance').onchange=e=>{data.theme=e.target.value;save();applyTheme()};
-  ['工作日','非工作'].forEach((name,index)=>option(el('planMode'),name,edit===index,()=>{edit=index;render()}));
-  const body=el('planBody');
-  if(edit===1){
-    body.innerHTML='<h2 class="section">用屏提醒</h2><div id="screenFreq"></div><small>按页面可见或已安排的用眼时长累计。</small><div class="section-line section"><h2>今天的临时安排</h2><button id="newBlock">添加</button></div><div id="blocks"></div>';
-    frequencyField(el('screenFreq'),'提醒远眺',0,1);
-    el('newBlock').onclick=()=>blockEditor();drawBlocks();return
-  }
-  body.innerHTML='<h2 class="section">固定作息</h2><small>按中国大陆节假日及调休安排 · 北京时间</small><div id="hours" class="hours"></div><button id="dayException"></button><details id="workPrefs"><summary>提醒频率</summary><div id="freqs"></div></details>';
+function numberPrompt(title,value,min,max,fn){
+  chosen=document.activeElement;modal.innerHTML='<form id="numberForm"><h2></h2><label class="field">分钟<input type="number" id="numberValue" required></label><button class="primary">确定</button><button type="button" id="numberCancel">取消</button></form>';
+  modal.querySelector('h2').textContent=title;const input=el('numberValue');input.min=min;input.max=max;input.value=value;
+  el('numberCancel').onclick=()=>modal.close();el('numberForm').onsubmit=e=>{e.preventDefault();modal.close();fn(Number(input.value))};modal.showModal()
+}
+function choiceField(parent,title,value,options,fn){
+  const label=document.createElement('label'),select=document.createElement('select');label.className='field';label.textContent=title;
+  for(const [v,name] of options)select.add(new Option(name,v));select.value=value;select.onchange=()=>fn(select.value);label.append(select);parent.append(label);return select
+}
+function toggleField(parent,title,checked,fn,hint){
+  const label=document.createElement('label'),input=document.createElement('input');label.className='field';
+  const text=document.createElement('span');text.textContent=title;if(hint){const small=document.createElement('small');small.textContent=hint;small.style.display='block';text.append(small)}
+  input.type='checkbox';input.checked=checked;input.onchange=()=>fn(input.checked,input);label.append(text,input);parent.append(label);return input
+}
+function group(parent,title){const h=document.createElement('h2');h.className='group';h.textContent=title;parent.append(h);const box=document.createElement('div');parent.append(box);return box}
+const workdayRules=[['mon-fri','周一至周五'],['single','单休（周一至周六）'],['alt','大小周'],['custom','自选星期']];
+function thisSaturday(){const d=dayKey(Date.now());return dayKey(midnight(d)+((6-weekday(d)+7)%7)*dayMs+3600000)}
+function workdayPicker(parent){
+  const rule=Array.isArray(data.workdays)?'custom':data.workdays||'mon-fri';
+  choiceField(parent,'工作日',rule,workdayRules,v=>{
+    settle();
+    if(v==='custom')data.workdays=[1,2,3,4,5];
+    else if(v==='alt'){data.workdays='alt';data.altSaturday=thisSaturday();say('本周六上班，之后隔周')}
+    else data.workdays=v;
+    save();render();window.blinkAccounts?.changed()});
+  if(rule==='alt')toggleField(parent,'本周六上班',dayType(thisSaturday())==='工作日'||dayType(thisSaturday())==='调休上班',on=>{
+    const sat=thisSaturday();data.altSaturday=on?sat:dayKey(midnight(sat)+7*dayMs+3600000);save();render()});
+  if(rule==='custom'){const chips=document.createElement('div');chips.className='chips';parent.append(chips);
+    '日一二三四五六'.split('').forEach((name,d)=>{const b=document.createElement('button');b.textContent='周'+name;b.setAttribute('aria-pressed',String(data.workdays.includes(d)));
+      b.onclick=()=>{settle();data.workdays=data.workdays.includes(d)?data.workdays.filter(x=>x!==d):[...data.workdays,d].sort();save();render()};chips.append(b)})}
+}
+function hoursEditor(parent){
+  const box=document.createElement('div');box.className='hours';parent.append(box);
   for(const [title,fields] of [['上下班',[['start','上班'],['end','下班']]],['午休',[['lunchStart','午休开始'],['lunchEnd','午休结束']]],['晚餐',[['dinnerStart','晚餐开始'],['dinnerEnd','晚餐结束']]]]){
     const row=document.createElement('div');row.className='hours-row';
     const caption=document.createElement('span');caption.textContent=title;row.append(caption);
@@ -445,28 +758,84 @@ function schedule(){
       input.onchange=()=>{const next={...data,[key]:input.value};
         if(!input.value||!(next.start<=next.lunchStart&&next.lunchStart<=next.lunchEnd&&next.lunchEnd<=next.end&&next.start<next.end)){input.value=data[key];say('午休需在上下班时间内，结束时间应晚于开始时间');return}
         if(next.dinnerStart<next.lunchEnd||next.dinnerEnd<next.dinnerStart){input.value=data[key];say('晚餐应在午休后，结束时间不能早于开始时间');return}
-        settle();data[key]=input.value;render()
+        settle();data[key]=input.value;save();render();window.blinkAccounts?.changed()
       };
       if(key===fields[1][0]){const dash=document.createElement('span');dash.textContent='–';row.append(dash)}
       row.append(input)
     }
-    el('hours').append(row)
+    box.append(row)
   }
-  const exception=el('dayException'),hasOverride=data.shift&&data.shift.until>Date.now();
-  exception.textContent=hasOverride?'恢复今天的自动作息':'今天取消自动上班';
-  exception.onclick=()=>{settle();const ms=Date.now();data.shift=hasOverride?null:{from:ms,until:midnight(dayKey(ms))+dayMs,work:false};data.pause=null;render()};
-  const details=el('workPrefs');details.open=frequenciesOpen;details.ontoggle=()=>{if(details.isConnected)frequenciesOpen=details.open};
-  const prefs=el('freqs');
-  ['远眺','离席休息','喝水'].forEach((name,k)=>frequencyField(prefs,name,k,0));
-  const label=document.createElement('label'),select=document.createElement('select');
-  label.className='field';label.textContent='每次离席时长';
-  for(const n of [5,10,15,20])select.add(new Option(n+' 分钟',n));
-  select.value=data.breakMinutes;select.onchange=()=>{data.breakMinutes=Number(select.value);save()};label.append(select);prefs.append(label)
 }
-
+function schedule(){
+  app.innerHTML=bar('设置')+
+    (desktop?'<div class="desktop-grid schedule-grid"><div class="desktop-panel" id="leftCol"></div><section class="desktop-panel preferences" id="preferences"></section></div>':'<div id="leftCol"></div><div id="preferences"></div>');
+  const left=el('leftCol'),right=el('preferences');
+  if(window.blinkAccounts)window.blinkAccounts.card(left);
+  const day=dayKey(Date.now());
+  if(calendarMissing(day)&&!data.calendarNoted){const b=document.createElement('div');b.className='banner';b.innerHTML='<span>节假日日历待更新，暂按工作日规则自动上班。</span><button>知道了</button>';b.querySelector('button').onclick=()=>{data.calendarNoted=true;save();render()};left.append(b)}
+  const hours=group(left,'作息');hoursEditor(hours);workdayPicker(hours);
+  toggleField(hours,'按法定节假日和调休',data.holidays!==false,on=>{settle();data.holidays=on;save();render()});
+  toggleField(hours,'上班时确认在场',data.confirmStart!==false,on=>{data.confirmStart=on;save()},'到点无人操作时暂不计时，等你回来确认');
+  const remind=group(left,'提醒');presetPicker(remind);
+  const details=document.createElement('details');details.id='workPrefs';details.open=frequenciesOpen;details.ontoggle=()=>{if(details.isConnected)frequenciesOpen=details.open};
+  details.innerHTML='<summary>自定义</summary>';remind.append(details);
+  ['远眺','离席休息','喝水'].forEach((name,k)=>frequencyField(details,name,k,0));
+  choiceField(details,'每次远眺',String(data.eyeSeconds||20),[['20','20 秒'],['30','30 秒'],['60','1 分钟']],v=>{data.eyeSeconds=Number(v);save();render();window.blinkAccounts?.changed()});
+  choiceField(details,'每次离席',String(data.breakMinutes),[5,10,15,20].map(n=>[String(n),n+' 分钟']),v=>{data.breakMinutes=Number(v);save();render();window.blinkAccounts?.changed()});
+  frequencyField(details,'非工作时远眺（按亮屏时长）',0,1);
+  const notify=group(right,'通知');deliverySettings(notify);
+  if(window.blinkMobile&&!window.blinkMobile.ios||desktop){const b=document.createElement('button');b.className='row';b.id='healthEntry';b.innerHTML='<span class="lead"><strong>提醒健康检查</strong></span><span class="end">'+svg('arrow')+'</span>';b.onclick=healthCheck;notify.append(b)}
+  const look=group(right,'外观');
+  choiceField(look,'主题',data.theme||'system',[['system','跟随系统'],['light','亮色'],['dark','暗色']],v=>{data.theme=v;save();applyTheme()});
+  const about=group(right,'关于与更新');
+  if(window.blinkAccounts)window.blinkAccounts.about(about);
+  if(window.blinkDesktop?.updates&&!window.blinkAccounts)desktopUpdates(about);
+  const replay=document.createElement('button');replay.className='row';replay.textContent='重新查看首次设置';replay.onclick=()=>{data.onboarded=false;onboardStep=0;save();render()};about.append(replay);
+}
+let onboardStep=0;
+function onboarding(){
+ const titles=['几点上下班？','想要哪种提醒节奏？','允许 Blink 提醒你'];
+ const descs=['之后到点自动开始和结束，提前、晚到或加班都能在首页一键调整。','随时可以在设置里换成别的方案或自定义。','到点发通知，锁屏也能直接打卡。'];
+ app.innerHTML='<section class="onboard"><p class="steps"></p><h1></h1><p class="muted" id="obDesc"></p><div id="obBody"></div><footer id="obFoot"></footer></section>';
+ app.querySelector('.steps').textContent='第 '+(onboardStep+1)+' 步，共 3 步';
+ app.querySelector('h1').textContent=titles[onboardStep];el('obDesc').textContent=descs[onboardStep];
+ const body=el('obBody'),foot=el('obFoot');
+ if(onboardStep===0){hoursEditor(body);workdayPicker(body)}
+ else if(onboardStep===1)presetPicker(body);
+ else deliverySettings(body);
+ if(onboardStep>0){const back=document.createElement('button');back.textContent='上一步';back.onclick=()=>{onboardStep--;render()};foot.append(back)}
+ const next=document.createElement('button');next.className='primary';next.textContent=onboardStep<2?'下一步':'开始使用';
+ next.onclick=()=>{if(onboardStep<2){onboardStep++;render();return}data.onboarded=true;tab=0;save();render();say('设置完成，可随时在「设置」中修改')};
+ foot.append(next);
+}
+// Work or timed eye use that passed while Blink was closed and could not remind.
+function coverage(from,to){
+ let total=0;
+ for(let t=from;t<to;){const st=status(t),stop=boundary(t,to,st);if(!st.meal&&!st.pause&&(st.work||st.timed||st.planned))total+=stop-t;t=stop}
+ return total
+}
+function noteClosedGap(closedAt){
+ if(!Number.isFinite(closedAt)||closedAt>=Date.now())return;
+ const gap=coverage(Math.max(closedAt,Date.now()-dayMs),Date.now()),shortest=Math.min(...[0,1,2].map(k=>frequency(k)).filter(Boolean));
+ if(Number.isFinite(shortest)&&gap>=shortest*minute){data.notice='上次关闭 Blink 后，约 '+duration(gap)+'没有提醒。需要关闭后也提醒，可在「设置 → 通知」开启。';save();render()}
+}
+// Holiday tables for new years arrive without an app update.
+async function refreshCalendar(){
+ try{
+   const saved=JSON.parse(localStorage.getItem('blink-calendar')||'null');
+   if(saved&&Date.now()-saved.fetched<7*dayMs)return;
+   const response=await fetch('https://raw.githubusercontent.com/Zhao-wl/Blink/main/calendar.json',{cache:'no-store'});
+   if(!response.ok)return;
+   const table=await response.json();if(!validCalendar(table?.years))return;
+   localStorage.setItem('blink-calendar',JSON.stringify({years:table.years,fetched:Date.now()}));
+   Object.assign(calendar,table.years);render(false)
+ }catch{}
+}
 // Native mobile OS timers outlive the web view. Queue only a bounded local schedule.
 function backgroundPlan(ms){
  const items=[],end=ms+3*dayMs;
+ if(data.away)return items;
+ const ask=dayPlan(dayKey(ms)).o.ask,askLimit=ask?ask+30*minute:Infinity;
  let next=data.progress.map((_,k)=>left(k)),lastContext=data.context,lastDelivery=0;
  for(let t=ms;t<end&&items.length<60;){
    const st=status(t),stop=boundary(t,end,st),tag=st.day+':'+st.work+(st.timed?':session':'');
@@ -487,7 +856,8 @@ function backgroundPlan(ms){
            if(when>=stop||items.length>=60)break;
            const round=st.work?roundId(k,t):undefined;
            if(round&&data.logs.some(row=>row.id===round))break;
-           items.push({slot:items.length+1,token,k,rest:restDuration(k),round,shared:st.work&&key!==guestKey,at:when,expires:Math.min(stop,when+5*minute),retry,title:kinds[k],body:reminderMessages[k]});
+           if(when>=askLimit)break;
+           items.push({slot:items.length+1,token,k,rest:restDuration(k),round,shared:st.work&&key!==guestKey,at:when,expires:Math.min(stop,when+5*minute),retry,wake:!retry,title:kinds[k],body:reminderMessages[k]});
            lastDelivery=when;
          }
        }
@@ -496,7 +866,9 @@ function backgroundPlan(ms){
    }
    t=stop
  }
- return items
+ if(data.session&&data.session.from>ms&&data.session.from<end&&items.length<60)
+   items.push({slot:items.length+1,token:crypto.randomUUID(),k:3,notice:true,at:data.session.from,expires:data.session.from+10*minute,retry:false,wake:false,title:'用眼计时开始',body:'到 '+time(data.session.until)+' 结束，期间按工作频率提醒。'});
+ return items.sort((a,b)=>a.at-b.at).map((item,i)=>({...item,slot:i+1}))
 }
 // The native receipt survives process death. Persist the same round ID before acknowledging it.
 function applyLockConfirmation(row){
@@ -519,13 +891,13 @@ function applyLockConfirmation(row){
 }
 function viewKey(){const st=status(Date.now());return [st.day,st.work,st.meal,st.pause?.from,st.planned,st.timed,sessionEndsFirst(st,reminders()[0]),...[0,1,2].map(k=>frequency(k)>0&&!left(k)),...todayBlocks().map(b=>b.at<=time(now()))].join('|')}
 let painted='',lastSaved=0,tickTimer;
-function render(persist=true){settle();if(persist)save();painted=viewKey();document.title='Blink · '+tabs[tab];Array.from(el('nav').children).forEach((b,i)=>{if(i===tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});[home,records,schedule][tab]();checkReminder();syncBackground();scheduleTick()}
+function render(persist=true){settle();if(persist)save();painted=viewKey();document.title='Blink · '+tabs[tab];Array.from(el('nav').children).forEach((b,i)=>{if(i===tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});el('nav').hidden=!data.onboarded;if(!data.onboarded)onboarding();else [home,records,schedule][tab]();checkReminder();syncBackground();scheduleTick()}
 el('logo').innerHTML='<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#96dfc3" stroke="none" d="M3 14 Q14 24 29 12 Q19 31 4 20 Z"/><circle cx="21" cy="9" r="4" fill="#ffc58c" stroke="none"/></svg>';
 function applyTheme(){const dark=data.theme==='dark'||(data.theme!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=dark?'dark':'light';document.querySelector('meta[name="theme-color"]').content=dark?'#191b21':'#faf9f6'}
 applyTheme();matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme);
-tabs.forEach((label,i)=>{const b=document.createElement('button');b.innerHTML='<i>'+svg(['today','record','plan'][i])+'</i>'+label;b.onclick=()=>{if(i===2&&tab!==2){edit=scene();frequenciesOpen=false}tab=i;window.scrollTo(0,0);render()};el('nav').append(b)});
+tabs.forEach((label,i)=>{const b=document.createElement('button');b.innerHTML='<i>'+svg(['today','record','plan'][i])+'</i>'+label;b.onclick=()=>{if(i===2&&tab!==2)frequenciesOpen=false;if(i!==1)recordDay=null;tab=i;window.scrollTo(0,0);render()};el('nav').append(b)});
 function refreshStored(){try{const saved=JSON.parse(localStorage.getItem(key));if(saved&&saved.cursor>data.cursor)data=loadMealTimes(saved)}catch{}}
-function visibilityChanged(){refreshStored();settle();visible=!pageHidden();render()}
+function visibilityChanged(){refreshStored();settle();visible=!pageHidden();if(visible)markActive();render()}
 document.addEventListener('visibilitychange',visibilityChanged);
 window.addEventListener('pagehide',event=>{
  clearTimeout(tickTimer);
@@ -538,54 +910,30 @@ let nativePlanSignature='';
 function syncBackground(){
  if(!window.blinkMobile)return;
  const ms=Date.now(),pref=data.delivery||{};
- const account=key!==guestKey?data.cloud:null;
- const lease=account?.reminder??null;
- const legacyWork=account?.reminderLegacy===true;
- const canWork=workAllowed(ms);
- const monitorWork=!!(pref.enabled&&!window.blinkMobile.ios&&account);
- const items=pref.enabled?backgroundPlan(ms).filter(item=>!item.shared||monitorWork||canWork):[];
+ const items=pref.enabled?backgroundPlan(ms):[];
  const st=status(ms),current=st.work||st.timed||st.planned;
- const display=current?items.find(item=>!item.shared||canWork):null;
- const workCheckedElapsed=account?.reminderCheckedElapsed,workBoot=account?.reminderBoot;
- const fingerprint=JSON.stringify([key,lease?.device,lease?.requested,lease?.revision,lease?.expiresAt,monitorWork,legacyWork,pref.enabled,pref.sound,pref.buzz,pref.lock,pref.wake,data.breakMinutes,items.map(i=>[i.k,Math.round(i.at/1000),i.round,i.retry]),display?.k]);
+ const display=current?items.find(item=>!item.notice):null;
+ const awaySince=data.away?.from||0;
+ const fingerprint=JSON.stringify([key,pref.enabled,pref.sound,pref.buzz,pref.lock,pref.wake,pref.persist,awaySince,data.breakMinutes,items.map(i=>[i.k,Math.round(i.at/1000),i.round,i.retry]),display?.k]);
  if(nativePlanSignature===fingerprint)return;
  nativePlanSignature=fingerprint;
  const pendingKey='blink-pending:'+key;
- const old=JSON.parse(localStorage.getItem(pendingKey)||'[]').filter(i=>i.at<=ms&&i.expires>ms&&(!i.shared||monitorWork||canWork));
+ const old=JSON.parse(localStorage.getItem(pendingKey)||'[]').filter(i=>i.at<=ms&&i.expires>ms);
  localStorage.setItem(pendingKey,JSON.stringify([...old,...items]));
- window.blinkMobile.replace(items,pref,display,{owner:key,lease,monitorWork,legacyWork,workCheckedElapsed,workBoot}).catch(()=>{nativePlanSignature='';say('后台提醒未启动，请检查系统权限')})
+ window.blinkMobile.replace(items,pref,display,{owner:key,awaySince}).catch(()=>{nativePlanSignature='';say('后台提醒未启动，请检查系统权限')})
 }
-function applyNativeReminderAuthority(authority){
- const cloud=data.cloud;
- if(!cloud||!Number.isSafeInteger(authority?.checkedElapsed)||!Number.isSafeInteger(authority.boot))return;
- if(cloud.reminderBoot===authority.boot&&cloud.reminderCheckedElapsed>=authority.checkedElapsed)return;
- cloud.reminderCheckedElapsed=authority.checkedElapsed;cloud.reminderBoot=authority.boot;
- if(authority.legacy){cloud.reminderLegacy=true;delete cloud.reminder}
- else{cloud.reminder=authority.lease;delete cloud.reminderLegacy}
-}
-async function openMobileReminder(token){
+function openMobileReminder(token){
  const card=data.card?.id===token?data.card:null;
  const pendingKey='blink-pending:'+key,ms=Date.now();
  const pending=JSON.parse(localStorage.getItem(pendingKey)||'[]');
  const row=card?null:pending.find(item=>item.token===token&&item.at<=ms&&ms<item.expires);
  if(!card&&!row){say('这条提醒已结束');return}
- const shared=card?key!==guestKey&&!!card.round:row.shared;
- if(shared&&!window.blinkMobile.ios){
-   const owner=key,profile=data;
-   const result=await window.blinkMobile.validateTap(owner,token).catch(()=>null);
-   if(key!==owner||data!==profile)return;
-   if(!result?.valid){say('这条提醒已结束');return}
-   applyNativeReminderAuthority(result.authority);
- }
- const now=Date.now();
- if(shared&&!workAllowed(now)){say('这条提醒已结束');return}
  if(card){openReminder(token,false);return}
- if(now>=row.expires){say('这条提醒已结束');return}
- const latest=JSON.parse(localStorage.getItem(pendingKey)||'[]');
- localStorage.setItem(pendingKey,JSON.stringify(latest.filter(item=>item.token!==token)));
- settle();const st=status(now);if(st.pause||st.meal||!frequency(row.k))return;
+ localStorage.setItem(pendingKey,JSON.stringify(pending.filter(item=>item.token!==token)));
+ if(row.notice){tab=0;render();return}
+ settle();const st=status(ms);if(st.pause||st.meal||!frequency(row.k))return;
  data.progress[row.k]=Math.max(data.progress[row.k],frequency(row.k)*minute);
- data.card={id:token,k:row.k,round:row.round,until:now+5*minute,retry:row.retry};openedReminder=token;tab=0;render()
+ data.card={id:token,k:row.k,round:row.round,firedAt:row.at,until:ms+5*minute,retry:row.retry};openedReminder=token;tab=0;render()
 }
 let importingConfirmations=false;
 async function importLockConfirmations(){
@@ -600,9 +948,18 @@ async function importLockConfirmations(){
  }finally{importingConfirmations=false}
 }
 if(window.blinkMobile){
- document.addEventListener('visibilitychange',()=>{if(!document.hidden){importLockConfirmations().catch(()=>{});window.blinkMobile.consumeTap()}});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden){importLockConfirmations().catch(()=>{});window.blinkMobile.consumeTap();markActive()}});
  window.blinkMobile.listen(openMobileReminder);
  importLockConfirmations().catch(()=>{});window.blinkMobile.consumeTap().catch(()=>{});
+ // Native events arrive while the web view is hidden: unlocking, lock-screen check-ins and prompt answers.
+ const nativeEvent=event=>{
+   if(!event)return;
+   if(event.type==='present'){refreshStored();settle();if(Number.isFinite(event.awaySince)&&event.awaySince>0&&!data.away)enterAway(event.awaySince);markActive(event.at||Date.now())}
+   else if(event.type==='confirmed')importLockConfirmations().catch(()=>{});
+   else if(event.type==='prompt')answerPrompt(event.id,event.action);
+ };
+ window.blinkMobile.onNative?.(nativeEvent);
+ window.blinkMobile.lifecycle?.().then(info=>{noteClosedGap(info.closedAt);(info.events||[]).forEach(nativeEvent)}).catch(()=>{});
 }
 if(window.blinkDesktop){
  window.blinkDesktop.onVisibility(hidden=>{desktopHidden=hidden;visibilityChanged()});
@@ -610,6 +967,33 @@ if(window.blinkDesktop){
    if(yes)openReminder(id,true);else if(data.card?.id===id)deferReminder(data.card.k)
  });
  window.blinkDesktop.onResume(()=>{refreshStored();render()});
+ // System-wide idle time: 3 minutes without keyboard or mouse (or a locked screen) means away.
+ window.blinkDesktop.onPresence?.(({idle,locked})=>{
+   const ms=Date.now(),idleMs=(idle||0)*1000;
+   if(locked||idleMs>=3*minute){activeSince=null;if(!data.away)enterAway(ms-idleMs);return}
+   if(idleMs>=minute)activeSince=null;else activeSince??=ms-idleMs;
+   if(idleMs<20000)markActive(ms-idleMs);
+ });
+ window.blinkDesktop.onPrompt?.((id,action)=>answerPrompt(id,action));
+ window.blinkDesktop.onQuiet?.((until,id)=>{quietUntil=until;if(data.card?.id===id){data.card=null;save()}});
+ window.blinkDesktop.onUpdate?.(version=>say('新版本 '+version+' 已下载，退出时自动安装'));
+ // Tray menu commands.
+ window.blinkDesktop.onCommand?.(command=>{
+   settle();const st=status(Date.now()),next=reminders()[0];
+   if(command==='rest'){if(next!=null&&next<2)takeReminder(next);else pauseFor(1,restDuration(1))}
+   else if(command==='pause'){settle();data.pause={from:Date.now(),until:Date.now()+60*minute,kind:-1};if(data.card){clearSystemCard(data.card);data.card=null}save();render();say('已暂停提醒 1 小时',{undo:resume})}
+   else if(command==='shift'){if(st.work)offNow();else workNow()}
+   else if(command==='checkin'&&next!=null)takeReminder(next);
+ });
+}
+// The tray shows the same capsule and countdown as the home screen.
+let traySent='';
+function pushTray(){
+ if(!window.blinkDesktop?.status)return;
+ const st=status(Date.now()),next=reminders()[0];
+ const waiting=st.away?'已暂停':st.meal?st.meal+'中':st.pause?'休息中':next==null?'提醒已关闭':kinds[next]+' '+(left(next)?Math.ceil(left(next)/minute)+' 分钟后':'现在');
+ const payload=JSON.stringify({capsule:capsuleText(st),next:waiting,work:st.work});
+ if(payload!==traySent){traySent=payload;window.blinkDesktop.status(JSON.parse(payload))}
 }
 if(!window.blinkMobile&&!window.blinkDesktop&&'serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',event=>{
  if(event.data?.type==='blink-reminder')openReminder(event.data.id,event.data.confirm)
@@ -618,8 +1002,7 @@ if(window.blinkCloudNative&&window.BlinkAccounts){
   window.blinkAccounts=window.BlinkAccounts({
     native:window.blinkCloudNative, modal, say, render, settle, save, createState, loadMealTimes, dayKey, midnight,
     get:()=>data, getKey:()=>key, guestKey,
-    refreshReminders:()=>{if(modal.open)syncBackground();else render(false)},
-    stopWorkReminders:revision=>window.blinkMobile.stopShared(key,revision),
+    lastActive:()=>data.lastActive,
     switchTo:(nextKey,state)=>{
       data=loadMealTimes(state);key=nextKey;
       if(!save())throw Error('保存失败');
@@ -628,7 +1011,7 @@ if(window.blinkCloudNative&&window.BlinkAccounts){
     }
   });
 }
-render();
+render();refreshCalendar();setTimeout(askAutoStart,1500);
 const landing=new URLSearchParams(location.hash.slice(1));
 if(landing.has('reminder')){openReminder(landing.get('reminder'),landing.get('action')==='confirm');history.replaceState(null,'',location.href.split('#')[0])}
 function scheduleTick(){
@@ -637,7 +1020,7 @@ function scheduleTick(){
  if(window.blinkMobile||!systemEnabled())return;
  const ms=Date.now(),st=status(ms);
  let next=boundary(ms,ms+dayMs,st);
- if(!st.meal&&!st.pause&&(!st.work||workAllowed(ms))){
+ if(!st.meal&&!st.pause&&!st.away){
    if(data.card)next=Math.min(next,data.card.until);
    else{
      const delay=st.work||st.planned||st.timed?Math.min(...reminders().map(k=>left(k))):0;
@@ -647,7 +1030,7 @@ function scheduleTick(){
  tickTimer=setTimeout(tick,Math.max(250,next-ms))
 }
 function tick(){
- settle();checkReminder();
+ settle();checkDay();checkReminder();pushTray();
  if(!pageHidden()&&viewKey()!==painted){render();return}
  if(!pageHidden())updateText();
  if(Date.now()-lastSaved>=10000){save();lastSaved=Date.now()}

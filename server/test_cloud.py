@@ -73,52 +73,70 @@ class ExtendedTest(test_api.SyncTest):
         self.assertEqual(replay["canonical"],[reminder])
         self.assertEqual(self.post("sync",{},self.token)["records"],[reminder])
 
-    def test_primary_reminder_waits_for_old_device_acknowledgement(self):
-        second = str(uuid.uuid4())
-        other = self.post("login", dict(self.creds, device=second))["token"]
-        self.assertIsNone(self.v2("reminders", {})["device"])
-        main = self.v2("reminders", {"action": "select", "revision": 0})
-        self.assertEqual(main["device"], self.device)
-        self.assertGreater(main["expiresAt"], main["serverTime"])
-        stale = self.v2("reminders", {"action": "select", "revision": 0}, other)
-        self.assertEqual(stale["status"], 409)
-        waiting = self.v2("reminders", {"action": "select", "revision": main["revision"]}, other)
-        self.assertEqual((waiting["device"], waiting["requested"]), (self.device, second))
-        self.assertEqual(waiting["expiresAt"], main["expiresAt"])
-        release = {"action": "release", "revision": waiting["revision"]}
-        self.assertEqual(self.v2("reminders", release, other)["device"], self.device)
-        self.assertEqual(self.v2("reminders", release)["device"], second)
-        active = self.v2("reminders", {}, other)
-        self.assertGreater(active["expiresAt"], active["serverTime"])
-        self.assertEqual(self.v2("reminders", release)["device"], second)
+    def test_the_device_in_use_reminds(self):
+        phone, desktop = self.token, self.post("login", dict(self.creds, device=str(uuid.uuid4())))["token"]
+        # Desktop in use: the phone stays quiet, the desktop reminds.
+        self.assertTrue(self.v2("presence", {"idle": 1000, "platform": "desktop"}, desktop)["deliver"])
+        self.assertFalse(self.v2("presence", {"idle": 0, "platform": "android"}, phone)["deliver"])
+        # Desktop idle for 10 minutes: the active phone takes over.
+        self.v2("presence", {"idle": 600000, "platform": "desktop"}, desktop)
+        with patch("cloud.time.time", return_value=time.time() + 600):
+            self.assertTrue(self.v2("presence", {"idle": 0, "platform": "android"}, phone)["deliver"])
+            self.assertFalse(self.v2("presence", {"idle": 900000, "platform": "desktop"}, desktop)["deliver"])
+        # A confirmed round reminds nobody, and "only this device" wins.
+        round_id = "b11e0000-0000-8000-8000-000001c800ff"
+        self.post("sync", {"records": [{"id": round_id, "k": 0, "at": 1000}]}, phone)
+        self.assertTrue(self.v2("presence", {"idle": 0, "round": round_id}, desktop)["confirmed"])
+        self.v2("presence", {"idle": 0, "exclusive": True}, phone)
+        self.assertFalse(self.v2("presence", {"idle": 0}, desktop)["deliver"])
+        listed = self.v2("devices", {})["devices"]
+        self.assertTrue(any(d["exclusive"] for d in listed))
+        # Retired lease calls from older clients get the legacy shape and remind locally.
+        legacy = self.v2("reminders", {})
+        self.assertNotIn("revision", legacy)
+        self.assertTrue(all("platform" not in d for d in legacy["devices"]))
 
-    def test_primary_reminder_handoff_after_offline_expiry(self):
-        second = str(uuid.uuid4())
-        other = self.post("login", dict(self.creds, device=second))["token"]
-        with patch("cloud.time.time", return_value=time.time()):
-            main = self.v2("reminders", {"action": "select", "revision": 0})
-            self.v2("reminders", {"action": "select", "revision": main["revision"]}, other)
-        with patch("cloud.time.time", return_value=(main["expiresAt"] + 1) / 1000):
-            active = self.v2("reminders", {}, other)
-            self.assertEqual(active["device"], second)
-            self.assertIsNone(active["requested"])
-            self.assertGreater(active["expiresAt"], active["serverTime"])
-            self.assertEqual(self.v2("reminders", {})["device"], second)
+    def test_pairing_code_signs_in_a_new_device(self):
+        newcomer = str(uuid.uuid4())
+        ticket = self.post("/v2/pair/new", {"device": newcomer, "label": "公司电脑", "platform": "desktop"})
+        self.assertRegex(ticket["code"], r"^[0-9]{6}$")
+        self.assertTrue(self.post("/v2/pair/poll", {"secret": ticket["secret"]})["pending"])
+        self.assertEqual(self.v2("pair/approve", {"code": "000000" if ticket["code"] != "000000" else "111111"})["status"], 404)
+        self.assertEqual(self.v2("pair/approve", {"code": ticket["code"]})["label"], "公司电脑")
+        session = self.post("/v2/pair/poll", {"secret": ticket["secret"]})
+        self.assertEqual(session["account"], self.auth["account"])
+        self.assertEqual(self.v2("sync", {}, session["token"])["epoch"], self.v2("sync", {})["epoch"])
+        self.assertEqual(self.post("/v2/pair/poll", {"secret": ticket["secret"]})["status"], 410)
+        labels = {d["label"]: d for d in self.v2("devices", {})["devices"]}
+        self.assertEqual(labels["公司电脑"]["platform"], "desktop")
+        self.v2("rename", {"device": newcomer, "label": "家里电脑"})
+        self.assertIn("家里电脑", {d["label"] for d in self.v2("devices", {})["devices"]})
 
-    def test_primary_reminder_renews_past_the_next_morning(self):
-        start = int(time.time())
-        morning = start + 15 * 3600 + 20 * 60
-        with patch("cloud.time.time", return_value=start):
-            initial = self.v2("reminders", {"action": "select", "revision": 0})
-        self.assertLess(initial["expiresAt"], morning * 1000)
-        with patch("cloud.time.time", return_value=start + 6 * 3600 + 60):
-            renewed = self.v2("reminders", {})
-        self.assertEqual(renewed["revision"], initial["revision"])
-        self.assertGreater(renewed["expiresAt"], morning * 1000)
-        with patch("cloud.time.time", return_value=morning):
-            active = self.v2("reminders", {})
-        self.assertEqual(active["device"], self.device)
-        self.assertGreater(active["expiresAt"], active["serverTime"])
+    def test_expired_pairing_code_and_day_overrides(self):
+        ticket = self.post("/v2/pair/new", {"device": str(uuid.uuid4())})
+        with patch("cloud.time.time", return_value=time.time() + 200):
+            self.assertEqual(self.post("/v2/pair/poll", {"secret": ticket["secret"]})["status"], 410)
+            self.assertEqual(self.v2("pair/approve", {"code": ticket["code"]})["status"], 404)
+        change = lambda key, value: dict(key=key, value=value, base=0, mutation=str(uuid.uuid4()))
+        reply = self.v2("sync", {"changes": [change("day/2026-11-24", {"start": "10:30", "off": False})]})
+        self.assertIn("day", reply["features"])
+        self.assertEqual(reply["changes"][0]["value"], {"start": "10:30", "off": False})
+        self.assertEqual(self.v2("sync", {"changes": [change("day/2026-11-25", {"ask": 1})]})["status"], 400)
+
+    def test_spans_shrink_when_the_owner_saw_the_latest_copy(self):
+        key = "spans/2026-11-23/" + self.device
+        first = self.v2("sync", {"changes": [dict(key=key, value=[[0, 100]], base=0, mutation=str(uuid.uuid4()))]})
+        rev = first["changes"][0]["rev"]
+        cut = self.v2("sync", {"changes": [dict(key=key, value=[[0, 40]], base=rev, mutation=str(uuid.uuid4()))], "cursor": rev})
+        self.assertEqual(cut["changes"][0]["value"], [[0, 40]])
+
+    def test_sessions_slide_forward_when_used(self):
+        import api
+        with patch("api.time.time", return_value=time.time() + 40 * 86400):
+            self.assertIn("epoch", self.v2("sync", {}))
+        with patch("api.time.time", return_value=time.time() + 120 * 86400):
+            self.assertIn("epoch", self.v2("sync", {}))
+        self.assertEqual(api.SESSION_SECONDS, 90 * 86400)
 
     def test_recovery_revocation_and_deletion(self):
         other=self.post("login",dict(self.creds,device=str(uuid.uuid4())))["token"]

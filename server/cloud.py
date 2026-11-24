@@ -21,10 +21,24 @@ CREATE TABLE IF NOT EXISTS metadata (name TEXT PRIMARY KEY, value TEXT NOT NULL)
 CREATE TABLE IF NOT EXISTS reminder_devices (
  owner INTEGER PRIMARY KEY, device TEXT, requested TEXT, expires INTEGER NOT NULL,
  revision INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS pairs (
+ code TEXT PRIMARY KEY, secret BLOB UNIQUE NOT NULL, device TEXT NOT NULL, label TEXT NOT NULL,
+ platform TEXT NOT NULL, expires INTEGER NOT NULL, owner INTEGER, token TEXT);
 """
-REMINDER_LEASE_MS = 12 * 60 * 60 * 1000
+FEATURES = ["day", "presence", "pair"]
+RECENT_MS = 3 * 60 * 1000
+PAIR_SECONDS = 120
+PLATFORMS = ("android", "desktop", "ios", "web")
 attempts = collections.OrderedDict()
 attempt_lock = threading.Lock()
+
+
+def migrate(db):
+    """Adds presence columns to devices created by earlier releases."""
+    columns = {row[1] for row in db.execute("PRAGMA table_info(devices)")}
+    for name, kind in (("platform", "TEXT"), ("active", "INTEGER"), ("exclusive", "INTEGER"), ("seen", "INTEGER")):
+        if name not in columns:
+            db.execute("ALTER TABLE devices ADD COLUMN %s %s" % (name, kind))
 
 
 def allowed(peer):
@@ -89,6 +103,10 @@ def valid(key, value):
             and type(value.get("done", False)) is bool)
     if len(parts) < 2 or not valid_day(parts[1]):
         return False
+    if kind == "day" and len(parts) == 2:
+        return value is None or (isinstance(value, dict) and set(value) <= {"start", "end", "off", "work"}
+            and all(hm(value[k]) for k in ("start", "end") if k in value)
+            and all(type(value[k]) is bool for k in ("off", "work") if k in value))
     if kind == "baseline" and len(parts) == 2:
         return isinstance(value, list) and len(value) == 2 and all(number(x, 0, 86400000) for x in value)
     if kind == "correction" and len(parts) == 2:
@@ -125,7 +143,8 @@ def sync_objects(db, owner, body, check):
             accepted.append(mid)
             continue
         if key.startswith("spans/"):
-            v = ranges((current or []) + v)
+            # A device owns its spans: replace when it saw the latest copy, otherwise merge.
+            v = ranges(v if base == rev else (current or []) + v)
         elif base != rev:
             conflicts.append({"key":key,"value":current,"rev":rev,"mutation":mid})
             continue
@@ -137,7 +156,7 @@ def sync_objects(db, owner, body, check):
                       (owner,cursor)).fetchall()
     return {"changes":[{"rev": r, "key": k, "value": json.loads(v)} for r,k,v in rows[:100]],
             "cursor":rows[min(len(rows),100)-1][0] if rows else cursor,"more":len(rows)>100,
-            "accepted":accepted,"conflicts":conflicts,"epoch":epoch}
+            "accepted":accepted,"conflicts":conflicts,"epoch":epoch,"features":FEATURES}
 
 
 def identity(db, owner):
@@ -156,65 +175,133 @@ def revoke_sessions(db,owner,keep=b""):
     db.execute("DELETE FROM sessions WHERE owner=? AND token!=?",(owner,keep))
 
 
-def reminder_device(db, owner, token, body, check, problem):
-    action = body.get("action", "status")
-    check(action in ("status", "select", "release"))
-    if action != "status":
-        check(number(body.get("revision"), 0, 2**63-1))
-    caller = db.execute("SELECT device FROM devices WHERE token=?", (token,)).fetchone()
-    check(caller is not None)
-    caller = caller[0]
-    now = int(time.time() * 1000)
-    row = db.execute("SELECT device,requested,expires,revision FROM reminder_devices WHERE owner=?",
-                     (owner,)).fetchone()
-    device, requested, expires, revision = row or (None, None, 0, 0)
+def attach_device(db, owner, token, body, check):
+    device = body.get("device", str(uuid.uuid4()))
+    label = body.get("label", "Android")
+    platform = body.get("platform", "android")
+    check(is_uuid(device) and isinstance(label, str) and len(label) <= 80 and platform in PLATFORMS)
+    db.execute("DELETE FROM sessions WHERE owner=? AND token IN (SELECT token FROM devices WHERE device=?)", (owner, device))
+    db.execute("DELETE FROM devices WHERE token NOT IN (SELECT token FROM sessions)")
+    now = int(time.time()*1000)
+    db.execute("INSERT INTO devices(token,device,label,platform,active,exclusive,seen) VALUES(?,?,?,?,?,0,?)",
+               (token, device, label, platform, now, now))
 
-    def active(candidate):
-        return db.execute("SELECT MAX(s.expires) FROM sessions s JOIN devices d ON d.token=s.token "
-                          "WHERE s.owner=? AND d.device=? AND s.expires>?",
-                          (owner, candidate, now // 1000)).fetchone()[0]
 
-    if requested and not active(requested):
-        requested, revision = None, revision + 1
-    if requested and expires <= now:
-        device, requested, expires, revision = requested, None, 0, revision + 1
-
-    if action == "select" and caller not in (device, requested):
-        # Check the snapshot before competing devices can replace one another's choices.
-        if body.get("revision") != revision or requested:
-            raise problem(409, "reminder_selection_changed")
-        if expires > now:
-            requested = caller
+def pairing(db, path, body, check, problem, token_hash, session_seconds):
+    """A new device shows a 6-digit code; a signed-in device approves it; the new device polls."""
+    now = int(time.time())
+    db.execute("DELETE FROM pairs WHERE expires<=?", (now - 60,))
+    if path == "/v2/pair/new":
+        device, label, platform = body.get("device"), body.get("label", "新设备"), body.get("platform", "android")
+        check(is_uuid(device) and isinstance(label, str) and len(label) <= 80 and platform in PLATFORMS)
+        for _ in range(20):
+            code = "%06d" % secrets.randbelow(1000000)
+            if not db.execute("SELECT 1 FROM pairs WHERE code=?", (code,)).fetchone():
+                break
         else:
-            device, expires = caller, 0
-        revision += 1
-    if action == "release" and caller == device and requested and body.get("revision") == revision:
-        device, requested, expires, revision = requested, None, 0, revision + 1
+            raise problem(429, "try_later")
+        secret = secrets.token_urlsafe(32)
+        db.execute("INSERT INTO pairs(code,secret,device,label,platform,expires) VALUES(?,?,?,?,?,?)",
+                   (code, token_hash(secret), device, label, platform, now + PAIR_SECONDS))
+        return {"code": code, "secret": secret, "expires": PAIR_SECONDS}
+    secret = body.get("secret")
+    check(isinstance(secret, str) and len(secret) <= 100)
+    row = db.execute("SELECT code,expires,owner,token FROM pairs WHERE secret=?", (token_hash(secret),)).fetchone()
+    if not row:
+        raise problem(410, "pair_unknown")
+    code, expires, owner, token = row
+    if owner is None:
+        if expires <= now:
+            raise problem(410, "pair_expired")
+        return {"pending": True}
+    db.execute("DELETE FROM pairs WHERE code=?", (code,))
+    account_id = db.execute("SELECT account FROM profiles WHERE owner=?", (owner,)).fetchone()[0]
+    name = db.execute("SELECT name FROM users WHERE id=?", (owner,)).fetchone()[0]
+    return {"token": token, "expires": now + session_seconds, "account": account_id, "name": name}
 
-    if caller == device and not requested and expires - now <= REMINDER_LEASE_MS // 2:
-        session_end = active(caller)
-        expires = min(now + REMINDER_LEASE_MS, session_end * 1000) if session_end else 0
-    updated = (device, requested, expires, revision)
-    if updated != (row or (None, None, 0, 0)):
-        db.execute("INSERT OR REPLACE INTO reminder_devices VALUES (?,?,?,?,?)", (owner,) + updated)
-    return {"device": device, "requested": requested, "revision": revision,
-            "expiresAt": expires, "serverTime": now}
+
+def approve(db, owner, body, check, problem, token_hash, session_seconds):
+    code = body.get("code")
+    check(isinstance(code, str) and re.fullmatch(r"[0-9]{6}", code))
+    now = int(time.time())
+    row = db.execute("SELECT device,label,platform FROM pairs WHERE code=? AND expires>? AND owner IS NULL",
+                     (code, now)).fetchone()
+    if not row:
+        raise problem(404, "pair_unknown")
+    device, label, platform = row
+    token = secrets.token_urlsafe(32)
+    db.execute("INSERT INTO sessions VALUES(?,?,?)", (token_hash(token), owner, now + session_seconds))
+    identity(db, owner)
+    attach_device(db, owner, token_hash(token), {"device": device, "label": label, "platform": platform}, check)
+    db.execute("UPDATE pairs SET owner=?, token=? WHERE code=?", (owner, token, code))
+    return {"label": label}
 
 
-def manage(db, owner, key, path, body, check, problem, derive):
+def decide(me, devices, now):
+    """The device in use reminds (desktop first); with nobody active, the most recent phone does."""
+    if any(d["exclusive"] for d in devices):
+        return me["exclusive"]
+    recent = [d for d in devices if now - d["active"] <= RECENT_MS]
+    if not recent:
+        phones = [d for d in devices if d["platform"] != "desktop"] or devices
+        return me in phones and me["active"] >= max(d["active"] for d in phones)
+    desktops = [d for d in recent if d["platform"] == "desktop"]
+    pool = desktops or recent
+    return me in pool and me["active"] >= max(d["active"] for d in pool)
+
+
+def presence(db, owner, token, body, check):
+    """Records this device's activity and says whether it should show a work reminder now."""
+    idle, round_id = body.get("idle", 0), body.get("round")
+    platform, exclusive = body.get("platform"), body.get("exclusive", False)
+    check(number(idle, 0, 400 * 86400000) and (round_id is None or is_uuid(round_id))
+          and (platform is None or platform in PLATFORMS) and type(exclusive) is bool)
+    now = int(time.time() * 1000)
+    check(db.execute("SELECT device FROM devices WHERE token=?", (token,)).fetchone() is not None)
+    db.execute("UPDATE devices SET active=max(coalesce(active,0),?), seen=?, exclusive=?, platform=coalesce(?,platform) "
+               "WHERE token=?", (now - idle, now, int(exclusive), platform, token))
+    rows = db.execute("SELECT d.token,d.device,d.label,coalesce(d.platform,'android'),coalesce(d.active,0),coalesce(d.exclusive,0) "
+                      "FROM devices d JOIN sessions s ON s.token=d.token WHERE s.owner=? AND s.expires>?",
+                      (owner, now // 1000)).fetchall()
+    devices = [{"token": t, "id": d, "label": l, "platform": p, "active": a, "exclusive": bool(x)} for t, d, l, p, a, x in rows]
+    me = next(d for d in devices if d["token"] == token)
+    confirmed = bool(round_id and db.execute(
+        "SELECT 1 FROM records WHERE owner=? AND record_id=? AND deleted=0", (owner, round_id)).fetchone())
+    return {"deliver": decide(me, devices, now) and not confirmed, "confirmed": confirmed, "serverTime": now,
+            "devices": [{"id": d["id"], "label": d["label"], "platform": d["platform"], "active": d["active"],
+                         "exclusive": d["exclusive"], "current": d["token"] == token} for d in devices]}
+
+
+def manage(db, owner, key, path, body, check, problem, derive, token_hash=None, session_seconds=0):
+    if path == "/v2/presence":
+        return presence(db, owner, key, body, check)
+    if path == "/v2/pair/approve":
+        return approve(db, owner, body, check, problem, token_hash, session_seconds)
+    if path == "/v2/rename":
+        device, label = body.get("device"), body.get("label")
+        check(is_uuid(device) and isinstance(label, str) and 0 < len(label.strip()) <= 40)
+        db.execute("UPDATE devices SET label=? WHERE device=? AND token IN (SELECT token FROM sessions WHERE owner=?)",
+                   (label.strip(), device, owner))
+        return {"ok": True}
     if path == "/v2/devices":
-        if "action" in body:
-            return reminder_device(db, owner, key, body, check, problem)
-        rows=db.execute("SELECT coalesce(d.device,''),coalesce(d.label,'旧版设备'),s.expires,s.token=? "
+        rows=db.execute("SELECT coalesce(d.device,''),coalesce(d.label,'旧版设备'),s.expires,s.token=?,"
+                        "coalesce(d.platform,'android'),coalesce(d.active,0),coalesce(d.exclusive,0) "
                         "FROM sessions s LEFT JOIN devices d ON d.token=s.token WHERE s.owner=? AND s.expires>?",
                         (key,owner,int(time.time()))).fetchall()
-        return {"devices":[dict(id=i,label=n,expires=e,current=bool(c)) for i,n,e,c in rows]}
+        devices=[dict(id=i,label=n,expires=e,current=bool(c)) for i,n,e,c,_,_,_ in rows]
+        # Older clients asking for the retired reminder lease get the legacy shape: they remind locally.
+        if "action" in body:
+            return {"devices":devices}
+        for d,row in zip(devices,rows):
+            d.update(platform=row[4],active=row[5],exclusive=bool(row[6]))
+        return {"devices":devices}
     if path == "/v2/revoke":
         device=body.get("device")
         check(is_uuid(device))
         db.execute("DELETE FROM sessions WHERE owner=? AND token IN (SELECT token FROM devices WHERE device=?)",(owner,device))
         db.execute("DELETE FROM devices WHERE token NOT IN (SELECT token FROM sessions)")
         return {"ok":True}
+    check(path in ("/v2/recovery-code","/v2/password","/v2/delete"))
     password=body.get("password")
     check(isinstance(password,str) and len(password)<=128)
     salt, digest=db.execute("SELECT salt,digest FROM users WHERE id=?",(owner,)).fetchone()
@@ -224,13 +311,13 @@ def manage(db, owner, key, path, body, check, problem, derive):
         return {"recovery":recovery(db,owner)}
     if path=="/v2/password":
         new=body.get("newPassword")
-        check(isinstance(new,str) and 10<=len(new)<=128)
+        check(isinstance(new,str) and 8<=len(new)<=128)
         salt=secrets.token_bytes(16)
         db.execute("UPDATE users SET salt=?,digest=? WHERE id=?",(salt,derive(new,salt),owner))
         revoke_sessions(db,owner,key)
         return {"recovery":recovery(db,owner)}
-    check(path=="/v2/delete")
     revoke_sessions(db,owner)
+    db.execute("DELETE FROM pairs WHERE owner=?",(owner,))
     for table in ("records","objects","profiles","reminder_devices"):
         db.execute("DELETE FROM "+table+" WHERE owner=?",(owner,))
     db.execute("DELETE FROM users WHERE id=?",(owner,))

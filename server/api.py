@@ -16,7 +16,8 @@ from socketserver import ThreadingMixIn
 
 DB = os.environ.get("BLINK_DB", "/var/lib/blink-staging/blink.sqlite3")
 BACKUP_ACCESS_FILE = "/etc/blink-backup-access.sha256"
-SESSION_SECONDS = 30 * 86400
+SESSION_SECONDS = 90 * 86400
+RENEW_BELOW = 60 * 86400
 LIMIT = 200
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
@@ -44,6 +45,7 @@ def initialize():
     with closing(sqlite3.connect(DB)) as db:
         db.execute("PRAGMA journal_mode=WAL")
         db.executescript(SCHEMA + cloud.SCHEMA)
+        cloud.migrate(db)
         db.execute("INSERT OR IGNORE INTO metadata VALUES('epoch',?)",(str(uuid.uuid4()),))
         db.commit()
 
@@ -59,7 +61,7 @@ def derive(password, salt):
 def account(db, path, body):
     name, password = body.get("name"), body.get("password")
     check(isinstance(name, str) and 1 <= len(name.strip()) <= 64)
-    check(isinstance(password, str) and 10 <= len(password) <= 128)
+    check(isinstance(password, str) and 8 <= len(password) <= 128)
     name = name.strip().casefold()
     now = int(time.time())
     if path == "/v1/register":
@@ -80,12 +82,7 @@ def account(db, path, body):
     db.execute("DELETE FROM sessions WHERE expires<=?", (now,))
     db.execute("INSERT INTO sessions VALUES(?,?,?)", (token_hash(token), owner, now+SESSION_SECONDS))
     account_id = cloud.identity(db, owner)
-    device = body.get("device", str(uuid.uuid4()))
-    label = body.get("label","Android")
-    check(cloud.is_uuid(device) and isinstance(label,str) and len(label)<=80)
-    db.execute("DELETE FROM sessions WHERE owner=? AND token IN (SELECT token FROM devices WHERE device=?)",(owner,device))
-    db.execute("DELETE FROM devices WHERE token NOT IN (SELECT token FROM sessions)")
-    db.execute("INSERT INTO devices VALUES(?,?,?)",(token_hash(token),device,label))
+    cloud.attach_device(db, owner, token_hash(token), body, check)
     result = {"token":token,"expires":now+SESSION_SECONDS,"account":account_id,"name":name}
     if path == "/v1/register":
         result["recovery"] = cloud.recovery(db,owner)
@@ -193,7 +190,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         try:
-            if self.path not in ("/v1/register", "/v1/login", "/v1/logout", "/v1/sync", "/v2/sync", "/v2/devices", "/v2/revoke", "/v2/recovery-code", "/v2/password", "/v2/delete", "/v2/reset"):
+            if self.path not in ("/v1/register", "/v1/login", "/v1/logout", "/v1/sync", "/v2/sync", "/v2/devices", "/v2/revoke", "/v2/recovery-code", "/v2/password", "/v2/delete", "/v2/reset", "/v2/presence", "/v2/rename", "/v2/pair/new", "/v2/pair/poll", "/v2/pair/approve"):
                 raise Problem(404, "not_found")
             check(self.headers.get_content_type() == "application/json")
             length = int(self.headers.get("Content-Length", "0"))
@@ -201,15 +198,14 @@ class Handler(BaseHTTPRequestHandler):
             body = json.loads(self.rfile.read(length).decode())
             check(isinstance(body, dict))
             with closing(sqlite3.connect(DB, timeout=10)) as db, db:
-                if ((self.path not in ("/v1/sync","/v2/sync","/v1/logout","/v2/devices")
-                        or (self.path == "/v2/devices" and body.get("action", "status") != "status"))
+                if (self.path not in ("/v1/sync","/v2/sync","/v1/logout","/v2/devices","/v2/presence","/v2/pair/poll")
                         and not cloud.allowed(self.client_address[0])):
                     raise Problem(429,"try_later")
                 # Keep authentication and its write in one transaction, including account deletion.
                 db.execute("BEGIN IMMEDIATE")
                 if self.path == "/v2/reset":
                     name,code,new=(body.get(k) for k in ("name","recovery","newPassword"))
-                    check(isinstance(name,str) and isinstance(code,str) and isinstance(new,str) and 10<=len(new)<=128)
+                    check(isinstance(name,str) and isinstance(code,str) and isinstance(new,str) and 8<=len(new)<=128)
                     user=db.execute("SELECT u.id,p.recovery FROM users u JOIN profiles p ON p.owner=u.id WHERE name=?",(name.strip().casefold(),)).fetchone()
                     if not user or not user[1] or not hmac.compare_digest(token_hash(code),user[1]):
                         raise Problem(401,"invalid_credentials")
@@ -219,13 +215,18 @@ class Handler(BaseHTTPRequestHandler):
                     result={"recovery":cloud.recovery(db,user[0])}
                 elif self.path in ("/v1/register", "/v1/login"):
                     result = account(db, self.path, body)
+                elif self.path in ("/v2/pair/new", "/v2/pair/poll"):
+                    result = cloud.pairing(db, self.path, body, check, Problem, token_hash, SESSION_SECONDS)
                 else:
                     auth = self.headers.get("Authorization", "")
                     key = token_hash(auth[7:]) if auth.startswith("Bearer ") else b""
-                    row = db.execute("SELECT owner FROM sessions WHERE token=? AND expires>?",
+                    row = db.execute("SELECT owner,expires FROM sessions WHERE token=? AND expires>?",
                                      (key, int(time.time()))).fetchone()
                     if not row:
                         raise Problem(401, "invalid_session")
+                    # Sliding sessions: any use within 90 days keeps the device signed in.
+                    if row[1] - int(time.time()) < RENEW_BELOW:
+                        db.execute("UPDATE sessions SET expires=? WHERE token=?", (int(time.time())+SESSION_SECONDS, key))
                     if self.path == "/v1/logout":
                         db.execute("DELETE FROM sessions WHERE token=?", (key,))
                         result = {"ok": True}
@@ -234,7 +235,7 @@ class Handler(BaseHTTPRequestHandler):
                     elif self.path == "/v2/sync":
                         result = cloud.sync_objects(db,row[0],body,check)
                     else:
-                        result = cloud.manage(db,row[0],key,self.path,body,check,Problem,derive)
+                        result = cloud.manage(db,row[0],key,self.path,body,check,Problem,derive,token_hash,SESSION_SECONDS)
             self.reply(200, result)
         except Problem as exc:
             self.reply(exc.status, {"error": exc.message})

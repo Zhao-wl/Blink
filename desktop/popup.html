@@ -51,19 +51,28 @@
 </style>
 <header><img src="icon.png" alt=""><span id="reminderTitle"></span></header>
 <p id="message"></p>
-<div class="actions"><button id="yes"></button><button id="later"></button></div>
+<div class="actions" id="actions"></div>
 <script>
   const params=new URLSearchParams(location.search);
-  const kind=Number(params.get('kind'));
-  const retry=params.get('retry')==='1';
-  const yes=document.getElementById('yes');
-  const later=document.getElementById('later');
   document.documentElement.classList.toggle('dark',params.get('theme')==='dark');
-  document.getElementById('reminderTitle').textContent='Blink · '+(retry?'再次提醒 · ':'')+['远眺','离席','喝水'][kind];
-  document.getElementById('message').textContent=['看看远处，让眼睛休息 20 秒。','方便的话，起来走动一下。','方便的话，喝一口水。'][kind];
-  yes.textContent=['开始远眺','开始离席','喝过了'][kind];
-  later.textContent=retry?'跳过本轮':'稍后 5 分钟';
-  yes.onclick=()=>respond(true);
-  later.onclick=()=>respond(false);
+  const actions=document.getElementById('actions');
+  function add(label,answer){const b=document.createElement('button');b.textContent=label;b.onclick=()=>respond(answer);actions.append(b);return b}
+  if(params.get('mode')==='prompt'){
+    document.getElementById('reminderTitle').textContent='Blink · '+params.get('title');
+    document.getElementById('message').textContent=params.get('body');
+    for(const [code,label] of JSON.parse(params.get('actions')||'[]'))add(label,code);
+  }else{
+    const kind=Number(params.get('kind')),retry=params.get('retry')==='1';
+    document.getElementById('reminderTitle').textContent='Blink · '+(retry?'再次提醒 · ':'')+['远眺','离席','喝水'][kind];
+    document.getElementById('message').textContent=['看看远处，让眼睛休息一会儿。','方便的话，起来走动一下。','方便的话，喝一口水。'][kind];
+    add(['开始远眺','开始离席','喝过了'][kind],true);
+    add(params.get('later')||'5 分钟后',false);
+  }
+  // Enter confirms the first action, Esc picks the last one (later / skip).
+  addEventListener('keydown',e=>{
+    const buttons=actions.querySelectorAll('button');
+    if(e.key==='Enter')buttons[0]?.click();
+    if(e.key==='Escape')buttons[buttons.length-1]?.click();
+  });
 </script>
 </html>

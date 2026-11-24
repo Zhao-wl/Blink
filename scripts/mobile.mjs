@@ -9,22 +9,33 @@ if(platform==='android'){
   const dir='android/app/src/main/res/raw';await mkdir(dir,{recursive:true});await copyFile('mobile/blink.wav',dir+'/blink.wav');
   await copyFile('mobile/quiet.wav',dir+'/quiet.wav');
   const java='android/app/src/main/java/com/zhaowl/blink';
-  for(const name of ['MainActivity','BlinkCloudPlugin','ReminderAction','BlinkTimerAlarm','BlinkTimerService','BlinkTimerPlugin','BlinkWorkScheduling'])await copyFile('mobile/android/'+name+'.java',java+'/'+name+'.java');
-  for(const name of ['LockClockActivity','LockFace'])await rm(java+'/'+name+'.java',{force:true});
-  await copyFile('mobile/android/blink_notification.xml','android/app/src/main/res/drawable/blink_notification.xml');
+  for(const name of ['MainActivity','BlinkCloudPlugin','ReminderAction','BlinkTimerAlarm','BlinkTimerService','BlinkTimerPlugin','BlinkRules','BlinkWidget'])await copyFile('mobile/android/'+name+'.java',java+'/'+name+'.java');
+  for(const name of ['LockClockActivity','LockFace','BlinkWorkScheduling'])await rm(java+'/'+name+'.java',{force:true});
+  const res='android/app/src/main/res';
+  for(const sub of ['layout','xml','drawable'])await mkdir(res+'/'+sub,{recursive:true});
+  await copyFile('mobile/android/blink_notification.xml',res+'/drawable/blink_notification.xml');
+  for(const file of ['layout/blink_widget.xml','xml/blink_widget_info.xml','drawable/blink_widget_bg.xml','drawable/blink_widget_button.xml'])
+    await copyFile('mobile/android/res/'+file,res+'/'+file);
+
+  // Rebuild Blink's manifest entries from scratch on every sync so removed features cannot linger.
   const manifest='android/app/src/main/AndroidManifest.xml';
-  const xml=await readFile(manifest,'utf8');
-  const service='<service android:name=".BlinkTimerService" android:exported="false" android:stopWithTask="false" android:foregroundServiceType="specialUse"><property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="User enabled work and break countdown with local reminders"/></service>';
-  const patched=xml.includes('.BlinkTimerService')?xml:xml.replace('</application>',service+'</application>').replace('</manifest>','<uses-permission android:name="android.permission.FOREGROUND_SERVICE"/><uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/></manifest>');
-  const withoutLegacyClock=patched.replace(/<activity\s+android:name="(?:com\.zhaowl\.blink)?\.LockClockActivity"[^>]*\/>/g,'');
-  const receiver='<receiver android:name="com.zhaowl.blink.ReminderAction" android:exported="false"/>';
-  const actions=withoutLegacyClock.includes('com.zhaowl.blink.ReminderAction')?withoutLegacyClock:withoutLegacyClock.replace('</application>',receiver+'</application>').replace('</manifest>','<uses-permission android:name="android.permission.WAKE_LOCK"/><uses-permission android:name="android.permission.TURN_SCREEN_ON"/></manifest>');
-  const alarm='<receiver android:name="com.zhaowl.blink.BlinkTimerAlarm" android:exported="false"><intent-filter><action android:name="android.intent.action.MY_PACKAGE_REPLACED"/><action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"/></intent-filter></receiver>';
-  const withAlarm=actions.includes('com.zhaowl.blink.BlinkTimerAlarm')?actions
-    .replace('<action android:name="android.intent.action.BOOT_COMPLETED"/>','')
-    .replace('<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>','')
-    :actions.replace('</application>',alarm+'</application>');
-  await writeFile(manifest,withAlarm.replace(/android:allowBackup="true"/,'android:allowBackup="false"'));
+  let xml=await readFile(manifest,'utf8');
+  xml=xml.replace(/<service android:name="(?:com\.zhaowl\.blink)?\.BlinkTimerService"[\s\S]*?<\/service>/g,'')
+    .replace(/<receiver android:name="com\.zhaowl\.blink\.(?:ReminderAction|BlinkTimerAlarm|BlinkWidget)"[^>]*\/>/g,'')
+    .replace(/<receiver android:name="com\.zhaowl\.blink\.(?:ReminderAction|BlinkTimerAlarm|BlinkWidget)"[\s\S]*?<\/receiver>/g,'')
+    .replace(/<activity\s+android:name="(?:com\.zhaowl\.blink)?\.LockClockActivity"[^>]*\/>/g,'');
+  const components=[
+    '<service android:name="com.zhaowl.blink.BlinkTimerService" android:exported="false" android:stopWithTask="false" android:foregroundServiceType="specialUse"><property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="User enabled work and break countdown with local reminders"/></service>',
+    '<receiver android:name="com.zhaowl.blink.ReminderAction" android:exported="false"/>',
+    '<receiver android:name="com.zhaowl.blink.BlinkTimerAlarm" android:exported="false"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/><action android:name="android.intent.action.MY_PACKAGE_REPLACED"/><action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"/></intent-filter></receiver>',
+    '<receiver android:name="com.zhaowl.blink.BlinkWidget" android:exported="true" android:label="Blink"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE"/></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/blink_widget_info"/></receiver>'
+  ];
+  xml=xml.replace('</application>',components.join('')+'</application>');
+  for(const permission of ['FOREGROUND_SERVICE','FOREGROUND_SERVICE_SPECIAL_USE','WAKE_LOCK','TURN_SCREEN_ON','RECEIVE_BOOT_COMPLETED','REQUEST_IGNORE_BATTERY_OPTIMIZATIONS','POST_PROMOTED_NOTIFICATIONS']){
+    const tag='<uses-permission android:name="android.permission.'+permission+'"/>';
+    if(!xml.includes(tag))xml=xml.replace('</manifest>',tag+'</manifest>');
+  }
+  await writeFile(manifest,xml.replace(/android:allowBackup="true"/,'android:allowBackup="false"'));
 }else{
   // The web bundle is a resources folder in the SPM-based Capacitor app.
   await copyFile('mobile/blink.wav','ios/App/App/public/blink.wav');

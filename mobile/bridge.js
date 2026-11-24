@@ -21,7 +21,7 @@ if (Capacitor.isNativePlatform()) {
     queue = queue.catch(()=>{}).then(async()=>{
       if(android){
         const channelId=items.length?await channel(pref.sound,pref.buzz):'';
-        await timer.configure({...authorization,items:items.map(item=>({...item,owner:authorization.owner})),channel:channelId,lock:pref.lock!==false,wake:pref.wake===true});
+        await timer.configure({...authorization,items:items.map(item=>({...item,owner:authorization.owner})),channel:channelId,lock:pref.lock!==false,wake:pref.wake===true,persist:pref.persist===true});
         return;
       }
       const liveUpdate=live.setTimer({at:pref.lock===false?0:display?.at||0,title:display?.title||''}).catch(()=>{});
@@ -47,14 +47,18 @@ if (Capacitor.isNativePlatform()) {
     if(handlers.length)handlers.forEach(fn=>fn(token));else waiting=token;
   }
   if(android)timer.addListener('tap',event=>receive(event.token));
+  const nativeHandlers=[];
+  if(android)timer.addListener('native',event=>nativeHandlers.forEach(fn=>fn(event)));
   notifications.addListener('localNotificationActionPerformed',event=>receive(event.notification.extra?.token));
   window.blinkMobile={
     ios:!android,replace,confirmations:owner=>timer.pendingConfirmations({owner}),acknowledge:(owner,ids)=>timer.acknowledge({owner,ids}),
-    validateTap:(owner,token)=>timer.validateTap({owner,token}),
-    stopShared(owner,revision){
-      queue=queue.catch(()=>{}).then(()=>timer.stopShared({owner,revision}));
-      return queue;
-    },
+    onNative(fn){nativeHandlers.push(fn)},
+    lifecycle:async()=>android?timer.lifecycle():{},
+    active:()=>android?timer.active():Promise.resolve(),
+    health:async()=>android?(await timer.health()).rows:[],
+    openSetting:action=>timer.openSetting({action}),
+    async prompt(p){if(android)return timer.prompt({prompt:p,channel:await channel(false,false)})},
+    clearPrompt:id=>android?timer.clearPrompt({id}):Promise.resolve(),
     async exactAllowed(){return (await notifications.checkExactNotificationSetting()).exact_alarm==='granted'},
     async requestExact(){return (await notifications.changeExactNotificationSetting()).exact_alarm==='granted'},
     async consumeTap(){if(android){const {token}=await timer.consumeTap();if(token)receive(token)}},

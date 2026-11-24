@@ -1,6 +1,7 @@
 /* Account data lives in the same atomic local snapshot as its replication cursors. */
 (function(root){
   const HOURS=['start','lunchStart','lunchEnd','end','dinnerStart','dinnerEnd'];
+  const DAYKEYS=['start','end','off','work'];
   const DAY=86400000, clone=x=>JSON.parse(JSON.stringify(x));
   const eq=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
   function union(ranges){
@@ -22,6 +23,13 @@
     for(const b of s.blocks)out['block/'+b.id]=b;
     for(const [day,offset] of Object.entries(s.corrections))out['correction/'+day]=offset;
     if(s.shift)out['shift/'+new Date(s.shift.from+8*3600000).toISOString().slice(0,10)]=s.shift;
+    // Day overrides (leave early, overtime, late start, day off) from yesterday on.
+    const since=new Date(Date.now()+8*3600000-DAY).toISOString().slice(0,10);
+    for(const [day,o] of Object.entries(s.days||{})){
+      if(day<since)continue;
+      const shared={};for(const k of DAYKEYS)if(o[k]!=null)shared[k]=o[k];
+      out['day/'+day]=Object.keys(shared).length?shared:null;
+    }
     return out;
   }
   function observe(s){
@@ -42,6 +50,14 @@
     const last=rows[rows.length-1];
     if(last&&last[1]>=a)last[1]=Math.max(last[1],b);else rows.push([a,b]);
   }
+  // Cut a range out of this device's own spans (time that turned out to be unattended).
+  function unspan(s,day,from,to,midnight){
+    if(!s.cloud||from>=to)return;
+    const key='spans/'+day+'/'+s.cloud.device,rows=s.cloud.local[key];if(!rows)return;
+    const a=from-midnight,b=to-midnight,out=[];
+    for(const [x,y] of rows){if(y<=a||x>=b)out.push([x,y]);else{if(x<a)out.push([x,a]);if(y>b)out.push([b,y]);}}
+    s.cloud.local[key]=out;
+  }
   function rebuild(s,day){
     const c=s.cloud,baseline=c.local['baseline/'+day]||[0,0],all=[];
     for(const [k,v] of Object.entries(c.local)){
@@ -59,6 +75,12 @@
     }else if(kind==='block'){
       s.blocks=s.blocks.filter(b=>b.id!==id);if(value)s.blocks.push(value);
     }else if(kind==='correction')s.corrections[id]=value||0;
+    else if(kind==='day'){
+      s.days=s.days||{};const local={...(s.days[id]||{})};
+      for(const k of DAYKEYS)delete local[k];
+      Object.assign(local,value||{});
+      if(Object.keys(local).length)s.days[id]=local;else delete s.days[id];
+    }
     else if(kind==='shift'){
       if(value?.until>Date.now())s.shift=value;
       else if(!value&&s.shift&&new Date(s.shift.from+8*3600000).toISOString().slice(0,10)===id)s.shift=null;
@@ -102,11 +124,13 @@
       const pending=c.pending[item.key];if(!pending)continue;
       if(pending.mutation!==item.mutation)continue;
       if(item.key.startsWith('baseline/')){apply(s,item.key,item.value);delete c.pending[item.key];}
-      else{c.conflicts[item.key]={mine:pending.value,theirs:item.value};apply(s,item.key,item.value);delete c.pending[item.key];}
+      else if(item.key==='hours'){c.conflicts[item.key]={mine:pending.value,theirs:item.value};apply(s,item.key,item.value);delete c.pending[item.key];}
+      // Everything but the schedule follows the most recent edit: resubmit on top of the server copy.
+      else{pending.base=item.rev;pending.mutation=crypto.randomUUID();}
     }
     // Acknowledgements may precede their position in a paginated pull.
     for(const item of sent)if(reply.accepted.includes(item.mutation)&&c.pending[item.key]?.mutation===item.mutation)delete c.pending[item.key];
     c.cursor=reply.cursor;c.epoch=reply.epoch;
   }
-  root.BlinkSync={accountState,observe,span,rebuild,collect,apply,recordBatch,records,objects,union};
+  root.BlinkSync={accountState,observe,span,unspan,rebuild,collect,apply,recordBatch,records,objects,union};
 })(typeof window==='undefined'?globalThis:window);
