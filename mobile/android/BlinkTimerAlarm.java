@@ -33,6 +33,7 @@ public class BlinkTimerAlarm extends BroadcastReceiver {
 
     private static JSONObject scan(Context context,boolean deliver){
         SharedPreferences prefs=ReminderAction.prefs(context);
+        if(!prefs.contains("owner"))return null;
         JSONArray plan;
         try{plan=new JSONArray(prefs.getString("plan","[]"));}
         catch(JSONException e){return null;}
@@ -44,7 +45,7 @@ public class BlinkTimerAlarm extends BroadcastReceiver {
         JSONObject next=null;
         for(int i=0;i<plan.length();i++){
             JSONObject item=plan.optJSONObject(i);
-            if(item==null)continue;
+            if(item==null||!ReminderAction.eligible(context,item))continue;
             long due=item.optLong("at");
             if(due<=handledThrough||due<restUntil||prefs.getLong("done:"+ReminderAction.id(item),0)>now)continue;
             if(due>now){next=item;break;}

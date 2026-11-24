@@ -38,6 +38,20 @@ test('background notifications skip lunch and pair a reminder with one retry',()
   for(const item of plan){const hour=new Date(item.at+8*3600000).getUTCHours();assert.ok(hour>=9&&hour<18&&hour!==12)}
 });
 
+test('work reminders require the current account to own an unexpired authorization',()=>{
+  const {run}=engine('2026-11-23T09:00');
+  assert.equal(run('workAllowed()'),true);
+  run("key='blink-profile-example';data.cloud={device:'a'}");
+  assert.equal(run('workAllowed()'),false);
+  run("data.cloud.reminder={device:'a',requested:null,localExpires:Date.now()+60000}");
+  assert.equal(run('workAllowed()'),true);
+  run("data.cloud.reminder.requested='b'");
+  assert.equal(run('workAllowed()'),false);
+  run('data.cloud.reminder.requested=null');
+  // Advance the clock directly so the test does not require a cloud observer.
+  assert.equal(run('workAllowed(Date.now()+60000)'),false);
+});
+
 test('dinner pauses eye time and reminders, then resumes the remaining interval',()=>{
   const {run,advance}=engine('2026-11-23T17:50');
   run("data.end='20:00';settle()");

@@ -25,28 +25,66 @@ public class BlinkTimerPlugin extends Plugin {
         getActivity().runOnUiThread(()->configurePlan(ctx,call,plan));
     }
     private void configurePlan(Context ctx,PluginCall call,String plan){
+        if(getActivity().isFinishing()||getActivity().isDestroyed()){call.resolve();return;}
         SharedPreferences prefs = ctx.getSharedPreferences("blink-timer", Context.MODE_PRIVATE);
-        prefs.edit().putString("plan", plan).putString("channel", call.getString("channel","blink-00"))
-            .putBoolean("lock", call.getBoolean("lock",true)).putBoolean("wake",call.getBoolean("wake",true)).apply();
+        String owner=call.getString("owner","");
+        JSObject lease=call.getObject("lease",new JSObject());
+        SharedPreferences.Editor edit=prefs.edit().putString("owner",owner).putString("plan",plan)
+            .putString("channel",call.getString("channel","blink-00"))
+            .putBoolean("lock",call.getBoolean("lock",true)).putBoolean("wake",call.getBoolean("wake",true));
+        ReminderAction.lease(edit,lease);
+        if(!owner.equals(prefs.getString("owner",""))){
+            edit.remove("restUntil").remove("deliveredAt");
+            for(String key:prefs.getAll().keySet())if(key.startsWith("done:"))edit.remove(key);
+        }
+        if(!edit.commit()){call.reject("无法保存后台计时");return;}
+        ReminderAction.clearIneligible(ctx);
         Intent service = new Intent(ctx, BlinkTimerService.class);
         try {
-            BlinkTimerAlarm.schedule(ctx,BlinkTimerAlarm.next(ctx));
-            if (plan.equals("[]")) ctx.stopService(service);
+            org.json.JSONObject next=BlinkTimerAlarm.next(ctx);
+            BlinkTimerAlarm.schedule(ctx,next);
+            if (next==null) ctx.stopService(service);
             else if (Build.VERSION.SDK_INT >= 26) ctx.startForegroundService(service);
             else ctx.startService(service);
             call.resolve();
         } catch (RuntimeException e) { call.reject("后台计时未启动",e); }
     }
+    @PluginMethod public void stopShared(PluginCall call){
+        getActivity().runOnUiThread(()->{
+            Context ctx=getContext();
+            String owner=call.getString("owner","");
+            long revision=call.getData().optLong("revision",-1);
+            if(!ReminderAction.stopShared(ctx,owner,revision)){
+                call.reject("无法停止旧设备提醒");return;
+            }
+            try{
+                org.json.JSONObject next=BlinkTimerAlarm.next(ctx);
+                BlinkTimerAlarm.schedule(ctx,next);
+                BlinkTimerService.updateCountdown(next);
+                call.resolve();
+            }catch(RuntimeException e){call.reject("无法重新排程本机提醒",e);}
+        });
+    }
     @PluginMethod public void pendingConfirmations(PluginCall call){
-        JSObject out=new JSObject();out.put("rows",ReminderAction.receipts(getContext()));call.resolve(out);
+        String owner=call.getString("owner","");
+        org.json.JSONArray rows=ReminderAction.receipts(getContext()),matching=new org.json.JSONArray();
+        for(int i=0;i<rows.length();i++){
+            org.json.JSONObject row=rows.optJSONObject(i);
+            if(row!=null&&owner.equals(row.optString("owner")))matching.put(row);
+        }
+        JSObject out=new JSObject();out.put("rows",matching);call.resolve(out);
     }
     @PluginMethod public void acknowledge(PluginCall call){
         synchronized(ReminderAction.class){
         JSArray ids=call.getArray("ids",new JSArray());
+        String owner=call.getString("owner","");
         org.json.JSONArray rows=ReminderAction.receipts(getContext()),keep=new org.json.JSONArray();
         java.util.HashSet<String> saved=new java.util.HashSet<>();
         for(int i=0;i<ids.length();i++)saved.add(ids.optString(i));
-        for(int i=0;i<rows.length();i++)if(!saved.contains(rows.optJSONObject(i).optString("id")))keep.put(rows.opt(i));
+        for(int i=0;i<rows.length();i++){
+            org.json.JSONObject row=rows.optJSONObject(i);
+            if(row!=null&&(!owner.equals(row.optString("owner"))||!saved.contains(row.optString("id"))))keep.put(row);
+        }
         ReminderAction.prefs(getContext()).edit().putString("receipts",keep.toString()).apply();}
         call.resolve();
     }

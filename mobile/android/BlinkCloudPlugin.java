@@ -32,11 +32,13 @@ import org.json.JSONObject;
 public class BlinkCloudPlugin extends Plugin {
     private final ExecutorService io=Executors.newSingleThreadExecutor();
     private static final String ALIAS="blink-account-session-v1";
+    private static final String CLOUD="https://47.108.62.243/";
     private static final String RELEASE="https://github.com/Zhao-wl/Blink/releases/download/";
     private static final Set<String> ROUTES=new HashSet<>(Arrays.asList("v1/login","v1/register","v1/logout","v1/sync","v2/sync","v2/devices","v2/revoke","v2/reset","v2/password","v2/delete","v2/recovery-code"));
     private boolean stage(){return getContext().getPackageName().equals("com.zhaowl.blink.stage");}
-    private SharedPreferences prefs(){return getContext().getSharedPreferences("blink-account",Context.MODE_PRIVATE);}
-    private SecretKey key() throws Exception {
+    private static SharedPreferences prefs(Context context){return context.getSharedPreferences("blink-account",Context.MODE_PRIVATE);}
+    private SharedPreferences prefs(){return prefs(getContext());}
+    private static SecretKey key() throws Exception {
         KeyStore store=KeyStore.getInstance("AndroidKeyStore");store.load(null);
         if(!store.containsAlias(ALIAS)){
             KeyGenerator generator=KeyGenerator.getInstance("AES","AndroidKeyStore");
@@ -52,8 +54,9 @@ public class BlinkCloudPlugin extends Plugin {
         String sealed=Base64.encodeToString(cipher.getIV(),Base64.NO_WRAP)+"."+Base64.encodeToString(bytes,Base64.NO_WRAP);
         if(!prefs().edit().putString("sealed",sealed).commit())throw new IOException();
     }
-    private JSONObject session() throws Exception {
-        String value=prefs().getString("sealed",null);
+    private JSONObject session() throws Exception {return session(getContext());}
+    private static JSONObject session(Context context) throws Exception {
+        String value=prefs(context).getString("sealed",null);
         if(value==null)return new JSONObject();
         String[] parts=value.split("\\.",2);
         Cipher cipher=Cipher.getInstance("AES/GCM/NoPadding");
@@ -72,6 +75,34 @@ public class BlinkCloudPlugin extends Plugin {
             return out.toByteArray();
         }
     }
+    private static void localizeLease(Context context,JSONObject json,long startedAt,long startedElapsed) throws JSONException {
+        long remaining=Math.max(0,json.getLong("expiresAt")-json.getLong("serverTime"));
+        json.put("localExpires",startedAt+remaining);
+        json.put("elapsedExpires",startedElapsed+remaining);
+        json.put("boot",ReminderAction.bootCount(context));
+    }
+    static JSONObject reminderState(Context context,String owner,String action,long revision) throws Exception {
+        JSONObject session=session(context);
+        if(!owner.equals("blink-profile-"+session.optString("account"))||!session.has("token"))return null;
+        long startedAt=System.currentTimeMillis(),startedElapsed=android.os.SystemClock.elapsedRealtime();
+        HttpURLConnection connection=(HttpURLConnection)new URL(CLOUD+"v2/devices").openConnection(Proxy.NO_PROXY);
+        try{
+            connection.setConnectTimeout(4000);connection.setReadTimeout(8000);
+            connection.setInstanceFollowRedirects(false);connection.setRequestMethod("POST");connection.setDoOutput(true);
+            connection.setRequestProperty("Content-Type","application/json");
+            connection.setRequestProperty("Authorization","Bearer "+session.getString("token"));
+            JSONObject body=new JSONObject().put("action",action).put("revision",revision);
+            try(OutputStream out=connection.getOutputStream()){out.write(body.toString().getBytes(StandardCharsets.UTF_8));}
+            int status=connection.getResponseCode();
+            if(status==401)return session.optString("token").equals(session(context).optString("token"))
+                ?new JSONObject().put("revoked",true):null;
+            if(status!=200)return null;
+            JSONObject reply=new JSONObject(new String(read(connection.getInputStream(),8192),StandardCharsets.UTF_8));
+            if(!reply.has("expiresAt"))return null;
+            localizeLease(context,reply,startedAt,startedElapsed);
+            return reply.put("callerDevice",prefs(context).getString("device",""));
+        }finally{connection.disconnect();}
+    }
     @PluginMethod public void info(PluginCall call){io.execute(()->{try{
         JSONObject s=session();s.remove("token");JSObject result=new JSObject(s.toString());
         result.put("device",device());result.put("enabled",stage());
@@ -87,7 +118,8 @@ public class BlinkCloudPlugin extends Plugin {
             boolean login=route.equals("v1/login")||route.equals("v1/register");
             if(login){body.put("device",device());body.put("label",Build.MODEL);}
             if(!login&&!route.equals("v2/reset")&&!s.optString("account").equals(call.getString("account",""))){call.reject("账号已切换");return;}
-            c=(HttpURLConnection)new URL("https://47.108.62.243/"+route).openConnection(Proxy.NO_PROXY);
+            long startedAt=System.currentTimeMillis(),startedElapsed=android.os.SystemClock.elapsedRealtime();
+            c=(HttpURLConnection)new URL(CLOUD+route).openConnection(Proxy.NO_PROXY);
             c.setConnectTimeout(4000);c.setReadTimeout(12000);c.setInstanceFollowRedirects(false);c.setRequestMethod("POST");c.setDoOutput(true);
             c.setRequestProperty("Content-Type","application/json");
             if(!login&&!route.equals("v2/reset"))c.setRequestProperty("Authorization","Bearer "+s.optString("token"));
@@ -97,9 +129,12 @@ public class BlinkCloudPlugin extends Plugin {
             if(status>=400){call.reject(json.optString("error","request_failed"),Integer.toString(status));return;}
             if(login){
                 session(new JSONObject().put("account",json.getString("account")).put("name",json.getString("name")).put("token",json.getString("token")));
+                ReminderAction.prefs(getContext()).edit().remove("revoked:blink-profile-"+json.getString("account")).apply();
                 json.remove("token");
             }else if(route.equals("v1/logout")||route.equals("v2/delete")){
                 prefs().edit().remove("sealed").commit();
+            }else if(route.equals("v2/devices")&&json.has("expiresAt")){
+                localizeLease(getContext(),json,startedAt,startedElapsed);
             }
             call.resolve(new JSObject(json.toString()));
         }catch(Exception e){call.reject("无法连接 Blink 服务，请检查网络后重试");}finally{if(c!=null)c.disconnect();}

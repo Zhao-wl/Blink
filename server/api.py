@@ -201,7 +201,9 @@ class Handler(BaseHTTPRequestHandler):
             body = json.loads(self.rfile.read(length).decode())
             check(isinstance(body, dict))
             with closing(sqlite3.connect(DB, timeout=10)) as db, db:
-                if self.path not in ("/v1/sync","/v2/sync","/v1/logout","/v2/devices") and not cloud.allowed(self.client_address[0]):
+                if ((self.path not in ("/v1/sync","/v2/sync","/v1/logout","/v2/devices")
+                        or (self.path == "/v2/devices" and body.get("action", "status") != "status"))
+                        and not cloud.allowed(self.client_address[0])):
                     raise Problem(429,"try_later")
                 # Keep authentication and its write in one transaction, including account deletion.
                 db.execute("BEGIN IMMEDIATE")
