@@ -19,7 +19,8 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-      - run: npm ci && npm test && python3 -B server/test_api.py
+      - run: npm ci && npm test && node scripts/test-android-work.mjs
+      - run: python3 -B server/test_api.py && python3 -B -m unittest discover -s server -p test_cloud.py
       - run: npm run android && node scripts/android-stage.mjs
       - run: cd android && ./gradlew :app:assembleDebug
       - name: Sign Android testing package

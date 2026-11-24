@@ -4,12 +4,17 @@
 :root{color-scheme:light;--ink:#302e38;--muted:#67636f;--paper:#faf9f6;--line:#dedbdc;--violet:#685689;--lilac:#eee9f5}*{box-sizing:border-box}body{margin:0;background:#eae9e5;color:var(--ink);font:15px/1.5 "Inter","PingFang SC","Microsoft YaHei",system-ui,sans-serif}button,input,select{font:inherit;color:inherit}button{cursor:pointer;background:none;border:0;min-height:48px}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--violet);outline-offset:2px}button:active{opacity:.75}svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round;flex:none}.shell{max-width:460px;background:var(--paper);margin:auto;min-height:100dvh;position:relative;padding:0 22px 100px}.brand{height:65px;display:flex;align-items:center;gap:9px;font-size:23px;font-weight:740;letter-spacing:-1.6px}.mark{width:32px;height:32px;border-radius:10px;background:var(--ink);display:grid;place-items:center;color:#eee8fa}.mark svg{width:23px}.top{display:flex;justify-content:space-between;align-items:baseline;margin:6px 0 18px}h1{font-size:31px;letter-spacing:-1.5px;margin:0}h2{font-size:17px;margin:0}small,.muted{color:var(--muted);font-size:13px}.hero{background:var(--lilac);border-radius:25px;padding:18px 18px 14px}.hero-head,.row,.bar{display:flex;align-items:center;justify-content:space-between;gap:12px}.hero-head{font-size:14px}.state{display:flex;align-items:center;gap:7px;color:#514561}.state:before{content:"";width:7px;height:7px;border-radius:50%;background:#817094}.dial{width:190px;height:190px;position:relative;margin:12px auto;display:grid;place-content:center;text-align:center}.dial:before{content:"";position:absolute;inset:0;border-radius:100%;background:repeating-conic-gradient(from -1deg,#b6a8c8 0 1.25deg,transparent 1.25deg 6deg);mask:radial-gradient(circle,transparent 64%,#000 65%)}.dial:after{content:"";position:absolute;inset:11px;border:1px solid #d6ccdf;border-radius:50%;pointer-events:none}.digits{font:500 clamp(35px,10vw,47px)/1.25 "Inter",system-ui,sans-serif;letter-spacing:-2.8px;font-variant-numeric:tabular-nums}.dial small{font-size:12px;color:#5c5366}.hero-actions{display:flex;gap:8px}.hero-actions button{border-radius:14px;flex:1;font-size:14px;background:#ffffff83}.hero-actions .primary,.primary{background:var(--ink);color:white}.section{margin:22px 0 6px}.row{width:100%;text-align:left;padding:10px 0;min-height:62px;border-bottom:1px solid var(--line)}.lead{display:flex;align-items:center;gap:13px}.tile{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:#e3ede8;color:#456859}.tile.sand{background:#f1e7d8;color:#836847}.row strong{font-size:15px;font-weight:600}.row small{display:block}.end{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:13px}.end svg{width:16px}.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(460px,100%);background:#faf9f6f5;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 10px max(7px,env(safe-area-inset-bottom));z-index:2}.nav button{flex:1;display:grid;justify-items:center;gap:2px;font-size:12px;color:var(--muted)}.nav i{display:grid;place-items:center;width:50px;height:27px;border-radius:20px}.nav [aria-current=page]{color:var(--ink);font-weight:650}.nav [aria-current=page] i{background:#e6deee}.panel{padding:16px;border:1px solid var(--line);border-radius:17px;margin:12px 0}.panel p{margin:6px 0}.field{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:56px;border-bottom:1px solid var(--line)}select,input[type=time]{border:1px solid var(--line);border-radius:8px;background:white;padding:7px;min-height:42px}input[type=checkbox]{width:21px;height:21px;accent-color:var(--violet)}.days{display:flex;justify-content:space-between;gap:2px}.days button{flex:1;padding:0;border-radius:12px}.days [aria-pressed=true]{background:var(--lilac);color:#544566}.empty{margin:35px 0;color:var(--muted)}dialog{border:0;border-radius:22px;background:var(--paper);color:var(--ink);padding:22px;width:min(380px,calc(100% - 32px))}dialog::backdrop{background:#28233060}dialog button{display:block;width:100%;border-radius:12px;margin-top:5px}dialog p{color:var(--muted)}.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);width:max-content;max-width:90%;border-radius:12px;color:white;background:var(--ink);padding:8px 14px;pointer-events:none}.toast:empty{display:none}.record-time{font-variant-numeric:tabular-nums;color:var(--muted)}@media(min-width:600px){.shell{box-shadow:0 0 50px #36323a0b}}@media(max-height:720px){.brand{height:52px}.dial{width:154px;height:154px}.section{margin-top:16px}}
 .scene-tabs{background:#efede9;padding:4px;border-radius:16px}.scene-tabs button{font-size:14px}.scene-tabs [aria-pressed=true]{background:white;box-shadow:0 1px 4px #32283e19}.scene-note{display:flex;justify-content:space-between;align-items:center;min-height:48px}.scene-note button{font-size:13px;color:var(--violet)}.timeline{display:grid;gap:12px;margin-top:12px}.slot{display:grid;grid-template-columns:46px 1fr;gap:14px;align-items:start}.stamp{font-size:13px;font-variant-numeric:tabular-nums;padding-top:16px;color:var(--muted)}.strip{position:relative;background:#eee9f5;border-radius:16px;padding:13px 16px}.strip:before{content:"";position:absolute;top:21px;left:-10px;width:5px;height:5px;border-radius:50%;background:#89779e}.strip.k1{background:#f3eade}.strip.k2{background:#e5eee8}.strip p{font-size:13px;margin:3px 0;color:#57545d}.strip button{font-size:14px;min-height:44px;padding:4px 9px;color:#514361}.strip .controls{margin:5px -7px -5px}.stamp{align-self:stretch;border-right:1px solid var(--line)}.strip strong{font-size:16px}.strip small{font-size:12px}.section-line{display:flex;align-items:center;justify-content:space-between}.section-line button{font-size:13px;color:var(--violet)}.strip.due{outline:2px solid #776389}.nav [data-due=true] i{outline:2px solid #806699}.meter{background:#eee9f5;padding:14px 16px;border-radius:17px;display:flex;align-items:center;justify-content:space-between;margin:0 0 18px}.meter strong{display:block;font-size:24px;font-variant-numeric:tabular-nums}.meter button{border-radius:12px;background:white;padding:0 12px}.field input{max-width:55%}.bar span{font-variant-numeric:tabular-nums}.focus-clock{text-align:center;padding:clamp(65px,17dvh,150px) 0 40px}.focus-clock h1{font-size:17px;font-weight:500;letter-spacing:.03em;color:var(--muted)}#countdown{font:500 clamp(68px,18vw,94px)/1.3 system-ui,sans-serif;letter-spacing:-.065em;font-variant-numeric:tabular-nums;margin:4px 0 22px}#clockActions button{padding:0 20px;border-radius:24px;color:var(--violet)}#clockActions button:first-child{background:var(--lilac)}.scene-note>strong{font-weight:550}.feed{list-style:none;padding:0;margin:4px 0}.feed-row{width:100%;display:grid;grid-template-columns:47px 14px 1fr auto;align-items:center;gap:9px;min-height:57px;text-align:left;padding:0;color:var(--ink)}.feed-row time{font-size:13px;font-variant-numeric:tabular-nums}.feed li{position:relative}.feed li:not(:last-child):after{content:"";position:absolute;top:50%;height:100%;left:62px;border-left:1px solid var(--line);pointer-events:none}.feed-row i{justify-self:center;z-index:1;width:10px;height:10px;border:1.5px solid currentColor;border-radius:50%;background:var(--paper)}.recorded .feed-row i{background:#537160;color:#537160}.due .feed-row i{background:#807198;outline:3px solid #e4deec}.upcoming .feed-row{color:var(--muted)}.upcoming .feed-row strong{font-weight:450}.due .feed-row small{color:#634d81;font-weight:650}.hours{margin-top:8px}.hours-row{display:grid;grid-template-columns:minmax(44px,1fr) minmax(0,98px) auto minmax(0,98px);gap:6px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}.hours-row input{width:100%;min-width:0;box-sizing:border-box;font:inherit}#workPrefs{border-top:1px solid var(--line);margin-top:16px}#workPrefs summary{padding:14px 0;cursor:pointer;font-weight:600}#dayException{color:var(--muted);font-size:13px}#nudge{position:fixed;z-index:4;bottom:calc(80px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(408px,calc(100% - 32px));box-sizing:border-box;padding:16px;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:18px;box-shadow:0 7px 28px #2923321c}.nudge-body{display:flex;align-items:center;gap:12px}.nudge-icon{display:grid;place-items:center;border-radius:50%;width:38px;height:38px;background:var(--lilac)}.nudge-body strong{display:block;font-size:16px}.nudge-actions{display:flex;gap:8px;margin-top:12px}.nudge-actions button{flex:1;border-radius:12px;min-height:48px}.nudge-actions button:first-child{background:var(--lilac);font-weight:600}@media(pointer:fine){#nudge{left:auto;right:20px;bottom:20px;transform:none}}#delivery summary{cursor:pointer;padding:14px 0}#delivery p{font-size:13px;color:var(--muted)}.shell{padding-top:env(safe-area-inset-top)}.nudge-actions button:focus-visible{outline:2px solid currentColor}.mode-tabs{display:flex;padding:4px;border-radius:17px;background:var(--lilac)}.mode-tabs button{flex:1;border-radius:13px;font-weight:600}.mode-tabs [aria-pressed=true]{background:var(--ink);color:var(--paper)}.mode-tabs [aria-pressed=true]::before{content:'✓';margin-right:8px}.mark{background:#24343a}.brand .mark svg{width:30px;height:30px}
 :root[data-theme=dark]{color-scheme:dark;--ink:#edeef1;--paper:#191b21;--muted:#b3b4bf;--line:#393c45;--violet:#d3c2ef;--lilac:#35313f}
-[data-theme=dark] body{background:#101116}[data-theme=dark] .nav{background:var(--paper)}[data-theme=dark] :is(.scene-tabs,.meter,.strip,.nav [aria-current=page] i){background:var(--lilac)}[data-theme=dark] :is(input,select,.meter button,.scene-tabs [aria-pressed=true]){background:#262930;color:var(--ink)}[data-theme=dark] :is(.strip p,.strip button,.days [aria-pressed=true],.due .feed-row small){color:var(--violet)}[data-theme=dark] :is(.primary,.toast){color:var(--paper)}[data-theme=dark] .tile{color:#9ddbba;background:#253d32}[data-theme=dark] .tile.sand{color:#e3c599;background:#3c332a}</style></head><body>
+[data-theme=dark] body{background:#101116}[data-theme=dark] .nav{background:var(--paper)}[data-theme=dark] :is(.scene-tabs,.meter,.strip,.nav [aria-current=page] i){background:var(--lilac)}[data-theme=dark] :is(input,select,.meter button,.scene-tabs [aria-pressed=true]){background:#262930;color:var(--ink)}[data-theme=dark] :is(.strip p,.strip button,.days [aria-pressed=true],.due .feed-row small){color:var(--violet)}[data-theme=dark] :is(.primary,.toast){color:var(--paper)}[data-theme=dark] .tile{color:#9ddbba;background:#253d32}[data-theme=dark] .tile.sand{color:#e3c599;background:#3c332a}</style><link rel="stylesheet" href="desktop-ui.css"></head><body>
 <div class="shell"><header class="brand"><span class="mark" id="logo"></span>Blink</header><main id="app"></main><nav class="nav" aria-label="主导航" id="nav"></nav></div><dialog id="dialog"></dialog><aside id="nudge" hidden aria-label="休息与饮水提醒"><div class="nudge-body"><span class="nudge-icon" id="nudgeIcon" aria-hidden="true"></span><div role="status"><small id="nudgeType"></small><strong id="nudgeTitle"></strong></div></div><div class="nudge-actions"><button id="accept"></button><button id="postpone"></button></div></aside><div class="toast" id="toast" role="status"></div>
 <script src="sync.js"></script><script src="account.js"></script><script>
 const icons={eye:'<path d="M2 12s3.6-6.3 10-6.3S22 12 22 12s-3.6 6.3-10 6.3S2 12 2 12Z"/><circle cx="12" cy="12" r="2.6"/>',today:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/>',record:'<path d="M5 4h14v16H5zM8.5 8h7M8.5 12h7M8.5 16h4"/>',plan:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18m-12 5h3"/>',water:'<path d="M12 3c-1.8 3.5-6 7.2-6 11a6 6 0 0 0 12 0c0-3.8-4.2-7.5-6-11Z"/>',rest:'<path d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5Zm12 1h2a2.5 2.5 0 0 1 0 5h-2M7 3v2m4-2v2M3 21h16"/>',plus:'<path d="M12 5v14M5 12h14"/>',arrow:'<path d="m9 5 7 7-7 7"/>'};
 const svg=k=>'<svg aria-hidden="true" viewBox="0 0 24 24">'+icons[k]+'</svg>';
 const el=id=>document.getElementById(id),app=el('app'),modal=el('dialog');
+const desktop=!!window.blinkDesktop;
+if(desktop){
+ document.documentElement.dataset.platform='desktop';
+ app.before(el('nav'));
+}
 const tabs=['今日','记录','日程'],kinds=['远眺','离席','喝水'];
 let tab=0, edit=0, notice, chosen;
 const guestKey='blink-auto-v2';let key=localStorage.getItem('blink-active-profile')||guestKey;
@@ -72,7 +77,9 @@ function boundary(ms,end,st){
   return Math.min(...points.filter(x=>x>ms));
 }
 function context(st){const tag=st.day+':'+st.work+(st.timed?':session':'');if(tag!==data.context){data.context=tag;clearSystemCard(data.card);data.card=null;data.deferredRounds={};data.progress=[0,0,0];data.snooze=[0,0,0]}}
-let lastVisibleSample=Date.now(), visible=!document.hidden;
+let desktopHidden=false;
+const pageHidden=()=>desktopHidden||document.hidden;
+let lastVisibleSample=Date.now(), visible=!pageHidden();
 function settle(end=Date.now()){
   // Visible time requires a recent observation. A suspended tab supplies none.
   const observedFrom=visible&&end-lastVisibleSample<5000?lastVisibleSample:end;
@@ -117,13 +124,6 @@ function startSession(minutes){
   for(let t=from;t<until;){const st=status(t);if(st.work){until=t;break}t=boundary(t,until,st)}
   data.session={from,until};context(status(from));save();render()
 }
-function openLockClock(){
-  const show=async()=>{try{await syncFace(Date.now());await window.blinkMobile.openFace()}catch{say('计时页未能打开')}};
-  const st=status(Date.now());
-  if(st.work||st.timed){show();return}
-  sheet('锁屏计时','选择本次定时用眼时长，熄屏后继续计时。可在首页提前结束。',
-    [30,60,90,120].map(n=>[n+' 分钟',()=>{startSession(n);show()}]))
-}
 function toggleSession(){
   settle();
   if(data.session){data.session=null;context(status(Date.now()));save();render();return}
@@ -157,30 +157,43 @@ const reminderMessages=['方便的话，看看约 6 米外的地方。','起来�
 const mobileDevice=()=>navigator.userAgentData?.mobile??/Android|iPhone|iPad/i.test(navigator.userAgent);
 const supportsSystem=()=>!!window.blinkMobile||!!window.blinkDesktop||window.isSecureContext&&/^https?:$/.test(location.protocol)&&'serviceWorker' in navigator&&'Notification' in window;
 const systemEnabled=()=>supportsSystem()&&data.delivery?.enabled&&(window.blinkMobile||window.blinkDesktop||Notification.permission==='granted');
-let worker,openedReminder=null,posted='',failed='',deliveryOpen=false;
+let worker,workerRegistration,openedReminder=null,posted='',failed='',deliveryOpen=false;
 async function registration(){
-  if(!worker)worker=navigator.serviceWorker.register('./blink-notifications.js').then(()=>navigator.serviceWorker.ready).catch(e=>{worker=null;throw e});
+  if(!worker)worker=navigator.serviceWorker.register('./blink-notifications.js').then(()=>navigator.serviceWorker.ready)
+    .then(reg=>workerRegistration=reg).catch(e=>{worker=null;throw e});
   return worker
 }
-function deliverySettings(){
+function deliverySettings(parent){
  const section=document.createElement('details');section.id='delivery';section.open=deliveryOpen;section.ontoggle=()=>{if(section.isConnected)deliveryOpen=section.open};
  section.innerHTML='<summary>通知设置</summary><label class="field">系统通知<input type="checkbox" id="systemOn"></label><label class="field">提示音<input type="checkbox" id="soundOn"></label><label class="field">震动<input type="checkbox" id="buzzOn"></label><p id="deliveryHint"></p>';
- el('app').append(section);const pref=data.delivery??={enabled:false,sound:false,buzz:false};
+ parent.append(section);const pref=data.delivery??={enabled:false,sound:false,buzz:false};
  const enabled=el('systemOn');enabled.checked=!!systemEnabled();enabled.disabled=!supportsSystem();
- el('deliveryHint').textContent=!supportsSystem()?'系统通知需要在支持通知的浏览器中通过 HTTPS 或 localhost 打开。':mobileDevice()?'锁屏显示、亮屏和声振组合由手机系统决定。':'提醒在桌面右下角显示，可直接确认。';
- enabled.onchange=async()=>{if(enabled.checked){try{if(window.blinkMobile||window.blinkDesktop){if(!await (window.blinkMobile||window.blinkDesktop).request())throw Error()}else{if(await Notification.requestPermission()!=='granted')throw Error();await registration()}pref.enabled=true;if(window.blinkMobile)nativePlanSignature=''}catch{pref.enabled=false;say('请检查系统通知权限')}}else pref.enabled=false;save();render()};
+ el('deliveryHint').textContent=desktop?'开启后，即使 Blink 最小化，提醒也会出现在屏幕右下角。':!supportsSystem()?'系统通知需要在支持通知的浏览器中通过 HTTPS 或 localhost 打开。':mobileDevice()?'锁屏显示、亮屏和声振组合由手机系统决定。':'提醒在桌面右下角显示，可直接确认。';
+ enabled.onchange=async()=>{
+   if(enabled.checked){
+     try{
+       if(window.blinkMobile||desktop){
+         if(!await (window.blinkMobile||window.blinkDesktop).request())throw Error();
+       }else{
+         if(await Notification.requestPermission()!=='granted')throw Error();
+         await registration();
+       }
+       pref.enabled=true;
+       if(window.blinkMobile)nativePlanSignature='';
+     }catch{pref.enabled=false;say('请检查系统通知权限')}
+   }else{
+     pref.enabled=false;
+     if(desktop){clearSystemCard(data.card);posted=''}
+   }
+   save();render();
+ };
  for(const [id,k] of [['soundOn','sound'],['buzzOn','buzz']]){const input=el(id);input.checked=pref[k];input.disabled=!supportsSystem()||(k==='buzz'&&(window.blinkDesktop||window.blinkMobile?.ios));input.onchange=()=>{pref[k]=input.checked;save();syncBackground()}}
  if(window.blinkMobile){
    const label=document.createElement('label');label.className='field';label.textContent='锁屏显示倒计时';const toggle=document.createElement('input');toggle.type='checkbox';toggle.checked=pref.lock!==false;toggle.onchange=()=>{pref.lock=toggle.checked;save();syncBackground()};label.append(toggle);section.append(label);
    if(!window.blinkMobile.ios){
      const wake=document.createElement('label');wake.className='field';wake.textContent='提醒时亮屏约 15 秒';
-     const wakeToggle=document.createElement('input');wakeToggle.type='checkbox';wakeToggle.checked=pref.wake!==false;wakeToggle.disabled=!pref.enabled;
+     const wakeToggle=document.createElement('input');wakeToggle.type='checkbox';wakeToggle.checked=pref.wake===true;wakeToggle.disabled=!pref.enabled;
      wakeToggle.onchange=()=>{pref.wake=wakeToggle.checked;save();syncBackground()};wake.append(wakeToggle);section.append(wake);
-     const field=document.createElement('label');field.className='field';field.textContent='工作时自动显示锁屏计时页';
-     const auto=document.createElement('input');auto.type='checkbox';auto.checked=pref.autoFace!==false;
-     auto.onchange=()=>{pref.autoFace=auto.checked;save();syncBackground()};field.append(auto);section.append(field);
-     const open=document.createElement('button');open.textContent='手动打开计时页';section.append(open);
-     open.onclick=openLockClock;
    }
    if(!window.blinkMobile.ios&&pref.enabled){
      const exact=document.createElement('button');exact.textContent='允许锁屏准时提醒';exact.hidden=true;section.append(exact);
@@ -207,11 +220,17 @@ function clearSystemCard(card){
    for(const item of items)if(item.data?.id===card.id)item.close()
  }).catch(()=>{})
 }
+function workAllowed(at=Date.now()){
+ if(key===guestKey)return true;
+ if(data.cloud?.reminderLegacy===true)return true;
+ const reminder=data.cloud?.reminder;
+ return !!(reminder?.device&&reminder.device===data.cloud.device&&!reminder.requested&&at<reminder.localExpires);
+}
 async function postSystem(card){
  const id=card.id,token=id+':'+Number(!!card.retry);
  if(posted===token)return;posted=token;
  try{
-   if(window.blinkMobile){await window.blinkMobile.show({...card,rest:restDuration(card.k)},kinds[card.k],reminderMessages[card.k],data.delivery);return}
+   if(window.blinkMobile){await window.blinkMobile.show({...card,owner:key,shared:key!==guestKey&&!!card.round,rest:restDuration(card.k)},kinds[card.k],reminderMessages[card.k],data.delivery);return}
    if(window.blinkDesktop){window.blinkDesktop.show({...card,sound:!!data.delivery.sound,theme:document.documentElement.dataset.theme});return}
    const reg=await registration();
    if(data.card?.id!==id||!systemEnabled())return;
@@ -220,7 +239,7 @@ async function postSystem(card){
    if(!mobileDevice())options.actions=[{action:'confirm',title:reminderLabels[card.k]}];
    await reg.showNotification('Blink · '+(card.retry?'再次提醒 · ':'')+kinds[card.k],options);
    if(!pref.sound&&pref.buzz&&!document.hidden)navigator.vibrate?.(160);
- }catch{failed=id;if(!document.hidden)paintCard(card)}
+}catch{failed=id;if(!pageHidden())paintCard(card)}
 }
 function openReminder(id,confirm){
  refreshStored();settle();const card=data.card,st=status(Date.now());
@@ -252,16 +271,21 @@ function paintCard(card){
 }
 function checkReminder(){
  const ms=Date.now(),st=status(ms);
- if(modal.open&&!document.hidden){paintCard(null);return}
- const useSystem=systemEnabled()&&(window.blinkDesktop||mobileDevice()||document.hidden||!document.hasFocus());
- if(document.hidden&&!useSystem){paintCard(null);return}
+ if(st.work&&!workAllowed(ms)){
+   if(data.card){clearSystemCard(data.card);data.card=null;save()}
+   paintCard(null);return
+ }
+ const hidden=pageHidden();
+ if(modal.open&&!hidden){paintCard(null);return}
+ const useSystem=systemEnabled()&&(window.blinkDesktop||mobileDevice()||hidden||!document.hasFocus());
+ if(hidden&&!useSystem){paintCard(null);return}
  let card=data.card;
  if(card&&(st.pause||st.meal||!frequency(card.k)||left(card.k))){clearSystemCard(card);data.card=null;card=null;save()}
  if(st.pause||st.meal){paintCard(null);return}
  if(card&&!card.id){card.id=crypto.randomUUID();save()}
- if(window.blinkMobile&&document.hidden){paintCard(null);return}
+ if(window.blinkMobile&&hidden){paintCard(null);return}
  if(card&&ms>=card.until){
-   if(!document.hidden&&!el('nudge').hidden&&el('nudge').contains(document.activeElement))return;
+   if(!hidden&&!el('nudge').hidden&&el('nudge').contains(document.activeElement))return;
    if(card.system&&!card.retry&&!data.snooze[card.k]&&ms<card.until+5*minute){
      card.retry=true;card.until=ms+5*minute;openedReminder=null;save()
    }else{restart(card.k,card.system||data.snooze[card.k]?0:5*minute);save();card=null}
@@ -279,13 +303,16 @@ function checkReminder(){
  if(card&&useSystem&&openedReminder!==card.id&&failed!==card.id){
    if(!card.system){card.system=true;card.until=ms+5*minute;save()}
    postSystem(card);paintCard(null)
- }else paintCard(document.hidden?null:card)
+ }else paintCard(hidden?null:card)
 }
 function home(){
  const st=status(Date.now()),next=reminders()[0],resting=st.meal||st.pause;
+ const heading=desktop?'h2':'h1';
  const label=sessionEndsFirst(st,next)?'距离定时结束':st.meal?st.meal+'结束':st.pause?(st.pause.kind===0?'远眺结束':'离席休息结束'):next==null?'当前提醒已关闭':(left(next)?'距离下次':'现在可以')+['远眺','离席休息','喝水'][next];
- app.innerHTML='<div class="mode-tabs" role="group" aria-label="当前运行模式"><button id="workMode" aria-pressed="'+st.work+'">工作</button><button id="offMode" aria-pressed="'+!st.work+'">非工作</button></div>'+
- '<div class="scene-note"><small>'+ (st.meal?st.meal+'中':st.work?'工作计时中':st.timed?'定时用眼 · 至 '+time(data.session.until):'按用屏计时')+'</small>'+(!st.work?'<button id="sessionToggle">'+(st.timed?'结束定时':'定时用眼')+'</button>':'')+'</div><section class="focus-clock"><h1>'+label+'</h1><div id="countdown" role="timer"></div><div id="clockActions"></div></section>';
+ app.innerHTML=(desktop?bar('今日',st.day)+'<div class="timer-panel">':'')+
+ '<div class="mode-tabs" role="group" aria-label="当前运行模式"><button id="workMode" aria-pressed="'+st.work+'">工作</button><button id="offMode" aria-pressed="'+!st.work+'">非工作</button></div>'+
+ '<div class="scene-note"><small>'+ (st.meal?st.meal+'中':st.work?'工作计时中':st.timed?'定时用眼 · 至 '+time(data.session.until):'按用屏计时')+'</small>'+(!st.work?'<button id="sessionToggle">'+(st.timed?'结束定时':'定时用眼')+'</button>':'')+'</div><section class="focus-clock"><'+heading+'>'+label+'</'+heading+'><div id="countdown" role="timer"></div><div id="clockActions"></div></section>'+
+ (desktop?'</div>':'');
  el('workMode').onclick=()=>{if(!status(Date.now()).work)clockShift()};
  el('offMode').onclick=()=>{if(status(Date.now()).work)clockShift()};
  if(el('sessionToggle'))el('sessionToggle').onclick=toggleSession;
@@ -296,7 +323,6 @@ function home(){
    action(['开始远眺','开始离席','喝过了'][next],()=>takeReminder(next));
    if(!left(next))action(delayLabel(next),()=>deferReminder(next))
  }else if(!resting)action('设置提醒',()=>{edit=scene();tab=2;render()});
- if(!st.work&&window.blinkMobile&&!window.blinkMobile.ios)action('锁屏计时',openLockClock);
  updateText()
 }
 function updateText(){const ms=Date.now(),st=status(ms);
@@ -362,8 +388,11 @@ function showWeek(){
 function records(){
  const ms=Date.now(),day=dayKey(ms);
  app.innerHTML='<div class="section-line"><h1>记录</h1><button id="week">近七天</button></div>'+
+   (desktop?'<div class="desktop-grid record-grid">':'')+
    '<section class="meter"><div><small>今日用眼总时长 · 估算</small><strong id="total"></strong><small id="reason"></small></div><button id="correct">修正</button></section>'+
-   '<div class="section-line section"><h2>今日时间轴</h2><button id="addActivity">记一次</button></div><ol id="feed" class="feed"></ol>';
+   (desktop?'<section class="desktop-panel">':'')+
+   '<div class="section-line section"><h2>今日时间轴</h2><button id="addActivity">记一次</button></div><ol id="feed" class="feed"></ol>'+
+   (desktop?'</section></div>':'');
  el('week').onclick=showWeek;el('correct').onclick=()=>correct(day);
  el('addActivity').onclick=()=>sheet('记录活动','选择刚做过的活动。',kinds.map((label,k)=>[label,()=>{settle();log(k);render()}]));
  const feed=el('feed'),labels={recorded:'已记录',due:'已到点 · 待处理',upcoming:'预计提醒'};
@@ -391,10 +420,14 @@ function frequencyField(parent,title,kind,mode){
   label.append(select);parent.append(label)
 }
 function schedule(){
-  app.innerHTML=bar('日程')+'<div class="days scene-tabs" id="planMode" role="group" aria-label="日程模式"></div><section id="planBody"></section>';
-  deliverySettings();
-  if(window.blinkAccounts)window.blinkAccounts.settings(app);
-  const appearance=document.createElement('label');appearance.className='field';appearance.innerHTML='外观<select id="appearance"><option value="system">跟随系统</option><option value="light">亮色</option><option value="dark">暗色</option></select>';app.append(appearance);
+  app.innerHTML=bar('日程')+
+    (desktop?'<div class="desktop-grid schedule-grid"><div class="desktop-panel">':'')+
+    '<div class="days scene-tabs" id="planMode" role="group" aria-label="日程模式"></div><section id="planBody"></section>'+
+    (desktop?'</div><section class="desktop-panel preferences" id="preferences"><h2>应用设置</h2></section></div>':'');
+  const preferences=desktop?el('preferences'):app;
+  deliverySettings(preferences);
+  if(window.blinkAccounts)window.blinkAccounts.settings(preferences);
+  const appearance=document.createElement('label');appearance.className='field';appearance.innerHTML='外观<select id="appearance"><option value="system">跟随系统</option><option value="light">亮色</option><option value="dark">暗色</option></select>';preferences.append(appearance);
   el('appearance').value=data.theme||'system';el('appearance').onchange=e=>{data.theme=e.target.value;save();applyTheme()};
   ['工作日','非工作'].forEach((name,index)=>option(el('planMode'),name,edit===index,()=>{edit=index;render()}));
   const body=el('planBody');
@@ -452,7 +485,9 @@ function backgroundPlan(ms){
          for(const retry of [false,true]){
            const when=fire+(retry?5*minute:0);
            if(when>=stop||items.length>=60)break;
-           items.push({slot:items.length+1,token,k,rest:restDuration(k),round:st.work?roundId(k,t):undefined,at:when,expires:Math.min(stop,when+5*minute),retry,title:kinds[k],body:reminderMessages[k]});
+           const round=st.work?roundId(k,t):undefined;
+           if(round&&data.logs.some(row=>row.id===round))break;
+           items.push({slot:items.length+1,token,k,rest:restDuration(k),round,shared:st.work&&key!==guestKey,at:when,expires:Math.min(stop,when+5*minute),retry,title:kinds[k],body:reminderMessages[k]});
            lastDelivery=when;
          }
        }
@@ -462,24 +497,6 @@ function backgroundPlan(ms){
    t=stop
  }
  return items
-}
-function faceRows(ms,items){
- const rows=[],end=ms+3*dayMs;
- for(let from=ms;from<end;){
-   const st=status(from),stop=boundary(from,end,st);
-   if(st.work||st.timed){
-     let t=from;
-     while(t<stop){
-       const next=items.find(item=>item.at>t&&item.at<=stop);
-       const until=st.meal||st.pause||!next?stop:next.at;
-       const label=st.meal?st.meal+'结束':st.pause?(st.pause.kind===0?'远眺结束':'离席结束'):
-         next?'距离下次'+next.title:st.timed?'定时结束':'本段工作结束';
-       rows.push({from:t,until,work:st.work,label});t=until;
-     }
-   }
-   from=stop
- }
- return rows
 }
 // The native receipt survives process death. Persist the same round ID before acknowledging it.
 function applyLockConfirmation(row){
@@ -501,60 +518,94 @@ function applyLockConfirmation(row){
  data.logs.unshift({id,k,at})
 }
 function viewKey(){const st=status(Date.now());return [st.day,st.work,st.meal,st.pause?.from,st.planned,st.timed,sessionEndsFirst(st,reminders()[0]),...[0,1,2].map(k=>frequency(k)>0&&!left(k)),...todayBlocks().map(b=>b.at<=time(now()))].join('|')}
-let painted='',lastSaved=0;
-function render(persist=true){settle();if(persist)save();painted=viewKey();document.title='Blink · '+tabs[tab];Array.from(el('nav').children).forEach((b,i)=>{if(i===tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});[home,records,schedule][tab]();checkReminder();syncBackground()}
+let painted='',lastSaved=0,tickTimer;
+function render(persist=true){settle();if(persist)save();painted=viewKey();document.title='Blink · '+tabs[tab];Array.from(el('nav').children).forEach((b,i)=>{if(i===tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});[home,records,schedule][tab]();checkReminder();syncBackground();scheduleTick()}
 el('logo').innerHTML='<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#96dfc3" stroke="none" d="M3 14 Q14 24 29 12 Q19 31 4 20 Z"/><circle cx="21" cy="9" r="4" fill="#ffc58c" stroke="none"/></svg>';
 function applyTheme(){const dark=data.theme==='dark'||(data.theme!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=dark?'dark':'light';document.querySelector('meta[name="theme-color"]').content=dark?'#191b21':'#faf9f6'}
 applyTheme();matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme);
 tabs.forEach((label,i)=>{const b=document.createElement('button');b.innerHTML='<i>'+svg(['today','record','plan'][i])+'</i>'+label;b.onclick=()=>{if(i===2&&tab!==2){edit=scene();frequenciesOpen=false}tab=i;window.scrollTo(0,0);render()};el('nav').append(b)});
 function refreshStored(){try{const saved=JSON.parse(localStorage.getItem(key));if(saved&&saved.cursor>data.cursor)data=loadMealTimes(saved)}catch{}}
-document.addEventListener('visibilitychange',()=>{refreshStored();settle();visible=!document.hidden;render()});
-window.addEventListener('pagehide',()=>{if(visible){refreshStored();settle();save()}});
+function visibilityChanged(){refreshStored();settle();visible=!pageHidden();render()}
+document.addEventListener('visibilitychange',visibilityChanged);
+window.addEventListener('pagehide',event=>{
+ clearTimeout(tickTimer);
+ if(visible){refreshStored();settle();save()}
+ if(!event.persisted&&data.card?.system)workerRegistration?.active?.postMessage({type:'blink-clear',id:data.card.id})
+});
+window.addEventListener('pageshow',event=>{if(event.persisted)render()});
 window.addEventListener('storage',e=>{if(e.key===key&&e.newValue){const latest=JSON.parse(e.newValue);if(latest.cursor>=data.cursor){data=loadMealTimes(latest);if(!document.hidden)render(false)}}});
 let nativePlanSignature='';
-function syncFace(ms,plan=backgroundPlan(ms)){
- return window.blinkMobile.configureFace({auto:data.delivery?.autoFace!==false,timed:data.delivery?.lock!==false,rows:faceRows(ms,plan)})
-}
 function syncBackground(){
  if(!window.blinkMobile)return;
- const ms=Date.now(),pref=data.delivery||{},android=!window.blinkMobile.ios;
- const plan=pref.enabled||android?backgroundPlan(ms):[],items=pref.enabled?plan:[];
- if(android)syncFace(ms,plan).catch(()=>say('锁屏计时页未能更新'));
+ const ms=Date.now(),pref=data.delivery||{};
+ const account=key!==guestKey?data.cloud:null;
+ const lease=account?.reminder??null;
+ const legacyWork=account?.reminderLegacy===true;
+ const canWork=workAllowed(ms);
+ const monitorWork=!!(pref.enabled&&!window.blinkMobile.ios&&account);
+ const items=pref.enabled?backgroundPlan(ms).filter(item=>!item.shared||monitorWork||canWork):[];
  const st=status(ms),current=st.work||st.timed||st.planned;
- const display=current&&pref.enabled?items[0]:null;
- const fingerprint=JSON.stringify([pref.enabled,pref.sound,pref.buzz,pref.lock,pref.wake,data.breakMinutes,items.map(i=>[i.k,Math.round(i.at/1000),i.retry]),display?.k]);
+ const display=current?items.find(item=>!item.shared||canWork):null;
+ const workCheckedElapsed=account?.reminderCheckedElapsed,workBoot=account?.reminderBoot;
+ const fingerprint=JSON.stringify([key,lease?.device,lease?.requested,lease?.revision,lease?.expiresAt,monitorWork,legacyWork,pref.enabled,pref.sound,pref.buzz,pref.lock,pref.wake,data.breakMinutes,items.map(i=>[i.k,Math.round(i.at/1000),i.round,i.retry]),display?.k]);
  if(nativePlanSignature===fingerprint)return;
  nativePlanSignature=fingerprint;
- const old=JSON.parse(localStorage.getItem('blink-pending')||'[]').filter(i=>i.at<=ms&&i.expires>ms);
- localStorage.setItem('blink-pending',JSON.stringify([...old,...items]));
- window.blinkMobile.replace(items,pref,display).catch(()=>{nativePlanSignature='';say('后台提醒未启动，请检查系统权限')})
+ const pendingKey='blink-pending:'+key;
+ const old=JSON.parse(localStorage.getItem(pendingKey)||'[]').filter(i=>i.at<=ms&&i.expires>ms&&(!i.shared||monitorWork||canWork));
+ localStorage.setItem(pendingKey,JSON.stringify([...old,...items]));
+ window.blinkMobile.replace(items,pref,display,{owner:key,lease,monitorWork,legacyWork,workCheckedElapsed,workBoot}).catch(()=>{nativePlanSignature='';say('后台提醒未启动，请检查系统权限')})
+}
+function applyNativeReminderAuthority(authority){
+ const cloud=data.cloud;
+ if(!cloud||!Number.isSafeInteger(authority?.checkedElapsed)||!Number.isSafeInteger(authority.boot))return;
+ if(cloud.reminderBoot===authority.boot&&cloud.reminderCheckedElapsed>=authority.checkedElapsed)return;
+ cloud.reminderCheckedElapsed=authority.checkedElapsed;cloud.reminderBoot=authority.boot;
+ if(authority.legacy){cloud.reminderLegacy=true;delete cloud.reminder}
+ else{cloud.reminder=authority.lease;delete cloud.reminderLegacy}
+}
+async function openMobileReminder(token){
+ const card=data.card?.id===token?data.card:null;
+ const pendingKey='blink-pending:'+key,ms=Date.now();
+ const pending=JSON.parse(localStorage.getItem(pendingKey)||'[]');
+ const row=card?null:pending.find(item=>item.token===token&&item.at<=ms&&ms<item.expires);
+ if(!card&&!row){say('这条提醒已结束');return}
+ const shared=card?key!==guestKey&&!!card.round:row.shared;
+ if(shared&&!window.blinkMobile.ios){
+   const owner=key,profile=data;
+   const result=await window.blinkMobile.validateTap(owner,token).catch(()=>null);
+   if(key!==owner||data!==profile)return;
+   if(!result?.valid){say('这条提醒已结束');return}
+   applyNativeReminderAuthority(result.authority);
+ }
+ const now=Date.now();
+ if(shared&&!workAllowed(now)){say('这条提醒已结束');return}
+ if(card){openReminder(token,false);return}
+ if(now>=row.expires){say('这条提醒已结束');return}
+ const latest=JSON.parse(localStorage.getItem(pendingKey)||'[]');
+ localStorage.setItem(pendingKey,JSON.stringify(latest.filter(item=>item.token!==token)));
+ settle();const st=status(now);if(st.pause||st.meal||!frequency(row.k))return;
+ data.progress[row.k]=Math.max(data.progress[row.k],frequency(row.k)*minute);
+ data.card={id:token,k:row.k,round:row.round,until:now+5*minute,retry:row.retry};openedReminder=token;tab=0;render()
 }
 let importingConfirmations=false;
 async function importLockConfirmations(){
  if(importingConfirmations||!window.blinkMobile||window.blinkMobile.ios)return;
  importingConfirmations=true;
+ const owner=key,profile=data;
  try{
-   const {rows}=await window.blinkMobile.confirmations();if(!rows.length)return;
+   const {rows}=await window.blinkMobile.confirmations(owner);if(!rows.length||key!==owner||data!==profile)return;
    rows.sort((a,b)=>a.at-b.at).forEach(applyLockConfirmation);settle();
-   localStorage.setItem(key,JSON.stringify(data));
-   await window.blinkMobile.acknowledge(rows.map(r=>r.id));render();window.blinkAccounts?.changed()
+   if(!save())return;
+   await window.blinkMobile.acknowledge(owner,rows.map(r=>r.id));render();window.blinkAccounts?.changed()
  }finally{importingConfirmations=false}
 }
 if(window.blinkMobile){
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){importLockConfirmations().catch(()=>{});window.blinkMobile.consumeTap()}});
- window.blinkMobile.listen(token=>{
-   if(data.card?.id===token){openReminder(token,false);return}
-   const pending=JSON.parse(localStorage.getItem('blink-pending')||'[]'),ms=Date.now();
-   const row=pending.find(x=>x.token===token&&x.at<=ms&&ms<=x.expires);
-   if(!row){say('这条提醒已结束');return}
-   localStorage.setItem('blink-pending',JSON.stringify(pending.filter(x=>x.token!==token)));
-   settle();const st=status(ms);if(st.pause||st.meal||!frequency(row.k))return;
-   data.progress[row.k]=Math.max(data.progress[row.k],frequency(row.k)*minute);
-   data.card={id:token,k:row.k,round:row.round,until:ms+5*minute,retry:row.retry};openedReminder=token;tab=0;render()
- });
+ window.blinkMobile.listen(openMobileReminder);
  importLockConfirmations().catch(()=>{});window.blinkMobile.consumeTap().catch(()=>{});
 }
 if(window.blinkDesktop){
+ window.blinkDesktop.onVisibility(hidden=>{desktopHidden=hidden;visibilityChanged()});
  window.blinkDesktop.listen((id,yes)=>{
    if(yes)openReminder(id,true);else if(data.card?.id===id)deferReminder(data.card.k)
  });
@@ -567,6 +618,8 @@ if(window.blinkCloudNative&&window.BlinkAccounts){
   window.blinkAccounts=window.BlinkAccounts({
     native:window.blinkCloudNative, modal, say, render, settle, save, createState, loadMealTimes, dayKey, midnight,
     get:()=>data, getKey:()=>key, guestKey,
+    refreshReminders:()=>{if(modal.open)syncBackground();else render(false)},
+    stopWorkReminders:revision=>window.blinkMobile.stopShared(key,revision),
     switchTo:(nextKey,state)=>{
       data=loadMealTimes(state);key=nextKey;
       if(!save())throw Error('保存失败');
@@ -578,7 +631,26 @@ if(window.blinkCloudNative&&window.BlinkAccounts){
 render();
 const landing=new URLSearchParams(location.hash.slice(1));
 if(landing.has('reminder')){openReminder(landing.get('reminder'),landing.get('action')==='confirm');history.replaceState(null,'',location.href.split('#')[0])}
-setInterval(()=>{if(document.hidden&&(window.blinkMobile||!systemEnabled()))return;settle();checkReminder();
- if(viewKey()!==painted){render()}else updateText();
- if(Date.now()-lastSaved>=10000){save();lastSaved=Date.now()}},1000);
+function scheduleTick(){
+ clearTimeout(tickTimer);
+ if(!pageHidden()){tickTimer=setTimeout(tick,1000);return}
+ if(window.blinkMobile||!systemEnabled())return;
+ const ms=Date.now(),st=status(ms);
+ let next=boundary(ms,ms+dayMs,st);
+ if(!st.meal&&!st.pause&&(!st.work||workAllowed(ms))){
+   if(data.card)next=Math.min(next,data.card.until);
+   else{
+     const delay=st.work||st.planned||st.timed?Math.min(...reminders().map(k=>left(k))):0;
+     if(delay||reminders().some(k=>!left(k)))next=Math.min(next,Math.max(ms+delay,data.nextCardAt||0));
+   }
+ }
+ tickTimer=setTimeout(tick,Math.max(250,next-ms))
+}
+function tick(){
+ settle();checkReminder();
+ if(!pageHidden()&&viewKey()!==painted){render();return}
+ if(!pageHidden())updateText();
+ if(Date.now()-lastSaved>=10000){save();lastSaved=Date.now()}
+ scheduleTick()
+}
 </script></body></html>

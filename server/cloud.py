@@ -18,7 +18,11 @@ CREATE TABLE IF NOT EXISTS objects (
  mutation TEXT NOT NULL, UNIQUE(owner,key));
 CREATE INDEX IF NOT EXISTS object_updates ON objects(owner,rev);
 CREATE TABLE IF NOT EXISTS metadata (name TEXT PRIMARY KEY, value TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS reminder_devices (
+ owner INTEGER PRIMARY KEY, device TEXT, requested TEXT, expires INTEGER NOT NULL,
+ revision INTEGER NOT NULL);
 """
+REMINDER_LEASE_MS = 12 * 60 * 60 * 1000
 attempts = collections.OrderedDict()
 attempt_lock = threading.Lock()
 
@@ -152,8 +156,55 @@ def revoke_sessions(db,owner,keep=b""):
     db.execute("DELETE FROM sessions WHERE owner=? AND token!=?",(owner,keep))
 
 
+def reminder_device(db, owner, token, body, check, problem):
+    action = body.get("action", "status")
+    check(action in ("status", "select", "release"))
+    if action != "status":
+        check(number(body.get("revision"), 0, 2**63-1))
+    caller = db.execute("SELECT device FROM devices WHERE token=?", (token,)).fetchone()
+    check(caller is not None)
+    caller = caller[0]
+    now = int(time.time() * 1000)
+    row = db.execute("SELECT device,requested,expires,revision FROM reminder_devices WHERE owner=?",
+                     (owner,)).fetchone()
+    device, requested, expires, revision = row or (None, None, 0, 0)
+
+    def active(candidate):
+        return db.execute("SELECT MAX(s.expires) FROM sessions s JOIN devices d ON d.token=s.token "
+                          "WHERE s.owner=? AND d.device=? AND s.expires>?",
+                          (owner, candidate, now // 1000)).fetchone()[0]
+
+    if requested and not active(requested):
+        requested, revision = None, revision + 1
+    if requested and expires <= now:
+        device, requested, expires, revision = requested, None, 0, revision + 1
+
+    if action == "select" and caller not in (device, requested):
+        # Check the snapshot before competing devices can replace one another's choices.
+        if body.get("revision") != revision or requested:
+            raise problem(409, "reminder_selection_changed")
+        if expires > now:
+            requested = caller
+        else:
+            device, expires = caller, 0
+        revision += 1
+    if action == "release" and caller == device and requested and body.get("revision") == revision:
+        device, requested, expires, revision = requested, None, 0, revision + 1
+
+    if caller == device and not requested and expires - now <= REMINDER_LEASE_MS // 2:
+        session_end = active(caller)
+        expires = min(now + REMINDER_LEASE_MS, session_end * 1000) if session_end else 0
+    updated = (device, requested, expires, revision)
+    if updated != (row or (None, None, 0, 0)):
+        db.execute("INSERT OR REPLACE INTO reminder_devices VALUES (?,?,?,?,?)", (owner,) + updated)
+    return {"device": device, "requested": requested, "revision": revision,
+            "expiresAt": expires, "serverTime": now}
+
+
 def manage(db, owner, key, path, body, check, problem, derive):
     if path == "/v2/devices":
+        if "action" in body:
+            return reminder_device(db, owner, key, body, check, problem)
         rows=db.execute("SELECT coalesce(d.device,''),coalesce(d.label,'旧版设备'),s.expires,s.token=? "
                         "FROM sessions s LEFT JOIN devices d ON d.token=s.token WHERE s.owner=? AND s.expires>?",
                         (key,owner,int(time.time()))).fetchall()
@@ -180,7 +231,7 @@ def manage(db, owner, key, path, body, check, problem, derive):
         return {"recovery":recovery(db,owner)}
     check(path=="/v2/delete")
     revoke_sessions(db,owner)
-    for table in ("records","objects","profiles"):
+    for table in ("records","objects","profiles","reminder_devices"):
         db.execute("DELETE FROM "+table+" WHERE owner=?",(owner,))
     db.execute("DELETE FROM users WHERE id=?",(owner,))
     return {"ok":True}

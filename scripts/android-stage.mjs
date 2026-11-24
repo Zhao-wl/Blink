@@ -7,7 +7,7 @@ let text=await readFile(gradle,'utf8');
 text=text.replace(/applicationId "com.zhaowl.blink(?:.stage)?"/,'applicationId "com.zhaowl.blink.stage"')
   .replace(/versionCode \d+/,'versionCode '+code).replace(/versionName "[^"]+"/,'versionName "0.2.'+code+'"');
 await writeFile(gradle,text);
-let manifest=(await readFile(xml,'utf8')).replace(/android:name="\.(MainActivity|LockClockActivity|BlinkTimerService)"/g,'android:name="com.zhaowl.blink.$1"');
+let manifest=(await readFile(xml,'utf8')).replace(/android:name="\.(MainActivity|BlinkTimerService)"/g,'android:name="com.zhaowl.blink.$1"');
 if(!manifest.includes('android:networkSecurityConfig'))manifest=manifest.replace('<application','<application android:networkSecurityConfig="@xml/blink_stage_network"');
 if(!manifest.includes('REQUEST_INSTALL_PACKAGES'))manifest=manifest.replace('</manifest>','<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/></manifest>');
 await writeFile(xml,manifest);

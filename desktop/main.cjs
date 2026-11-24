@@ -1,24 +1,26 @@
 const {app,BrowserWindow,Menu,Tray,nativeImage,screen,ipcMain,powerMonitor,shell}=require('electron');
 const path=require('node:path');
-let main,popup,tray,active,expiryTimer,quitting=false;
+let main,popup,tray,active,expiryTimer;
 if(!app.requestSingleInstanceLock()){app.quit()}else{
 app.on('second-instance',()=>{main?.show();main?.focus()});
-app.on('before-quit',()=>{quitting=true});
 app.whenReady().then(()=>{
   app.setAppUserModelId('com.zhaowl.blink');
-  main=new BrowserWindow({title:'Blink',width:470,height:780,minWidth:360,minHeight:520,
+  main=new BrowserWindow({title:'Blink',width:1120,height:740,minWidth:680,minHeight:520,
     webPreferences:{preload:path.join(__dirname,'preload.cjs'),sandbox:true,contextIsolation:true,backgroundThrottling:false}});
   main.webContents.setWindowOpenHandler(()=>({action:'deny'}));
   main.webContents.on('will-navigate',event=>event.preventDefault());
   main.loadFile(path.join(__dirname,'../www/index.html'));
-  main.on('close',event=>{if(!quitting){event.preventDefault();main.hide()}});
+  main.on('closed',()=>{clear();app.quit()});
+  const sendVisibility=()=>main.webContents.send('reminder:visibility',main.isMinimized()||!main.isVisible());
+  for(const event of ['minimize','restore','show','hide'])main.on(event,sendVisibility);
+  main.webContents.on('did-finish-load',sendVisibility);
   tray=new Tray(nativeImage.createFromPath(path.join(__dirname,'icon.png')).resize({width:20,height:20}));
   tray.setToolTip('Blink');tray.on('click',()=>main.show());
   tray.setContextMenu(Menu.buildFromTemplate([{label:'打开 Blink',click:()=>main.show()},{label:'退出',click:()=>app.quit()}]));
   app.on('activate',()=>main.show());
   const reconcile=()=>{
     if(active&&active.until<=Date.now())clear();
-    main.webContents.send('reminder:resume');
+    if(!main.isDestroyed())main.webContents.send('reminder:resume');
   };
   powerMonitor.on('resume',reconcile);
   powerMonitor.on('unlock-screen',reconcile);
@@ -37,8 +39,10 @@ ipcMain.on('reminder:show',(event,card)=>{
   clear();active={id:card.id,until:card.until};
   expiryTimer=setTimeout(clear,card.until-Date.now());
   const area=screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).workArea;
-  const win=new BrowserWindow({width:330,height:128,x:area.x+area.width-346,y:area.y+area.height-144,
+  const width=356,height=152,inset=16;
+  const win=new BrowserWindow({width,height,x:area.x+area.width-width-inset,y:area.y+area.height-height-inset,
     frame:false,resizable:false,alwaysOnTop:true,skipTaskbar:true,show:false,
+    backgroundColor:card.theme==='dark'?'#202432':'#ffffff',
     webPreferences:{preload:path.join(__dirname,'popup-preload.cjs'),sandbox:true,contextIsolation:true}});
   popup=win;
   win.once('ready-to-show',()=>{

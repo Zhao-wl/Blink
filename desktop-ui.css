@@ -1,0 +1,157 @@
+[data-platform=desktop] {
+  --canvas: #f2f4f8;
+  --sidebar: #f8f9fc;
+  --surface: #fff;
+  --ink: #202639;
+  --muted: #59637a;
+  --line: #dce1eb;
+  --accent: #503caf;
+  --on-accent: #fff;
+  --selection: #eae5fb;
+  --timer-surface: #edeafb;
+  --notice-shadow: 0 8px 24px #20263926;
+}
+
+[data-platform=desktop][data-theme=dark] {
+  --canvas: #151822;
+  --sidebar: #1b1e2a;
+  --surface: #202432;
+  --ink: #edf0fa;
+  --muted: #b3bdd4;
+  --line: #383e52;
+  --accent: #cbbdff;
+  --on-accent: #261b56;
+  --selection: #352d54;
+  --timer-surface: #29243f;
+  --notice-shadow: 0 8px 24px #0006;
+}
+
+[data-platform=desktop] body { background: var(--canvas); }
+[data-platform=desktop] button { min-height: 38px; }
+[data-platform=desktop] .shell {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  grid-template-rows: 82px auto;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  box-shadow: none;
+  background: linear-gradient(to right, var(--sidebar) 189px, var(--line) 189px 190px, var(--canvas) 190px);
+}
+
+[data-platform=desktop] .brand {
+  grid-area: 1 / 1;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 82px;
+  padding: 0 24px;
+  background: var(--sidebar);
+  border-right: 1px solid var(--line);
+}
+
+[data-platform=desktop] .nav {
+  grid-area: 2 / 1;
+  position: sticky;
+  top: 82px;
+  left: auto;
+  bottom: auto;
+  align-self: start;
+  display: grid;
+  justify-content: stretch;
+  gap: 6px;
+  width: auto;
+  padding: 0 14px;
+  transform: none;
+  border: 0;
+  background: transparent;
+}
+
+[data-platform=desktop] .nav button {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 9px;
+  min-height: 44px;
+  font-size: 14px;
+}
+
+[data-platform=desktop] .nav i { width: 26px; height: 26px; }
+[data-platform=desktop] .nav [aria-current=page] { background: var(--selection); color: var(--accent); }
+[data-platform=desktop] .nav [aria-current=page] i { background: transparent; }
+[data-platform=desktop] button:hover { box-shadow: inset 0 0 0 1px currentColor; }
+
+[data-platform=desktop] #app {
+  grid-area: 1 / 2 / 3;
+  width: min(100%, 1360px);
+  padding: 36px clamp(24px, 3.5vw, 56px) 100px;
+  min-width: 0;
+  margin-inline: auto;
+}
+
+[data-platform=desktop] #app > :is(.top,.section-line) { margin: 0 0 24px; }
+[data-platform=desktop] #app > .top small { font-variant-numeric: tabular-nums; }
+[data-platform=desktop] .desktop-grid {
+  display: grid;
+  gap: 20px;
+  align-items: start;
+}
+
+[data-platform=desktop] .record-grid { grid-template-columns: minmax(200px, .85fr) minmax(0, 1.4fr); }
+[data-platform=desktop] .schedule-grid { grid-template-columns: minmax(0, 1.45fr) minmax(240px, 1fr); }
+[data-platform=desktop] :is(.desktop-panel,.timer-panel,.meter) {
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+[data-platform=desktop] .timer-panel {
+  max-width: 680px;
+  background: var(--timer-surface);
+}
+[data-platform=desktop] .mode-tabs { max-width: 260px; background: var(--surface); }
+[data-platform=desktop] .mode-tabs [aria-pressed=true],
+[data-platform=desktop] #clockActions button:first-child {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+[data-platform=desktop] .scene-note { margin-top: 6px; }
+[data-platform=desktop] .focus-clock { padding: 24px 0 32px; }
+[data-platform=desktop] .focus-clock h2 { font-size: 16px; font-weight: 500; color: var(--muted); }
+[data-platform=desktop] #countdown { font-size: clamp(74px, 8vw, 112px); margin-bottom: 16px; }
+[data-platform=desktop] #clockActions button { border-radius: 9px; min-height: 42px; }
+[data-platform=desktop] .meter { margin: 0; flex-wrap: wrap; }
+[data-platform=desktop] .meter button { background: var(--selection); color: var(--accent); }
+[data-platform=desktop] .desktop-panel > .section-line:first-child { margin-top: 0; }
+[data-platform=desktop] .preferences h2 { margin-bottom: 8px; }
+[data-platform=desktop] .preferences .field { min-height: 48px; }
+[data-platform=desktop] .preferences > .field:last-child { border-bottom: 0; }
+[data-platform=desktop] :is(#week,#addActivity,#sessionToggle,.section-line button) { color: var(--accent); }
+[data-platform=desktop] :is(#nudge,.toast) {
+  left: auto;
+  right: 22px;
+  bottom: 22px;
+  transform: none;
+  box-shadow: var(--notice-shadow);
+}
+
+[data-platform=desktop] #nudge {
+  width: min(356px, calc(100% - 44px));
+  background: var(--surface);
+  border-color: var(--line);
+  border-radius: 14px;
+}
+
+[data-platform=desktop] .nudge-icon { background: var(--selection); color: var(--accent); flex: none; }
+[data-platform=desktop] .nudge-actions button { min-height: 36px; border-radius: 8px; }
+[data-platform=desktop] .nudge-actions button:first-child { background: var(--accent); color: var(--on-accent); }
+[data-platform=desktop] .toast { z-index: 5; max-width: min(380px, calc(100% - 44px)); padding: 12px 16px; }
+[data-platform=desktop] #nudge:not([hidden]) + .toast { bottom: calc(22px + 140px); }
+
+@media (max-width: 880px) {
+  [data-platform=desktop] .desktop-grid { grid-template-columns: minmax(0, 1fr); }
+}

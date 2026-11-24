@@ -5,7 +5,8 @@ window.BlinkAccounts=function(env){
   const clone=x=>JSON.parse(JSON.stringify(x));
   const profile=id=>'blink-profile-'+id;
   const errorText=e=>({invalid_credentials:'账号或密码不正确',name_unavailable:'此用户名已使用',
-    invalid_request:'请检查输入内容',invalid_session:'登录已过期，本机记录仍已保存',try_later:'操作频繁，请稍后再试'}[e.message]||e.message);
+    invalid_request:'请检查输入内容',invalid_session:'登录已过期，本机记录仍已保存',
+    reminder_selection_changed:'主设备状态已变化，请重新打开登录设备后再试',try_later:'操作频繁，请稍后再试'}[e.message]||e.message);
   const rpc=(route,body={},account=info?.account||'')=>native.request({route,body,account});
   function display(text){message=text;const node=document.getElementById('cloud-status');if(node)node.textContent=text;}
   function button(parent,text,fn){
@@ -29,6 +30,61 @@ window.BlinkAccounts=function(env){
   function fresh(){return env.loadMealTimes(env.createState(false));}
   function switchTo(k,s){env.switchTo(k,s);message='';nextTry=0;failures=0;}
   function scope(s){return s.cloud&&info?.account&&getKey()===profile(info.account);}
+  function legacyReminderReply(reply){
+    return reply&&typeof reply==='object'&&!('revision' in reply)&&!('expiresAt' in reply)&&Array.isArray(reply.devices)&&
+      reply.devices.every(d=>d&&typeof d.id==='string'&&typeof d.label==='string'&&
+        Number.isSafeInteger(d.expires)&&d.expires>=0&&typeof d.current==='boolean');
+  }
+  function leaseReminderReply(reply){
+    return reply&&[reply.revision,reply.expiresAt,reply.serverTime,reply.localExpires,reply.elapsedExpires]
+      .every(n=>Number.isSafeInteger(n)&&n>=0)&&[reply.device,reply.requested].every(d=>d===null||typeof d==='string');
+  }
+  function clearReminderAuthority(cloud){
+    delete cloud.reminder;delete cloud.reminderLegacy;
+    delete cloud.reminderCheckedElapsed;delete cloud.reminderBoot;
+  }
+  let reminderRequest;
+  function reminderStatus(action='status',revision){
+    if(reminderRequest){
+      if(action==='status')return reminderRequest;
+      return reminderRequest.catch(()=>{}).then(()=>reminderStatus(action,revision));
+    }
+    const s=get(),owner=info?.account;
+    if(!scope(s))return Promise.resolve(null);
+    function accept(reply){
+      if(get()!==s||!scope(s))return false;
+      const legacy=legacyReminderReply(reply);
+      if(!legacy&&!leaseReminderReply(reply))throw Error('主提醒设备状态暂不可用');
+      const cloud=s.cloud;
+      if(reply.boot===cloud.reminderBoot&&reply.checkedElapsed<cloud.reminderCheckedElapsed)return false;
+      clearReminderAuthority(cloud);
+      if(legacy)cloud.reminderLegacy=true;
+      else cloud.reminder=reply;
+      if(Number.isSafeInteger(reply.checkedElapsed)&&Number.isSafeInteger(reply.boot)){
+        cloud.reminderCheckedElapsed=reply.checkedElapsed;cloud.reminderBoot=reply.boot;
+      }
+      store();return true;
+    }
+    const request=async()=>{
+      const reply=await rpc('v2/devices',{action,revision},owner);
+      if(!accept(reply))return null;
+      if(s.cloud.reminder===reply&&reply.device===info.device&&reply.requested){
+        try{
+          await env.stopWorkReminders(reply.revision);
+          const released=await rpc('v2/devices',{action:'release',revision:reply.revision},owner);
+          if(!accept(released))return null;
+        }finally{if(get()===s&&scope(s))env.refreshReminders();}
+      }else env.refreshReminders();
+      return s.cloud.reminder||null;
+    };
+    reminderRequest=request().catch(error=>{
+      if((error.code==='401'||error.message==='invalid_session')&&get()===s&&scope(s)){
+        clearReminderAuthority(s.cloud);store();env.refreshReminders();
+      }
+      throw error;
+    }).finally(()=>{reminderRequest=null});
+    return reminderRequest;
+  }
   function returnGuest(){
     const old=JSON.parse(localStorage.getItem(guestKey)||'null')||fresh();
     old.cursor=Date.now();old.card=null;old.pause=null;
@@ -62,6 +118,7 @@ window.BlinkAccounts=function(env){
         initializeProfile(target,merge&&sourceKey===guestKey,info.device);
         if(route==='v1/register')target.cloud.seen={};
       }
+      if(target.cloud)clearReminderAuthority(target.cloud);
       target.cursor=Date.now();target.card=null;target.pause=null;target.session=null;
       switchTo(targetKey,target);modal.close();
       if(merge&&sourceKey===guestKey)localStorage.setItem('blink-guest-imported',result.account);
@@ -86,6 +143,7 @@ window.BlinkAccounts=function(env){
     const s=get();if(!scope(s)||running||authBusy||(!force&&Date.now()<nextTry))return;
     const owner=info.account,c=s.cloud,valid=()=>get()===s&&scope(s)&&owner===info.account;
     running=true;display('同步中…');
+    reminderStatus().catch(()=>{});
     try{
       let more;
       do{
@@ -140,9 +198,20 @@ window.BlinkAccounts=function(env){
     button(modal,'取消',()=>modal.close());
   }
   async function devices(){
-    const result=await rpc('v2/devices');dialog('登录设备');
+    const result=await rpc('v2/devices');
+    const state=await reminderStatus().catch(()=>null);
+    dialog('登录设备');
+    if(get().cloud?.reminderLegacy)note('当前服务使用本机工作提醒，升级服务后可选择主提醒设备。');
+    else if(!state)note('主提醒设备状态暂不可用。');
+    else if(!state.device)note('请选择一台设备接收工作提醒。');
+    else if(state.requested)note('等待旧主设备结束提醒。旧机无法联网时，当前授权到期后完成交接。');
     for(const d of result.devices){
-      note(d.label+(d.current?' · 本机':''));
+      const role=state?.device===d.id?' · 主提醒设备':state?.requested===d.id?' · 等待接管':'';
+      note(d.label+(d.current?' · 本机':'')+role);
+      if(state&&d.current&&d.id&&!role&&!state.requested)button(modal,'将本机设为主提醒设备',async()=>{
+        await reminderStatus('select',state.revision);
+        await devices();
+      });
       if(!d.current&&d.id)button(modal,'退出此设备',async()=>{await rpc('v2/revoke',{device:d.id});await devices()});
     }
     button(modal,'关闭',()=>modal.close());
@@ -222,6 +291,13 @@ window.BlinkAccounts=function(env){
     const summary=document.createElement('summary');summary.textContent='账号与同步';panel.append(summary);parent.append(panel);
     const state=document.createElement('p');state.id='cloud-status';state.textContent=message||(info.account?'已登录 · '+info.name:'游客 · 数据仅在本机');panel.append(state);
     if(info.account){
+      const reminder=get().cloud?.reminder;
+      const role=document.createElement('p');
+      role.textContent=get().cloud?.reminderLegacy?'当前服务使用本机工作提醒。':
+        reminder?.requested===info.device?'本机正在等待接管工作提醒。':
+        reminder?.device===info.device&&!reminder.requested?'本机是主提醒设备。':
+        reminder?.device?'工作提醒由主设备发送。':'请在「登录设备」中选择主提醒设备。';
+      panel.append(role);
       button(panel,'立即同步',()=>sync(true));button(panel,'重新登录',()=>loginForm('v1/login'));
       if(get().cloud&&Object.keys(get().cloud.conflicts).length)button(panel,'处理设置冲突',conflicts);
       button(panel,'登录设备',devices);button(panel,'修改密码',()=>passwordAction('password'));
@@ -239,13 +315,20 @@ window.BlinkAccounts=function(env){
       const s=JSON.parse(localStorage.getItem(profile(info.account))||'null')||initializeProfile(fresh(),false,info.device);
       s.cursor=Date.now();switchTo(profile(info.account),s);
     }else if(!info.account&&getKey()!==guestKey)returnGuest();
-    render(false);sync();setInterval(()=>{if(!document.hidden)sync()},30000);
-    window.addEventListener('online',()=>sync(true));document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});
+    render(false);watchVisibility();
+    window.addEventListener('online',()=>{if(!document.hidden)sync(true)});
+    document.addEventListener('visibilitychange',watchVisibility);
   }).catch(()=>display('无法读取本机凭证'));
-  let syncTimer;
+  let syncTimer,pollTimer;
+  function watchVisibility(){
+    clearTimeout(pollTimer);clearTimeout(syncTimer);
+    if(document.hidden)return;
+    if(scope(get()))sync();
+    pollTimer=setTimeout(watchVisibility,30000);
+  }
   function changed(){
-    if(!scope(get()))return;
+    if(!scope(get())||document.hidden)return;
     clearTimeout(syncTimer);syncTimer=setTimeout(()=>{if(!failures)nextTry=0;sync()},750);
   }
-  return {settings,sync,changed};
+  return {settings,sync,changed,refreshReminderAuthority:()=>reminderStatus()};
 };

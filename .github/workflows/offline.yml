@@ -35,6 +35,8 @@ jobs:
           distribution: temurin
           java-version: 21
       - if: matrix.target == 'Android'
+        run: node scripts/test-android-work.mjs
+      - if: matrix.target == 'Android'
         shell: bash
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}

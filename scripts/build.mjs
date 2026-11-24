@@ -6,4 +6,4 @@ await build({entryPoints:['mobile/bridge.js'],bundle:true,outfile:'www/bridge.js
 const html=await readFile('index.html','utf8');
 await writeFile('www/index.html',html.replace('<script>', '<script src="bridge.js"></script>\n<script>'));
 
-for(const name of ['sync.js','account.js'])await copyFile(name,'www/'+name);
+for(const name of ['sync.js','account.js','desktop-ui.css'])await copyFile(name,'www/'+name);

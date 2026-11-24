@@ -1,4 +1,10 @@
 // The notification carries only a reminder ID. The page validates it before recording anything.
+self.addEventListener('message',event=>{
+  if(event.data?.type!=='blink-clear'||typeof event.data.id!=='string')return;
+  event.waitUntil(self.registration.getNotifications({tag:'blink-current'}).then(items=>{
+    for(const item of items)if(item.data?.id===event.data.id)item.close()
+  }))
+});
 self.addEventListener('notificationclick',event=>{
   event.notification.close();
   const id=event.notification.data?.id;

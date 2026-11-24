@@ -100,6 +100,7 @@
     for(const item of reply.conflicts){
       c.remote[item.key]={rev:item.rev,value:item.value};
       const pending=c.pending[item.key];if(!pending)continue;
+      if(pending.mutation!==item.mutation)continue;
       if(item.key.startsWith('baseline/')){apply(s,item.key,item.value);delete c.pending[item.key];}
       else{c.conflicts[item.key]={mine:pending.value,theirs:item.value};apply(s,item.key,item.value);delete c.pending[item.key];}
     }

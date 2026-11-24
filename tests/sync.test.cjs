@@ -26,3 +26,17 @@ test('a revoke during upload survives its acknowledgement and tombstone replay',
   assert.deepEqual(sync.recordBatch(s),[]);
   assert.deepEqual(s.logs,[]);
 });
+
+test('a stale conflict response leaves a later edit queued', () => {
+  const s = {};
+  const c = sync.accountState(s, 'phone');
+  const newer = {key:'pref/eye',value:45,base:1,mutation:'new-edit'};
+  c.pending[newer.key] = newer;
+  sync.objects(s,{
+    changes:[],accepted:[],cursor:2,epoch:'test',
+    conflicts:[{key:newer.key,value:30,rev:2,mutation:'old-edit'}]
+  },[]);
+  assert.deepEqual(c.pending[newer.key],newer);
+  assert.equal(c.conflicts[newer.key],undefined);
+  assert.deepEqual(c.remote[newer.key],{value:30,rev:2});
+});

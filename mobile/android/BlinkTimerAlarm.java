@@ -1,6 +1,7 @@
 package com.zhaowl.blink;
 
 import android.app.AlarmManager;
+import android.app.ActivityManager;
 import android.app.KeyguardManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -9,12 +10,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /** Delivers the saved plan even when Android has stopped the countdown service. */
 public class BlinkTimerAlarm extends BroadcastReceiver {
+    private static final String CHECK_WORK_DEVICE="com.zhaowl.blink.CHECK_WORK_DEVICE";
     static PendingIntent open(Context context,String token){
         Intent intent=new Intent(context,MainActivity.class)
             .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -33,6 +36,7 @@ public class BlinkTimerAlarm extends BroadcastReceiver {
 
     private static JSONObject scan(Context context,boolean deliver){
         SharedPreferences prefs=ReminderAction.prefs(context);
+        if(!prefs.contains("owner"))return null;
         JSONArray plan;
         try{plan=new JSONArray(prefs.getString("plan","[]"));}
         catch(JSONException e){return null;}
@@ -44,7 +48,7 @@ public class BlinkTimerAlarm extends BroadcastReceiver {
         JSONObject next=null;
         for(int i=0;i<plan.length();i++){
             JSONObject item=plan.optJSONObject(i);
-            if(item==null)continue;
+            if(item==null||!ReminderAction.eligible(context,item))continue;
             long due=item.optLong("at");
             if(due<=handledThrough||due<restUntil||prefs.getLong("done:"+ReminderAction.id(item),0)>now)continue;
             if(due>now){next=item;break;}
@@ -57,12 +61,16 @@ public class BlinkTimerAlarm extends BroadcastReceiver {
         return next;
     }
 
+    static boolean exactAllowed(Context context){
+        return Build.VERSION.SDK_INT<31||context.getSystemService(AlarmManager.class).canScheduleExactAlarms();
+    }
+
     static void schedule(Context context,JSONObject item){
         AlarmManager manager=context.getSystemService(AlarmManager.class);
         PendingIntent pending=alarm(context);
         if(item==null){manager.cancel(pending);return;}
         long at=item.optLong("at");
-        if(Build.VERSION.SDK_INT<31||manager.canScheduleExactAlarms()){
+        if(exactAllowed(context)){
             try{
                 manager.setAlarmClock(new AlarmManager.AlarmClockInfo(at,open(context,null)),pending);
                 return;
@@ -71,19 +79,45 @@ public class BlinkTimerAlarm extends BroadcastReceiver {
         manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,at,pending);
     }
 
-    @Override public void onReceive(Context context,Intent intent){
-        String action=intent.getAction();
-        boolean restore=Intent.ACTION_BOOT_COMPLETED.equals(action)||Intent.ACTION_MY_PACKAGE_REPLACED.equals(action);
-        JSONObject upcoming=restore?next(context):advance(context);
+    static void scheduleWorkCheck(Context context,boolean monitoring){
+        AlarmManager manager=context.getSystemService(AlarmManager.class);
+        PendingIntent pending=PendingIntent.getBroadcast(context,3,
+            new Intent(context,BlinkTimerAlarm.class).setAction(CHECK_WORK_DEVICE),
+            PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
+        if(!monitoring){manager.cancel(pending);return;}
+        manager.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            BlinkWorkScheduling.nextCheck(SystemClock.elapsedRealtime()),pending);
+    }
+
+    static void closeSession(Context context){
+        ReminderAction.closeSession(context);
+        schedule(context,null);
+        scheduleWorkCheck(context,false);
+        context.getSystemService(android.app.NotificationManager.class).cancelAll();
+        context.stopService(new Intent(context,BlinkTimerService.class));
+    }
+
+    static boolean hasOpenTask(Context context){
+        return !context.getSystemService(ActivityManager.class).getAppTasks().isEmpty();
+    }
+
+    static void dispatch(Context context,boolean due){
+        JSONObject upcoming=due?advance(context):next(context);
         schedule(context,upcoming);
-        boolean exactAlarm=action==null&&(Build.VERSION.SDK_INT<31||
-            context.getSystemService(AlarmManager.class).canScheduleExactAlarms());
-        if((restore||exactAlarm)&&upcoming!=null&&!BlinkTimerService.running){
-            Intent service=new Intent(context,BlinkTimerService.class);
-            try{
-                if(Build.VERSION.SDK_INT>=26)context.startForegroundService(service);
-                else context.startService(service);
-            }catch(IllegalStateException|SecurityException ignored){/* The scheduled reminder remains active. */}
+        BlinkTimerService.updateCountdown(upcoming);
+    }
+
+    @Override public void onReceive(Context context,Intent intent){
+        if(Intent.ACTION_MY_PACKAGE_REPLACED.equals(intent.getAction())||!hasOpenTask(context)){
+            closeSession(context);
+            return;
         }
+        if(CHECK_WORK_DEVICE.equals(intent.getAction())){
+            boolean monitoring=BlinkTimerService.shouldMonitorWork(context);
+            scheduleWorkCheck(context,monitoring);
+            if(monitoring)BlinkTimerService.checkWorkDevice(context.getApplicationContext(),goAsync());
+            return;
+        }
+        dispatch(context,intent.getAction()==null);
     }
 }

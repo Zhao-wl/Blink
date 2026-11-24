@@ -17,11 +17,11 @@ if (Capacitor.isNativePlatform()) {
     return id;
   }
   let queue = Promise.resolve();
-  function replace(items,pref,display) {
+  function replace(items,pref,display,authorization) {
     queue = queue.catch(()=>{}).then(async()=>{
       if(android){
         const channelId=items.length?await channel(pref.sound,pref.buzz):'';
-        await timer.configure({items,channel:channelId,lock:pref.lock!==false,wake:pref.wake!==false});
+        await timer.configure({...authorization,items:items.map(item=>({...item,owner:authorization.owner})),channel:channelId,lock:pref.lock!==false,wake:pref.wake===true});
         return;
       }
       const liveUpdate=live.setTimer({at:pref.lock===false?0:display?.at||0,title:display?.title||''}).catch(()=>{});
@@ -49,13 +49,21 @@ if (Capacitor.isNativePlatform()) {
   if(android)timer.addListener('tap',event=>receive(event.token));
   notifications.addListener('localNotificationActionPerformed',event=>receive(event.notification.extra?.token));
   window.blinkMobile={
-    ios:!android,replace,confirmations:()=>timer.pendingConfirmations(),acknowledge:ids=>timer.acknowledge({ids}),configureFace:options=>timer.configureFace(options),openFace:()=>timer.openFace(),
+    ios:!android,replace,confirmations:owner=>timer.pendingConfirmations({owner}),acknowledge:(owner,ids)=>timer.acknowledge({owner,ids}),
+    validateTap:(owner,token)=>timer.validateTap({owner,token}),
+    stopShared(owner,revision){
+      queue=queue.catch(()=>{}).then(()=>timer.stopShared({owner,revision}));
+      return queue;
+    },
     async exactAllowed(){return (await notifications.checkExactNotificationSetting()).exact_alarm==='granted'},
     async requestExact(){return (await notifications.changeExactNotificationSetting()).exact_alarm==='granted'},
     async consumeTap(){if(android){const {token}=await timer.consumeTap();if(token)receive(token)}},
     async show(card,title,body,pref){
       const channelId=await channel(pref.sound,pref.buzz);
-      if(android)return timer.showReminder({channel:channelId,row:{token:card.id,round:card.round,k:card.k,at:Date.now(),expires:card.until,title,body,rest:card.rest||0}});
+      if(android){
+        await queue.catch(()=>{});
+        return timer.showReminder({channel:channelId,row:{owner:card.owner,shared:card.shared,token:card.id,round:card.round,k:card.k,at:Date.now(),expires:card.until,title,body,rest:card.rest||0}});
+      }
       await notifications.schedule({notifications:[{id:1000,isExactNotification:false,title:'Blink · '+title,body,
         extra:{token:card.id},channelId,foreground:true,sound:pref.sound?'blink.wav':undefined}]});
     },
