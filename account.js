@@ -201,10 +201,20 @@ window.BlinkAccounts=function(env){
     });button(modal,'取消',()=>modal.close());
   }
   async function update(){
-    display('正在检查版本…');const r=await native.update({install:false});
-    if(r.installed>=r.version){display('当前已是最新内测版');return}
+    display('正在检查版本…');
+    let r;
+    try{r=await native.update({install:false})}
+    catch(e){display(errorText(e));return}
+    if(r.installed>=r.version){display('当前已是最新内测版 0.2.'+r.installed);return}
+    display('当前内测版 0.2.'+r.installed);
     dialog('可更新到 0.2.'+r.version);note('安装完成后保留账号和离线记录。');
-    button(modal,'下载安装',async()=>{await native.update({install:true});modal.close()});button(modal,'稍后',()=>modal.close());
+    const progress=note('');
+    progress.setAttribute('role','status');
+    button(modal,'下载安装',async()=>{
+      progress.textContent='正在下载并校验安装包…';
+      try{await native.update({install:true,version:r.version});modal.close()}
+      catch(e){progress.textContent=errorText(e)}
+    });button(modal,'稍后',()=>modal.close());
   }
   function settings(parent){
     if(!info?.enabled)return;

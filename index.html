@@ -547,9 +547,12 @@ if(window.blinkMobile){
  });
  importLockConfirmations().catch(()=>{});window.blinkMobile.consumeTap().catch(()=>{});
 }
-if(window.blinkDesktop)window.blinkDesktop.listen((id,yes)=>{
- if(yes)openReminder(id,true);else if(data.card?.id===id)deferReminder(data.card.k)
-});
+if(window.blinkDesktop){
+ window.blinkDesktop.listen((id,yes)=>{
+   if(yes)openReminder(id,true);else if(data.card?.id===id)deferReminder(data.card.k)
+ });
+ window.blinkDesktop.onResume(()=>{refreshStored();render()});
+}
 if(!window.blinkMobile&&!window.blinkDesktop&&'serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',event=>{
  if(event.data?.type==='blink-reminder')openReminder(event.data.id,event.data.confirm)
 });

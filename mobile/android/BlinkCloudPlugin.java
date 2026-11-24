@@ -148,6 +148,7 @@ public class BlinkCloudPlugin extends Plugin {
             JSONObject info=release();int version=info.getInt("version");
             int installed=getContext().getPackageManager().getPackageInfo(getContext().getPackageName(),0).versionCode;
             if(!call.getBoolean("install",false)||installed>=version){call.resolve(new JSObject(info.toString()).put("installed",installed));return;}
+            if(call.getInt("version",version)!=version){call.reject("内测版本已变化，请重新检查更新");return;}
             if(Build.VERSION.SDK_INT>=26&&!getContext().getPackageManager().canRequestPackageInstalls()){
                 getActivity().runOnUiThread(()->getActivity().startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,Uri.parse("package:"+getContext().getPackageName()))));
                 call.reject("请允许安装内测更新后再点安装");return;

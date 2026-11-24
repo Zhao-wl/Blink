@@ -24,10 +24,31 @@ try {
   await page.getByLabel('晚餐开始').press('Tab');
   await page.locator('#appearance').selectOption('dark');
   assert.equal(await page.locator('html').getAttribute('data-theme'),'dark');
+  await page.locator('#delivery summary').click();
+  await page.getByRole('checkbox',{name:'系统通知'}).check();
+  await page.getByRole('button',{name:'今日',exact:true}).click();
+  await page.locator('#workMode[aria-pressed="true"]').waitFor();
+  const main=await instance.browserWindow(page);
+  await main.evaluate(win=>win.close());
+  assert.equal(await main.evaluate(win=>win.isVisible()),false);
+  const popupPromise=instance.waitForEvent('window',{timeout:10000});
+  await page.evaluate(()=>{
+    data.lunchEnd=data.lunchStart;
+    data.dinnerEnd=data.dinnerStart;
+    settle();
+    data.progress[2]=frequency(2)*minute;
+    checkReminder();
+  });
+  const reminder=await popupPromise;
+  const closed=reminder.waitForEvent('close',{timeout:10000});
+  await reminder.getByRole('button',{name:'喝过了',exact:true}).click();
+  await closed;
+  await main.evaluate(win=>win.show());
   await page.getByRole('button',{name:'记录',exact:true}).click();
+  await page.locator('#feed .recorded').waitFor();
   await page.getByRole('button',{name:'记一次',exact:true}).click();
   await page.getByRole('dialog').getByRole('button',{name:'喝水',exact:true}).click();
-  assert.equal(await page.locator('#feed .recorded').count(),1);
+  assert.equal(await page.locator('#feed .recorded').count(),2);
   await instance.close();
   instance=await launch();
   await instance.context().setOffline(true);
@@ -35,11 +56,12 @@ try {
   await page.getByRole('button',{name:'记录',exact:true}).click();
   await page.locator('#feed .recorded').waitFor();
   assert.equal(await page.locator('html').getAttribute('data-theme'),'dark');
-  assert.match(await page.locator('#feed .recorded').innerText(),/喝水/);
+  assert.equal(await page.locator('#feed .recorded').count(),2);
+  assert.match(await page.locator('#feed .recorded').first().innerText(),/喝水/);
   await page.getByRole('button',{name:'日程',exact:true}).click();
   await page.locator('#planMode').getByRole('button',{name:'工作日',exact:true}).click();
   assert.equal(await page.getByLabel('晚餐开始').inputValue(),'17:45');
-  console.log('Packaged app opened offline; one drink survived restart.');
+  console.log('Offline packaged app kept running in the tray; popup and manual check-ins survived restart.');
 } finally {
   if(instance)await instance.close().catch(()=>{});
   await rm(profile,{recursive:true,force:true,maxRetries:4,retryDelay:300});

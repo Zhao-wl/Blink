@@ -22,11 +22,15 @@ public class BlinkTimerPlugin extends Plugin {
     @PluginMethod public void configure(PluginCall call) {
         Context ctx = getContext();
         String plan = call.getArray("items", new JSArray()).toString();
+        getActivity().runOnUiThread(()->configurePlan(ctx,call,plan));
+    }
+    private void configurePlan(Context ctx,PluginCall call,String plan){
         SharedPreferences prefs = ctx.getSharedPreferences("blink-timer", Context.MODE_PRIVATE);
         prefs.edit().putString("plan", plan).putString("channel", call.getString("channel","blink-00"))
             .putBoolean("lock", call.getBoolean("lock",true)).putBoolean("wake",call.getBoolean("wake",true)).apply();
         Intent service = new Intent(ctx, BlinkTimerService.class);
         try {
+            BlinkTimerAlarm.schedule(ctx,BlinkTimerAlarm.next(ctx));
             if (plan.equals("[]")) ctx.stopService(service);
             else if (Build.VERSION.SDK_INT >= 26) ctx.startForegroundService(service);
             else ctx.startService(service);
