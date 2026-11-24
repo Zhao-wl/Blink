@@ -53,8 +53,10 @@ app.whenReady().then(()=>{
 });
 
 // ---- Presence: system-wide keyboard/mouse idle time and the lock screen ----
+// The end-to-end test drives presence and quiet states itself; an unattended CI desktop is always idle.
+const smoke=process.env.BLINK_SMOKE==='1';
 function sendPresence(){
-  if(!main||main.isDestroyed())return;
+  if(smoke||!main||main.isDestroyed())return;
   const idle=powerMonitor.getSystemIdleTime(),locked=lockedAt>0;
   main.webContents.send('desktop:presence',{idle:locked?Math.max(idle,Math.round((Date.now()-lockedAt)/1000)):idle,locked});
 }
@@ -85,7 +87,7 @@ ipcMain.on('desktop:status',(event,state)=>{
 // SHQueryUserNotificationState: 2 busy (full screen), 3 D3D full screen, 4 presentation, 6 quiet time, 7 app full screen.
 let quietCache={at:0,value:false};
 function quiet(){
-  if(process.platform!=='win32')return Promise.resolve(false);
+  if(smoke||process.platform!=='win32')return Promise.resolve(false);
   if(Date.now()-quietCache.at<20000)return Promise.resolve(quietCache.value);
   const script='$s=Add-Type -Name Q -Namespace B -PassThru -MemberDefinition \'[DllImport("shell32.dll")] public static extern int SHQueryUserNotificationState(out int s);\';$v=0;[void]$s::SHQueryUserNotificationState([ref]$v);$v';
   return new Promise(resolve=>execFile('powershell.exe',['-NoProfile','-NonInteractive','-Command',script],{timeout:4000,windowsHide:true},(error,stdout)=>{

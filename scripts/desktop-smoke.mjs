@@ -8,7 +8,7 @@ import path from 'node:path';
 const profile=await mkdtemp(path.join(os.tmpdir(),'blink-smoke-'));
 const executablePath=path.resolve(process.argv[2]);
 const extra=process.argv[3]?[path.resolve(process.argv[3])]:[];
-const launch=()=>electron.launch({executablePath,args:[...extra,'--user-data-dir='+profile],timeout:60000});
+const launch=()=>electron.launch({executablePath,args:[...extra,'--user-data-dir='+profile],env:{...process.env,BLINK_SMOKE:'1'},timeout:60000});
 const send=(instance,channel,...args)=>instance.evaluate(({BrowserWindow},[channel,args])=>{
   const win=BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().endsWith('index.html'));win.webContents.send(channel,...args);
 },[channel,args]);
@@ -56,8 +56,9 @@ try {
   const reminderWindow=await instance.browserWindow(reminder);
   const bounds=await reminderWindow.evaluate(win=>win.getBounds());
   const area=await instance.evaluate(({screen},rect)=>screen.getDisplayMatching(rect).workArea,bounds);
-  assert.equal(area.x+area.width-bounds.x-bounds.width,16);
-  assert.equal(area.y+area.height-bounds.y-bounds.height,16);
+  // 16 px inset; fractional display scaling rounds the window size by a few pixels.
+  assert.ok(Math.abs(area.x+area.width-bounds.x-bounds.width-16)<=6);
+  assert.ok(Math.abs(area.y+area.height-bounds.y-bounds.height-16)<=6);
   const closed=reminder.waitForEvent('close',{timeout:10000});
   await reminder.keyboard.press('Enter').catch(()=>{});
   await closed;
