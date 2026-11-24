@@ -15,8 +15,13 @@ public class MainActivity extends BridgeActivity {
             @Override public void handleOnBackPressed(){moveTaskToBack(true);}
         });
     }
-    @Override public void onResume(){super.onResume();visible=true;}
-    @Override public void onPause(){visible=false;super.onPause();}
+    @Override public void onResume(){super.onResume();visible=true;notifyVisibility(true);}
+    @Override public void onPause(){visible=false;notifyVisibility(false);super.onPause();}
+    /** The web view keeps running in the background and never reports hidden on its own. */
+    private void notifyVisibility(boolean shown){
+        try{BlinkTimerPlugin.emit(this,new org.json.JSONObject().put("type","visibility").put("visible",shown));}
+        catch(org.json.JSONException ignored){/* constant keys */}
+    }
     @Override public void onUserInteraction(){
         super.onUserInteraction();
         long now=System.currentTimeMillis();

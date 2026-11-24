@@ -28,6 +28,7 @@ public class BlinkTimerPlugin extends Plugin {
             try{plugin.notifyListeners("native",new JSObject(event.toString()),false);return;}
             catch(JSONException ignored){/* fall back to the queue */}
         }
+        if("visibility".equals(event.optString("type")))return;
         SharedPreferences prefs=ReminderAction.prefs(context);
         try{
             JSONArray queue=new JSONArray(prefs.getString("events","[]"));
@@ -148,6 +149,8 @@ public class BlinkTimerPlugin extends Plugin {
         String vendor=Build.MANUFACTURER.toLowerCase(java.util.Locale.ROOT);
         if(vendor.contains("xiaomi")||vendor.contains("redmi")||vendor.contains("oppo")||vendor.contains("oneplus")||vendor.contains("realme")||vendor.contains("vivo")||vendor.contains("honor")||vendor.contains("huawei"))
             rows.put(row("自启动 / 后台运行（厂商设置）",null,"autostart",true,"系统无法读取此项，请在打开的页面中允许 Blink"));
+        if(vendor.contains("xiaomi")||vendor.contains("redmi")||vendor.contains("oppo")||vendor.contains("oneplus")||vendor.contains("realme"))
+            rows.put(row("锁屏显示通知（厂商设置）",null,"notifications",false,"在通知设置中打开「锁屏通知」；小米还需在锁屏样式中关闭「仅显示时间」类模板"));
         JSObject out=new JSObject();out.put("rows",rows);call.resolve(out);
     }
     @PluginMethod public void openSetting(PluginCall call){

@@ -27,7 +27,8 @@ test('mobile background uses the native plan while minimized desktop wakes at th
   run(`let scheduled;globalThis.setTimeout=(_,delay)=>{scheduled=delay};globalThis.clearTimeout=()=>{scheduled=undefined};
     data.delivery={enabled:true};window.blinkMobile={};document.hidden=true;
     settle();scheduleTick()`);
-  assert.equal(run('scheduled'),undefined);
+  // Hidden Android only wakes for the next start/end question (at most every 15 minutes).
+  assert.ok(run('scheduled')<=15*60000&&run('scheduled')>0);
   run('delete window.blinkMobile;window.blinkDesktop={};document.hidden=false;desktopHidden=true;scheduleTick()');
   assert.equal(run('scheduled'),20*60000);
   run('desktopHidden=false;scheduleTick()');

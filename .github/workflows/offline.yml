@@ -5,7 +5,7 @@ on:
     tags: ['v*']
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 concurrency:
   group: offline-${{ github.ref }}
   cancel-in-progress: true
@@ -94,6 +94,11 @@ jobs:
         run: npm run pack:desktop -- --win --x64
       - if: matrix.target == 'Windows11'
         run: node scripts/desktop-smoke.mjs out/win-unpacked/Blink.exe
+      # Version tags publish the installer and latest.yml to GitHub Releases for in-app updates.
+      - if: matrix.target == 'Windows11' && startsWith(github.ref, 'refs/tags/v')
+        run: npx electron-builder --win --x64 --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - if: matrix.target == 'macOS'
         run: node scripts/desktop-smoke.mjs out/mac-universal/Blink.app/Contents/MacOS/Blink
       - uses: actions/upload-artifact@v4

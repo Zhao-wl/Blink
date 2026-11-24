@@ -41,8 +41,6 @@ public class ReminderAction extends BroadcastReceiver {
         int mode=c.getSystemService(AudioManager.class).getMode();
         return mode==AudioManager.MODE_IN_CALL||mode==AudioManager.MODE_IN_COMMUNICATION||mode==AudioManager.MODE_RINGTONE;
     }
-    /** The alert replaces the countdown card when the service owns it, so only one Blink card is ever shown. */
-    private static int slot(Context c){return prefs(c).getBoolean("alertOnTimer",false)?BlinkTimerService.TIMER:ALERT;}
     private static void dismiss(Context c){
         NotificationManager manager=c.getSystemService(NotificationManager.class);
         boolean merged=prefs(c).getBoolean("alertOnTimer",false);
@@ -95,7 +93,7 @@ public class ReminderAction extends BroadcastReceiver {
     // ---- Day questions ("下班了？") with up to three actions ----
     static void showPrompt(Context c,JSONObject p,String channel){
         NotificationManager manager=c.getSystemService(NotificationManager.class);
-        if(!manager.areNotificationsEnabled())return;
+        if(!manager.areNotificationsEnabled()||BlinkTimerAlarm.foreground(c))return;
         NotificationCompat.Builder b=new NotificationCompat.Builder(c,channel).setSmallIcon(R.drawable.blink_notification)
             .setContentTitle(p.optString("title")).setContentText(p.optString("body"))
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC).setAutoCancel(true)
@@ -149,7 +147,8 @@ public class ReminderAction extends BroadcastReceiver {
         }
         SharedPreferences.Editor editor=p.edit().putString(KEY,row.toString());
         for(String key:p.getAll().keySet())if(key.startsWith("done:")&&p.getLong(key,0)<=now)editor.remove(key);
-        boolean merged=BlinkTimerService.isRunning();
+        // Only Android 16 Live Updates show the service card on the lock screen; older ROMs (MIUI) hide it.
+        boolean merged=Build.VERSION.SDK_INT>=36&&BlinkTimerService.isRunning();
         editor.putBoolean("alertOnTimer",merged).apply();
         Intent i=new Intent(c,ReminderAction.class).setData(new Uri.Builder().scheme("blink").authority("confirm").appendPath(token).build());
         PendingIntent done=PendingIntent.getBroadcast(c,0,i,PendingIntent.FLAG_IMMUTABLE);
