@@ -45,7 +45,8 @@ try {
   await closed;
   await main.evaluate(win=>win.show());
   await page.getByRole('button',{name:'记录',exact:true}).click();
-  await page.locator('#feed .recorded').waitFor();
+  await page.locator('#feed .recorded').first().waitFor();
+  assert.equal(await page.locator('#feed .recorded').count(),1);
   await page.getByRole('button',{name:'记一次',exact:true}).click();
   await page.getByRole('dialog').getByRole('button',{name:'喝水',exact:true}).click();
   assert.equal(await page.locator('#feed .recorded').count(),2);
@@ -54,7 +55,7 @@ try {
   await instance.context().setOffline(true);
   page=await instance.firstWindow();
   await page.getByRole('button',{name:'记录',exact:true}).click();
-  await page.locator('#feed .recorded').waitFor();
+  await page.locator('#feed .recorded').first().waitFor();
   assert.equal(await page.locator('html').getAttribute('data-theme'),'dark');
   assert.equal(await page.locator('#feed .recorded').count(),2);
   assert.match(await page.locator('#feed .recorded').first().innerText(),/喝水/);
