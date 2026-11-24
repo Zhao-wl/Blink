@@ -65,6 +65,7 @@ if (Capacitor.isNativePlatform()) {
       const matches=shown.filter(item=>item.extra?.token===token);
       if(matches.length)await notifications.removeDeliveredNotifications({notifications:matches})
     },
+    notificationAllowed:async()=>(await notifications.checkPermissions()).display==='granted',
     request:async()=>(await notifications.requestPermissions()).display==='granted',
     listen(fn){handlers.push(fn);if(waiting){fn(waiting);waiting=null}}
   };

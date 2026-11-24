@@ -8,6 +8,7 @@ import org.json.*;
 
 /** Executes the on-device plan when the UI disappears; the system draws the countdown. */
 public class BlinkTimerService extends Service {
+    static boolean running;
     private static final int TIMER=4100, LOCK_TIMER=4102;
     private final Handler handler=new Handler(Looper.getMainLooper());
     private NotificationManager manager;
@@ -36,6 +37,7 @@ public class BlinkTimerService extends Service {
     };
     @Override public void onCreate(){
         super.onCreate();
+        running=true;
         prefs=getSharedPreferences("blink-timer",MODE_PRIVATE);
         manager=getSystemService(NotificationManager.class);
         if(Build.VERSION.SDK_INT>=26){
@@ -107,6 +109,7 @@ public class BlinkTimerService extends Service {
     }
     @Override public IBinder onBind(Intent intent){return null;}
     @Override public void onDestroy(){
+        running=false;
         handler.removeCallbacks(tick);unregisterReceiver(wake);
         if(separateLockCard)clearLockCard();
         stopForeground(STOP_FOREGROUND_REMOVE);super.onDestroy();

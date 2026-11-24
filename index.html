@@ -168,7 +168,7 @@ function deliverySettings(){
  el('app').append(section);const pref=data.delivery??={enabled:false,sound:false,buzz:false};
  const enabled=el('systemOn');enabled.checked=!!systemEnabled();enabled.disabled=!supportsSystem();
  el('deliveryHint').textContent=!supportsSystem()?'系统通知需要在支持通知的浏览器中通过 HTTPS 或 localhost 打开。':mobileDevice()?'锁屏显示、亮屏和声振组合由手机系统决定。':'提醒在桌面右下角显示，可直接确认。';
- enabled.onchange=async()=>{if(enabled.checked){try{if(window.blinkMobile||window.blinkDesktop){if(!await (window.blinkMobile||window.blinkDesktop).request())throw Error()}else{if(await Notification.requestPermission()!=='granted')throw Error();await registration()}pref.enabled=true}catch{pref.enabled=false;say('请检查浏览器的通知权限')}}else pref.enabled=false;save();render()};
+ enabled.onchange=async()=>{if(enabled.checked){try{if(window.blinkMobile||window.blinkDesktop){if(!await (window.blinkMobile||window.blinkDesktop).request())throw Error()}else{if(await Notification.requestPermission()!=='granted')throw Error();await registration()}pref.enabled=true;if(window.blinkMobile)nativePlanSignature=''}catch{pref.enabled=false;say('请检查系统通知权限')}}else pref.enabled=false;save();render()};
  for(const [id,k] of [['soundOn','sound'],['buzzOn','buzz']]){const input=el(id);input.checked=pref[k];input.disabled=!supportsSystem()||(k==='buzz'&&(window.blinkDesktop||window.blinkMobile?.ios));input.onchange=()=>{pref[k]=input.checked;save();syncBackground()}}
  if(window.blinkMobile){
    const label=document.createElement('label');label.className='field';label.textContent='锁屏显示倒计时';const toggle=document.createElement('input');toggle.type='checkbox';toggle.checked=pref.lock!==false;toggle.onchange=()=>{pref.lock=toggle.checked;save();syncBackground()};label.append(toggle);section.append(label);
@@ -190,6 +190,13 @@ function deliverySettings(){
      }catch{say('请在系统设置中允许 Blink 使用闹钟和提醒')}}
    }
    el('deliveryHint').textContent=window.blinkMobile.ios?'后台到点发送本地通知，iOS 16.2 起可显示实时活动。':'允许准时提醒后，系统闹钟会显示下次提醒时间。锁屏显示由系统通知设置决定。'
+   const hint=el('deliveryHint');
+   if(pref.enabled)window.blinkMobile.notificationAllowed().then(allowed=>{
+     if(!allowed&&section.isConnected){
+       enabled.checked=false;
+       hint.textContent='系统通知权限已关闭，请重新开启系统通知，才能在后台和锁屏收到提醒。';
+     }
+   }).catch(()=>{});
  }
 }
 function clearSystemCard(card){

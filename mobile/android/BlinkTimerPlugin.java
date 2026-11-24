@@ -58,7 +58,8 @@ public class BlinkTimerPlugin extends Plugin {
         Intent i=new Intent(getContext(),MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP)
             .putExtra("blinkToken",row.optString("token"));
         android.app.PendingIntent open=android.app.PendingIntent.getActivity(getContext(),1,i,android.app.PendingIntent.FLAG_IMMUTABLE|android.app.PendingIntent.FLAG_UPDATE_CURRENT);
-        ReminderAction.post(getContext(),row,call.getString("channel","blink-00"),open);call.resolve();
+        if(ReminderAction.post(getContext(),row,call.getString("channel","blink-00"),open))call.resolve();
+        else call.reject("系统通知不可用");
     }
     @Override protected void handleOnNewIntent(Intent intent){
         String token=intent.getStringExtra("blinkToken");

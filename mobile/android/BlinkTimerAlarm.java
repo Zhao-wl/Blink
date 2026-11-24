@@ -76,7 +76,9 @@ public class BlinkTimerAlarm extends BroadcastReceiver {
         boolean restore=Intent.ACTION_BOOT_COMPLETED.equals(action)||Intent.ACTION_MY_PACKAGE_REPLACED.equals(action);
         JSONObject upcoming=restore?next(context):advance(context);
         schedule(context,upcoming);
-        if(restore&&upcoming!=null){
+        boolean exactAlarm=action==null&&(Build.VERSION.SDK_INT<31||
+            context.getSystemService(AlarmManager.class).canScheduleExactAlarms());
+        if((restore||exactAlarm)&&upcoming!=null&&!BlinkTimerService.running){
             Intent service=new Intent(context,BlinkTimerService.class);
             try{
                 if(Build.VERSION.SDK_INT>=26)context.startForegroundService(service);

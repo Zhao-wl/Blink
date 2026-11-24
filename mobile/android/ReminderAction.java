@@ -49,14 +49,14 @@ public class ReminderAction extends android.content.BroadcastReceiver {
     }
     @Override public void onReceive(Context c,Intent i){if(i.getData()!=null)confirm(c,i.getData().getLastPathSegment());}
     @SuppressWarnings("deprecation")
-    static synchronized void post(Context c,JSONObject row,String channel,PendingIntent open){
-        int kind=row.optInt("k",-1);if(kind<0||kind>=LABEL.length||handled(c,row))return;
-        String token=row.optString("token");if(token.isEmpty())return;
+    static synchronized boolean post(Context c,JSONObject row,String channel,PendingIntent open){
+        int kind=row.optInt("k",-1);if(kind<0||kind>=LABEL.length||handled(c,row))return false;
+        String token=row.optString("token");if(token.isEmpty())return false;
         NotificationManager manager=c.getSystemService(NotificationManager.class);
-        if(!manager.areNotificationsEnabled())return;
+        if(!manager.areNotificationsEnabled())return false;
         if(Build.VERSION.SDK_INT>=26){
             NotificationChannel nc=manager.getNotificationChannel(channel);
-            if(nc==null||nc.getImportance()==NotificationManager.IMPORTANCE_NONE)return;
+            if(nc==null||nc.getImportance()==NotificationManager.IMPORTANCE_NONE)return false;
         }
         SharedPreferences p=prefs(c);SharedPreferences.Editor editor=p.edit().putString(KEY,row.toString());
         for(String key:p.getAll().keySet())if(key.startsWith("done:")&&p.getLong(key,0)<=System.currentTimeMillis())editor.remove(key);
@@ -75,5 +75,6 @@ public class ReminderAction extends android.content.BroadcastReceiver {
                 light.acquire(15000L);
             }catch(SecurityException ignored){/* Notification remains available under device policy. */}
         }
+        return true;
     }
 }
