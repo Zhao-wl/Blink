@@ -8,6 +8,7 @@ import test_api
 import secrets
 import uuid
 import cloud
+import time
 
 
 class ExtendedTest(test_api.SyncTest):
@@ -24,6 +25,9 @@ class ExtendedTest(test_api.SyncTest):
         self.token=self.auth["token"]
 
     def v2(self,path,body,token=None):
+        if path=="reminders":
+            path="devices"
+            body={"action":"status",**body}
         return self.post("/v2/"+path,body,self.token if token is None else token)
 
     def test_preferences_and_intervals(self):
@@ -68,6 +72,38 @@ class ExtendedTest(test_api.SyncTest):
         replay = self.post("sync",{"cursor":first["cursor"],"records":[dict(reminder,at=3000)]},self.token)
         self.assertEqual(replay["canonical"],[reminder])
         self.assertEqual(self.post("sync",{},self.token)["records"],[reminder])
+
+    def test_primary_reminder_waits_for_old_device_acknowledgement(self):
+        second = str(uuid.uuid4())
+        other = self.post("login", dict(self.creds, device=second))["token"]
+        self.assertIsNone(self.v2("reminders", {})["device"])
+        main = self.v2("reminders", {"action": "select", "revision": 0})
+        self.assertEqual(main["device"], self.device)
+        self.assertGreater(main["expiresAt"], main["serverTime"])
+        stale = self.v2("reminders", {"action": "select", "revision": 0}, other)
+        self.assertEqual(stale["status"], 409)
+        waiting = self.v2("reminders", {"action": "select", "revision": main["revision"]}, other)
+        self.assertEqual((waiting["device"], waiting["requested"]), (self.device, second))
+        self.assertEqual(waiting["expiresAt"], main["expiresAt"])
+        release = {"action": "release", "revision": waiting["revision"]}
+        self.assertEqual(self.v2("reminders", release, other)["device"], self.device)
+        self.assertEqual(self.v2("reminders", release)["device"], second)
+        active = self.v2("reminders", {}, other)
+        self.assertGreater(active["expiresAt"], active["serverTime"])
+        self.assertEqual(self.v2("reminders", release)["device"], second)
+
+    def test_primary_reminder_handoff_after_offline_expiry(self):
+        second = str(uuid.uuid4())
+        other = self.post("login", dict(self.creds, device=second))["token"]
+        with patch("cloud.time.time", return_value=time.time()):
+            main = self.v2("reminders", {"action": "select", "revision": 0})
+            self.v2("reminders", {"action": "select", "revision": main["revision"]}, other)
+        with patch("cloud.time.time", return_value=(main["expiresAt"] + 1) / 1000):
+            active = self.v2("reminders", {}, other)
+            self.assertEqual(active["device"], second)
+            self.assertIsNone(active["requested"])
+            self.assertGreater(active["expiresAt"], active["serverTime"])
+            self.assertEqual(self.v2("reminders", {})["device"], second)
 
     def test_recovery_revocation_and_deletion(self):
         other=self.post("login",dict(self.creds,device=str(uuid.uuid4())))["token"]
