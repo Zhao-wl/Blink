@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 @CapacitorPlugin(name="BlinkCloud")
