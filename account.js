@@ -1,6 +1,8 @@
 /* Accounts are optional and only replicate data. Guest mode never needs a network connection. */
 window.BlinkAccounts=function(env){
   const {native,modal,get,getKey,guestKey,save,settle,render,say}=env,engine=window.BlinkSync;
+  // Capacitor plugin proxies return a function for any property, so only a real boolean marks the desktop bridge.
+  const desktop=native.desktop===true;
   let info,running=false,authBusy=false,message='',nextTry=0,failures=0,devicesCache=null;
   const clone=x=>JSON.parse(JSON.stringify(x));
   const profile=id=>'blink-profile-'+id;
@@ -101,21 +103,22 @@ window.BlinkAccounts=function(env){
     const merge=mergeField(form);if(merge)modal.append(form);
     const code=note('获取中…');code.style.cssText='font:650 40px/1.3 ui-monospace,monospace;letter-spacing:.18em;color:var(--ink);text-align:center;margin:18px 0';
     const state=note('配对码 2 分钟内有效。','muted');
-    let stopped=false;button(modal,'取消',()=>{stopped=true;modal.close()});
-    modal.addEventListener('close',()=>{stopped=true},{once:true});
+    // The previous dialog's close event arrives after this one opens, so watch our own nodes instead.
+    let cancelled=false;button(modal,'取消',()=>{cancelled=true;modal.close()});
+    const live=()=>!cancelled&&modal.open&&code.isConnected;
     let ticket;
     try{ticket=await rpc('v2/pair/new',{});}catch(e){code.textContent='—';state.textContent=errorText(e);return}
     code.textContent=ticket.code.slice(0,3)+' '+ticket.code.slice(3);
     const until=Date.now()+(ticket.expires||120)*1000;
-    while(!stopped&&Date.now()<until){
+    while(live()&&Date.now()<until){
       await new Promise(r=>setTimeout(r,2000));
-      if(stopped)return;
+      if(!live())return;
       try{
         const reply=await rpc('v2/pair/poll',{secret:ticket.secret});
         if(reply.account){await enter(reply,!!merge?.checked,false);return}
       }catch(e){if(e.message==='pair_expired'||e.message==='pair_unknown')break}
     }
-    if(!stopped){code.textContent='—';state.textContent='配对码已过期，请重新获取。'}
+    if(live()){code.textContent='—';state.textContent='配对码已过期，请重新获取。'}
   }
   function pairApprove(){
     dialog('添加设备');
@@ -364,10 +367,10 @@ window.BlinkAccounts=function(env){
   }
   function about(parent){
     const p=document.createElement('p');p.className='muted';p.textContent='Blink '+(info?.versionName||(info?.version?'0.2.'+info.version:''));parent.append(p);
-    if(info?.stage||native.desktop){
+    if(info?.stage||desktop){
       const status=document.createElement('small');status.className='muted';status.style.display='block';
       const b=document.createElement('button');b.className='row';b.textContent='检查更新';b.onclick=()=>update(status);
-      if(native.desktop)b.onclick=()=>native.checkUpdate().then(r=>{status.textContent=r||''}).catch(e=>{status.textContent=errorText(e)});
+      if(desktop)b.onclick=()=>native.checkUpdate().then(r=>{status.textContent=r||''}).catch(e=>{status.textContent=errorText(e)});
       parent.append(b,status);
     }
   }
@@ -375,7 +378,7 @@ window.BlinkAccounts=function(env){
   async function presence(round){
     const s=get();if(!scope(s))return null;
     const idle=Math.max(0,Date.now()-(env.lastActive?.()||s.lastActive||0));
-    return rpc('v2/presence',{idle,round,platform:native.desktop?'desktop':'android',exclusive:!!s.cloud.exclusive},info.account);
+    return rpc('v2/presence',{idle,round,platform:desktop?'desktop':'android',exclusive:!!s.cloud.exclusive},info.account);
   }
   native.info().then(result=>{
     info=result;if(!info.enabled)return;
@@ -390,12 +393,12 @@ window.BlinkAccounts=function(env){
   let syncTimer,pollTimer;
   function watchVisibility(){
     clearTimeout(pollTimer);clearTimeout(syncTimer);
-    if(document.hidden&&!native.desktop)return;
+    if(document.hidden&&!desktop)return;
     if(scope(get())){sync();presence().catch(()=>{});}
-    pollTimer=setTimeout(watchVisibility,native.desktop?60000:30000);
+    pollTimer=setTimeout(watchVisibility,desktop?60000:30000);
   }
   function changed(){
-    if(!scope(get())||document.hidden&&!native.desktop)return;
+    if(!scope(get())||document.hidden&&!desktop)return;
     clearTimeout(syncTimer);syncTimer=setTimeout(()=>{if(!failures)nextTry=0;sync()},750);
   }
   return {card,about,sync,changed,presence};
